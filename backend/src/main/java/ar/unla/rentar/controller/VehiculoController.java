@@ -1,5 +1,8 @@
 package ar.unla.rentar.controller;
 
+import ar.unla.rentar.dto.VehiculoCreateDTO;
+import ar.unla.rentar.dto.VehiculoResponseDTO;
+import ar.unla.rentar.dto.VehiculoUpdateDTO;
 import ar.unla.rentar.model.Vehiculo;
 import ar.unla.rentar.service.VehiculoService;
 import jakarta.validation.Valid;
@@ -21,13 +24,13 @@ public class VehiculoController {
 
     // Get para listar todos los vehículos
     @GetMapping
-    public ResponseEntity<List<Vehiculo>> listarTodos() {
+    public ResponseEntity<List<VehiculoResponseDTO>> listarTodos() {
         return ResponseEntity.ok(vehiculoService.listarTodos());
     }
 
     // Get para buscar un vehículo por su ID
     @GetMapping("/{id}")
-    public ResponseEntity<Vehiculo> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<VehiculoResponseDTO> buscarPorId(@PathVariable Long id) {
         return vehiculoService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -35,8 +38,10 @@ public class VehiculoController {
 
     // Post para crear un nuevo vehículo
     @PostMapping
-    public ResponseEntity<Vehiculo> crear(@Valid @RequestBody Vehiculo vehiculo) {
-        Vehiculo nuevoVehiculo = vehiculoService.crear(vehiculo);
+    public ResponseEntity<VehiculoResponseDTO> crear(
+            @Valid @RequestBody VehiculoCreateDTO dto) {
+
+        VehiculoResponseDTO nuevoVehiculo = vehiculoService.crear(dto);
 
         return ResponseEntity
                 .created(URI.create("/vehiculos/" + nuevoVehiculo.getId()))
@@ -45,19 +50,19 @@ public class VehiculoController {
 
     // Put para modificar un vehículo existente
     @PutMapping("/{id}")
-    public ResponseEntity<Vehiculo> modificar(
+    public ResponseEntity<VehiculoResponseDTO> modificar(
             @PathVariable Long id,
-            @Valid @RequestBody Vehiculo vehiculo) {
+            @Valid @RequestBody VehiculoUpdateDTO dto) {
 
-        Vehiculo vehiculoModificado = vehiculoService.modificar(id, vehiculo);
+        VehiculoResponseDTO vehiculoModificado = vehiculoService.modificar(id, dto);
 
         return ResponseEntity.ok(vehiculoModificado);
     }
 
     // Delete para eliminar un vehículo (baja lógica)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Vehiculo> eliminar(@PathVariable Long id) {
-        Vehiculo vehiculoEliminado = vehiculoService.eliminar(id);
+    public ResponseEntity<VehiculoResponseDTO> eliminar(@PathVariable Long id) {
+        VehiculoResponseDTO vehiculoEliminado = vehiculoService.eliminar(id);
 
         return ResponseEntity.ok(vehiculoEliminado);
     }

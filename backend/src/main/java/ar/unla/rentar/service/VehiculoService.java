@@ -1,5 +1,8 @@
 package ar.unla.rentar.service;
 
+import ar.unla.rentar.dto.VehiculoCreateDTO;
+import ar.unla.rentar.dto.VehiculoResponseDTO;
+import ar.unla.rentar.dto.VehiculoUpdateDTO;
 import ar.unla.rentar.model.EstadoVehiculo;
 import ar.unla.rentar.model.Vehiculo;
 import ar.unla.rentar.repository.VehiculoRepository;
@@ -17,53 +20,87 @@ public class VehiculoService {
         this.vehiculoRepository = vehiculoRepository;
     }
 
-    public List<Vehiculo> listarTodos() {
-        return vehiculoRepository.findAll();
+    public List<VehiculoResponseDTO> listarTodos() {
+        return vehiculoRepository.findAll() // busca todos los vehículos en la base de datos y los convierte a DTOs de respuesta
+                .stream() // convierte la lista de vehículos a un stream para poder aplicar operaciones sobre ella
+                .map(this::convertirAResponseDTO) // convierte cada vehículo a un DTO de respuesta
+                .toList(); // convierte el stream de DTOs de respuesta a una lista y la devuelve
     }
 
-    public Optional<Vehiculo> buscarPorId(Long id) {
-        return vehiculoRepository.findById(id);
+    public Optional<VehiculoResponseDTO> buscarPorId(Long id) {
+        return vehiculoRepository.findById(id)
+                .map(this::convertirAResponseDTO);
     }
 
-    public Vehiculo crear(Vehiculo vehiculo) {
+    public VehiculoResponseDTO crear(VehiculoCreateDTO dto) {
 
-        // Verificar si ya existe un vehículo con la misma patente
-        if (vehiculoRepository.existsByPatente(vehiculo.getPatente())) {
+        if (vehiculoRepository.existsByPatente(dto.getPatente())) {
             throw new IllegalArgumentException("Ya existe un vehículo con esa patente");
         }
-         // Establecer el estado y la disponibilidad del vehículo antes de guardarlo
+
+        Vehiculo vehiculo = new Vehiculo();
+
+        vehiculo.setPatente(dto.getPatente());
+        vehiculo.setMarca(dto.getMarca());
+        vehiculo.setModelo(dto.getModelo());
+        vehiculo.setAnio(dto.getAnio());
+        vehiculo.setColor(dto.getColor());
+        vehiculo.setTipo(dto.getTipo());
+        vehiculo.setPrecioDiario(dto.getPrecioDiario());
+
         vehiculo.setEstado(EstadoVehiculo.DISPONIBLE);
         vehiculo.setActivo(true);
 
-        return vehiculoRepository.save(vehiculo);
+        Vehiculo vehiculoGuardado = vehiculoRepository.save(vehiculo);
+
+        return convertirAResponseDTO(vehiculoGuardado);
     }
 
-    public Vehiculo modificar(Long id, Vehiculo vehiculo) {
+    public VehiculoResponseDTO modificar(Long id, VehiculoUpdateDTO dto) {
 
-        // Verificar si el vehículo con el ID proporcionado existe
         Vehiculo vehiculoExistente = vehiculoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe un vehículo con ese ID"));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No existe un vehículo con ese ID"));
 
-        vehiculoExistente.setMarca(vehiculo.getMarca());
-        vehiculoExistente.setModelo(vehiculo.getModelo());
-        vehiculoExistente.setAnio(vehiculo.getAnio());
-        vehiculoExistente.setColor(vehiculo.getColor());
-        vehiculoExistente.setTipo(vehiculo.getTipo());
-        vehiculoExistente.setPrecioDiario(vehiculo.getPrecioDiario());
-        vehiculoExistente.setEstado(vehiculo.getEstado());
+        vehiculoExistente.setMarca(dto.getMarca());
+        vehiculoExistente.setModelo(dto.getModelo());
+        vehiculoExistente.setAnio(dto.getAnio());
+        vehiculoExistente.setColor(dto.getColor());
+        vehiculoExistente.setTipo(dto.getTipo());
+        vehiculoExistente.setPrecioDiario(dto.getPrecioDiario());
+        vehiculoExistente.setEstado(dto.getEstado());
 
+        Vehiculo vehiculoModificado = vehiculoRepository.save(vehiculoExistente);
 
-        return vehiculoRepository.save(vehiculoExistente); // Guardar los cambios en la base de datos
+        return convertirAResponseDTO(vehiculoModificado);
     }
 
-    public Vehiculo eliminar(Long id) {
+    public VehiculoResponseDTO eliminar(Long id) {
         // Verificar si el vehículo con el ID proporcionado existe
-        Vehiculo vehiculo = vehiculoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("No existe un vehículo con ese ID"));
+        Vehiculo vehiculo = vehiculoRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("No existe un vehículo con ese ID"));
 
         // En lugar de eliminar físicamente el vehículo, se marca como inactivo baja lógica
         vehiculo.setActivo(false);
+        Vehiculo vehiculoEliminado = vehiculoRepository.save(vehiculo); // Guardar los cambios en la base de datos
 
-        return vehiculoRepository.save(vehiculo);
+        return convertirAResponseDTO(vehiculoEliminado);  // Devolver el DTO del vehículo eliminado
+    }
+
+    private VehiculoResponseDTO convertirAResponseDTO(Vehiculo vehiculo) {
+
+    VehiculoResponseDTO dto = new VehiculoResponseDTO();
+
+    dto.setId(vehiculo.getId());
+    dto.setPatente(vehiculo.getPatente());
+    dto.setMarca(vehiculo.getMarca());
+    dto.setModelo(vehiculo.getModelo());
+    dto.setAnio(vehiculo.getAnio());
+    dto.setColor(vehiculo.getColor());
+    dto.setTipo(vehiculo.getTipo());
+    dto.setPrecioDiario(vehiculo.getPrecioDiario());
+    dto.setEstado(vehiculo.getEstado());
+    dto.setActivo(vehiculo.getActivo());
+
+    return dto;
     }
 }
