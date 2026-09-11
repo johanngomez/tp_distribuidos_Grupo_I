@@ -122,47 +122,25 @@ exit;
 
 ---
 
-# 4. Configurar la conexión del Backend
+# 4. Configurar variables de enterno
 
-El archivo se encuentra en:
+El archivo application.properties utiliza las siguientes variables de entorno para funcionar:
 
-```text
-backend/src/main/resources/application.properties
-```
+DB_PORT: <puerto de la base de datos>
+DB_NAME: <nombre de la base de datos>
+DB_USER: <nombre de usuario de la bd>
+DB_PASSWORD: <contraseña del usuario de la bd>
+
+Hay varias formas de configurar variables de entorno, pero en Visual Studio Code pueden apretar CTRL+SHIFT+P e ir a la opción "Open User Settings (JSON)". De ahí poner los datos previos en "terminal.integrated.env.windows".
 
 Ejemplo:
 
-```properties
-spring.application.name=rentar
-
-spring.datasource.url=jdbc:mysql://localhost:3306/rentar
-
-spring.datasource.username=root
-
-spring.datasource.password=CAMBIAR_PASSWORD ### Cada integrante debe reemplazar esto por su propia contraseña de MySQL
-
-spring.jpa.hibernate.ddl-auto=update
-
-spring.jpa.show-sql=true
-
-spring.jpa.properties.hibernate.format_sql=true
-```
-
-Cada integrante debe reemplazar `CAMBIAR_PASSWORD` por su propia contraseña de MySQL.
-
-La base de datos debe llamarse:
-
-```text
-rentar
-```
-
-y estar disponible en:
-
-```text
-localhost:3306
-```
-
-> **Seguridad:** no utilizar una contraseña real dentro del README. El valor anterior es solamente un ejemplo.
+    "terminal.integrated.env.windows": {
+    "DB_USER": "ejemplouser",
+    "DB_PASSWORD": "ejemplopass",
+    "DB_NAME": "grupoi_db",
+    "DB_PORT": "3306"
+    }
 
 ---
 
