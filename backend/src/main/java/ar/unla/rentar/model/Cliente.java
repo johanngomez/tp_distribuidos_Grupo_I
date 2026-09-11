@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import lombok.*;
 
 @Entity                                                     //clase representa una tabla en la base de datos
-@Table(name = "clientes")                                   //como lo llamamos en la tabla
+@Table(name = "cliente")                                   //como lo llamamos en la tabla
 @Data
 
 public class Cliente {

@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reservas")
+@Table(name = "reserva")
 @Data                    
 @NoArgsConstructor       
 @AllArgsConstructor    
@@ -15,13 +15,15 @@ public class Reserva {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    // Relación con Cliente (Muchas reservas pertenecen a un mismo Cliente)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    // Relación con Vehiculo (Muchas reservas corresponden a un mismo Vehiculo)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "vehiculo_id", nullable = false)
-    //private Vehiculo vehiculo;
+    private Vehiculo vehiculo;
 
     @Column(nullable = false)
     private LocalDateTime fechaInicio;
