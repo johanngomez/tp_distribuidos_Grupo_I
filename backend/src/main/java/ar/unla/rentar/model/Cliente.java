@@ -42,4 +42,10 @@ public class Cliente {
     @Column(nullable = false)
     private boolean activo = true;                          //arranca activo por defecto
 
+    @Column(nullable = false)
+    private String password;
+
+    @Column(name = "es_admin", nullable = false)
+    private boolean esAdmin = false;
+
 }

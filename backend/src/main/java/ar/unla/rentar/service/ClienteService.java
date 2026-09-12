@@ -5,6 +5,8 @@ import ar.unla.rentar.dto.ClienteResponseDto;
 import ar.unla.rentar.dto.ClienteUpdateDto;
 import ar.unla.rentar.model.Cliente;
 import ar.unla.rentar.repository.ClienteRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public ClienteService(ClienteRepository clienteRepository) {                                //inyección de dependencias por constructor
         this.clienteRepository = clienteRepository;
@@ -49,6 +53,8 @@ public class ClienteService {
         cliente.setTelefono(dto.getTelefono());
         cliente.setFechaNacimiento(dto.getFechaNacimiento());
         cliente.setActivo(true);                                                        //esta activo de principio
+        cliente.setEsAdmin(false);
+        cliente.setPassword(passwordEncoder.encode(dto.getPassword()));
 
         Cliente clienteGuardado = clienteRepository.save(cliente);
         return mapearAResponseDto(clienteGuardado);
@@ -85,6 +91,7 @@ public class ClienteService {
         dto.setTelefono(cliente.getTelefono());
         dto.setFechaNacimiento(cliente.getFechaNacimiento());
         dto.setActivo(cliente.isActivo());
+        dto.setEsAdmin(cliente.isEsAdmin());
         return dto;
     }
 }

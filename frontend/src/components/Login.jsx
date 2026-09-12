@@ -17,11 +17,11 @@ function Login() {
             const data = await login(email, password);
 
             localStorage.setItem("token", data.token);
-            localStorage.setItem("rol", data.rol);
+            localStorage.setItem("esAdmin", String(data.esAdmin));
 
             console.log("Login exitoso:", data);
 
-            alert(`Bienvenido. Rol: ${data.rol}`);
+            alert(`Bienvenido${data.esAdmin ? ". Sos administrador." : "."}`);
         } catch (error) {
             setError(error.message);
         } finally {

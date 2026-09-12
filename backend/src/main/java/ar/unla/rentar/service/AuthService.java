@@ -5,8 +5,8 @@ import java.time.temporal.ChronoUnit;
 
 import ar.unla.rentar.dto.LoginRequestDTO;
 import ar.unla.rentar.dto.LoginResponseDTO;
-import ar.unla.rentar.model.Usuario;
-import ar.unla.rentar.repository.UsuarioRepository;
+import ar.unla.rentar.model.Cliente;
+import ar.unla.rentar.repository.ClienteRepository;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -19,33 +19,33 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final ClienteRepository clienteRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtEncoder jwtEncoder;
 
     public AuthService(
-            UsuarioRepository usuarioRepository,
+            ClienteRepository clienteRepository,
             PasswordEncoder passwordEncoder,
             JwtEncoder jwtEncoder) {
 
-        this.usuarioRepository = usuarioRepository;
+        this.clienteRepository = clienteRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtEncoder = jwtEncoder;
     }
 
     public LoginResponseDTO login(LoginRequestDTO request) {
 
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+        Cliente cliente = clienteRepository.findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new RuntimeException("Credenciales inválidas"));
 
-        if (!usuario.getActivo()) {
+        if (!cliente.isActivo()) {
             throw new RuntimeException("El usuario está inactivo");
         }
 
         if (!passwordEncoder.matches(
                 request.getPassword(),
-                usuario.getPassword())) {
+                cliente.getPassword())) {
 
             throw new RuntimeException("Credenciales inválidas");
         }
@@ -54,10 +54,10 @@ public class AuthService {
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("rentar")
-                .subject(usuario.getEmail())
+                .subject(cliente.getEmail())
                 .issuedAt(ahora)
                 .expiresAt(ahora.plus(2, ChronoUnit.HOURS))
-                .claim("rol", usuario.getRol().name())
+                .claim("esAdmin", cliente.isEsAdmin())
                 .build();
 
         JwsHeader jwsHeader =
@@ -73,7 +73,7 @@ public class AuthService {
         return new LoginResponseDTO(
                 token,
                 "Bearer",
-                usuario.getRol().name()
+                cliente.isEsAdmin()
         );
     }
 }

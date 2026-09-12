@@ -4,15 +4,15 @@ public class LoginResponseDTO {
 
     private String token;
     private String tipo;
-    private String rol;
+    private boolean esAdmin;
 
     public LoginResponseDTO() {
     }
 
-    public LoginResponseDTO(String token, String tipo, String rol) {
+    public LoginResponseDTO(String token, String tipo, boolean esAdmin) {
         this.token = token;
         this.tipo = tipo;
-        this.rol = rol;
+        this.esAdmin = esAdmin;
     }
 
     public String getToken() {
@@ -23,7 +23,7 @@ public class LoginResponseDTO {
         return tipo;
     }
 
-    public String getRol() {
-        return rol;
+    public boolean isEsAdmin() {
+        return esAdmin;
     }
 }

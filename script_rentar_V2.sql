@@ -23,9 +23,9 @@ DROP TABLE IF EXISTS `reserva`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `reserva` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `cliente_id` int NOT NULL,
-  `vehiculo_id` int NOT NULL,
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `cliente_id` bigint NOT NULL,
+  `vehiculo_id` bigint NOT NULL,
   `fecha_inicio` datetime NOT NULL,
   `fecha_fin` datetime NOT NULL,
   `precio_diario` decimal(10,2) NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE `reserva` (
   PRIMARY KEY (`id`),
   KEY `fk_reserva_usuario` (`cliente_id`),
   KEY `fk_reserva_vehiculo` (`vehiculo_id`),
-  CONSTRAINT `fk_reserva_usuario` FOREIGN KEY (`cliente_id`) REFERENCES `usuario` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_reserva_usuario` FOREIGN KEY (`cliente_id`) REFERENCES `cliente` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_reserva_vehiculo` FOREIGN KEY (`vehiculo_id`) REFERENCES `vehiculo` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -50,14 +50,14 @@ INSERT INTO `reserva` VALUES (1,3,3,'2026-10-01 10:00:00','2026-10-05 10:00:00',
 UNLOCK TABLES;
 
 --
--- Table structure for table `usuario`
+-- Table structure for table `cliente`
 --
 
-DROP TABLE IF EXISTS `usuario`;
+DROP TABLE IF EXISTS `cliente`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `usuario` (
-  `id` int NOT NULL AUTO_INCREMENT,
+CREATE TABLE `cliente` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
   `documento` int NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `apellido` varchar(100) NOT NULL,
@@ -65,7 +65,8 @@ CREATE TABLE `usuario` (
   `telefono` bigint DEFAULT NULL,
   `fecha_nacimiento` date NOT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT '1',
-  `rol` enum('ADMINISTRADOR','CLIENTE') NOT NULL,
+  `password` varchar(100) NOT NULL DEFAULT '',
+  `es_admin` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `documento` (`documento`),
   UNIQUE KEY `email` (`email`)
@@ -73,13 +74,13 @@ CREATE TABLE `usuario` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `usuario`
+-- Dumping data for table `cliente`
 --
 
-LOCK TABLES `usuario` WRITE;
-/*!40000 ALTER TABLE `usuario` DISABLE KEYS */;
-INSERT INTO `usuario` VALUES (1,10000001,'Admin','Sistema','admin@rentar.com',1100000001,'1980-01-01',1,'ADMINISTRADOR'),(2,20000001,'Juan','Pérez','juan.perez@example.com',1144440001,'1990-03-15',1,'CLIENTE'),(3,20000002,'Maria','González','maria.gonzalez@example.com',1144440002,'1992-07-22',1,'CLIENTE'),(4,20000003,'Lucas','Rodríguez','lucas.rodriguez@example.com',1144440003,'1988-11-05',1,'CLIENTE'),(5,20000004,'Ana','Martínez','ana.martinez@example.com',1144440004,'1995-01-30',1,'CLIENTE'),(6,20000005,'Roberto','Sánchez','roberto.sanchez@example.com',1144440005,'1982-09-18',1,'CLIENTE'),(7,20000006,'Sofia','López','sofia.lopez@example.com',1144440006,'1998-04-12',1,'CLIENTE'),(8,20000007,'Diego','Fernández','diego.fernandez@example.com',1144440007,'1991-12-08',1,'CLIENTE'),(9,20000008,'Laura','Díaz','laura.diaz@example.com',1144440008,'1987-06-25',1,'CLIENTE'),(10,30000001,'Esteban','Quito','esteban.quito@example.com',1155550001,'1993-02-14',0,'CLIENTE'),(11,30000002,'Valeria','Blanco','valeria.blanco@example.com',1155550002,'1996-10-20',0,'CLIENTE');
-/*!40000 ALTER TABLE `usuario` ENABLE KEYS */;
+LOCK TABLES `cliente` WRITE;
+/*!40000 ALTER TABLE `cliente` DISABLE KEYS */;
+INSERT INTO `cliente` (`id`, `documento`, `nombre`, `apellido`, `email`, `telefono`, `fecha_nacimiento`, `activo`, `password`, `es_admin`) VALUES (1,10000001,'Admin','Sistema','admin@rentar.com',1100000001,'1980-01-01',1,'',1),(2,20000001,'Juan','Pérez','juan.perez@example.com',1144440001,'1990-03-15',1,'',0),(3,20000002,'Maria','González','maria.gonzalez@example.com',1144440002,'1992-07-22',1,'',0),(4,20000003,'Lucas','Rodríguez','lucas.rodriguez@example.com',1144440003,'1988-11-05',1,'',0),(5,20000004,'Ana','Martínez','ana.martinez@example.com',1144440004,'1995-01-30',1,'',0),(6,20000005,'Roberto','Sánchez','roberto.sanchez@example.com',1144440005,'1982-09-18',1,'',0),(7,20000006,'Sofia','López','sofia.lopez@example.com',1144440006,'1998-04-12',1,'',0),(8,20000007,'Diego','Fernández','diego.fernandez@example.com',1144440007,'1991-12-08',1,'',0),(9,20000008,'Laura','Díaz','laura.diaz@example.com',1144440008,'1987-06-25',1,'',0),(10,30000001,'Esteban','Quito','esteban.quito@example.com',1155550001,'1993-02-14',0,'',0),(11,30000002,'Valeria','Blanco','valeria.blanco@example.com',1155550002,'1996-10-20',0,'',0);
+/*!40000 ALTER TABLE `cliente` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -90,7 +91,7 @@ DROP TABLE IF EXISTS `vehiculo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `vehiculo` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` bigint NOT NULL AUTO_INCREMENT,
   `patente` varchar(20) NOT NULL,
   `marca` varchar(50) NOT NULL,
   `modelo` varchar(50) NOT NULL,

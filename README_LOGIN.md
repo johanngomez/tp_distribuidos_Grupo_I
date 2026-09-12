@@ -1,119 +1,76 @@
-# 🔐 Rentar — Login y Autenticación
+# Rentar — Login y autenticación
 
-> **Rama:** `feature/creamoslogin`  
-> **Proyecto:** TP Desarrollo de Software en Sistemas Distribuidos — Grupo I  
-> **Universidad:** Universidad Nacional de Lanús (UNLa)  
-> **Funcionalidad:** Login + autenticación JWT + roles  
-> **Estado:** Funcional y probado localmente
+> Proyecto: TP Desarrollo de Software en Sistemas Distribuidos — Grupo I, UNLa
 
----
+## Objetivo
 
-# 1. Descripción
+Rentar autentica a sus clientes con email y contraseña. Cuando las credenciales son válidas, el backend entrega un JWT firmado. El token identifica al cliente y contiene si posee permisos de administrador.
 
-Esta rama incorpora la primera versión funcional del sistema de autenticación de **Rentar**, el sistema web de alquiler de vehículos del Trabajo Práctico de Desarrollo de Software en Sistemas Distribuidos.
 
-La implementación agrega un flujo de login entre:
+## Tecnologías
 
-- **Frontend:** React + Vite.
-- **Backend:** Java + Spring Boot.
-- **Seguridad:** Spring Security.
-- **Autenticación:** JWT.
-- **Firma del token:** HS256.
-- **Contraseñas:** BCrypt.
-- **Roles:** `ADMINISTRADOR` y `CLIENTE`.
-- **Persistencia actual del usuario:** temporal, sin conexión definitiva a la tabla de usuarios.
+| Tecnología | Responsabilidad |
+| --- | --- |
+| Java 17 / Spring Boot | API y lógica de autenticación |
+| Spring Data JPA / Hibernate | Persistencia de clientes en MySQL |
+| Spring Security | Protección de endpoints y validación de JWT |
+| BCrypt | Hash y verificación de contraseñas |
+| JWT / HS256 | Token de sesión sin estado |
+| React / Vite | Formulario de inicio de sesión |
 
-El objetivo de esta versión es dejar disponible una base de autenticación funcional que posteriormente pueda integrarse con el modelo definitivo de usuarios/clientes y con las diferentes pantallas del sistema.
-
----
-
-# 2. Tecnologías utilizadas
-
-## Backend
-
-| Tecnología | Uso |
-|---|---|
-| Java 17 | Lenguaje principal |
-| Spring Boot 4.1.1 | Framework backend |
-| Maven | Gestión y construcción |
-| Spring Security | Seguridad y autenticación |
-| Spring Security OAuth2 Resource Server | Validación de JWT |
-| Nimbus JOSE JWT | Firma y procesamiento JWT |
-| BCrypt | Hash y validación de contraseñas |
-| Spring Web MVC | API REST |
-| MySQL 8.4 | Base de datos del sistema |
-| Spring Data JPA / Hibernate | Persistencia |
-| Spring Validation | Validaciones |
-| SpringDoc OpenAPI / Swagger | Documentación de API |
-
-## Frontend
-
-| Tecnología | Uso |
-|---|---|
-| React | Interfaz de usuario |
-| Vite | Servidor de desarrollo y build |
-| JavaScript | Lenguaje |
-| HTML/CSS | Interfaz del login |
-| Fetch API | Comunicación con backend |
-| localStorage | Almacenamiento temporal del token y rol |
-
----
-
-# 3. Arquitectura del Login
+## Arquitectura y flujo
 
 ```text
-┌───────────────────────────────┐
-│          FRONTEND             │
-│       React + Vite            │
-│                               │
-│  Email + Contraseña            │
-└───────────────┬───────────────┘
-                │
-                │ POST /auth/login
-                ▼
-┌───────────────────────────────┐
-│           BACKEND             │
-│        Spring Boot            │
-│                               │
-│       AuthController          │
-│             ↓                 │
-│         AuthService           │
-│             ↓                 │
-│    UsuarioRepository          │
-└───────────────┬───────────────┘
-                │
-                │ valida contraseña
-                │ mediante BCrypt
-                ▼
-┌───────────────────────────────┐
-│        Generación JWT         │
-│                               │
-│        HS256 + secreto        │
-│                               │
-│  sub = email                  │
-│  rol = ADMINISTRADOR/CLIENTE  │
-└───────────────┬───────────────┘
-                │
-                │ JWT
-                ▼
-┌───────────────────────────────┐
-│          FRONTEND             │
-│                               │
-│ localStorage                  │
-│  ├── token                    │
-│  └── rol                      │
-└───────────────────────────────┘
+React (Login.jsx)
+        |
+        | POST /auth/login { email, password }
+        v
+AuthController -> AuthService -> ClienteRepository -> MySQL: cliente
+                         |              |
+                         |              +-- busca el cliente por email
+                         +-- verifica activo, contraseña BCrypt y esAdmin
+        |
+        v
+JWT HS256 { sub: email, esAdmin: boolean }
+        |
+        v
+React guarda token y esAdmin en localStorage
 ```
 
----
+El endpoint de login es público. El resto de los endpoints requiere un token JWT válido según la configuración actual de Spring Security.
 
-# 4. Endpoint de Login
+## Modelo `Cliente`
 
-## POST `/auth/login`
+Además de los datos personales, el modelo contiene los siguientes campos relacionados con autenticación:
 
-Este endpoint recibe las credenciales del usuario y devuelve un JWT cuando las credenciales son válidas.
+| Campo Java | Columna MySQL | Uso |
+| --- | --- | --- |
+| `password` | `password` | Hash BCrypt de la contraseña. Nunca se guarda la contraseña en texto plano. |
+| `activo` | `activo` | Si es `false`, el cliente no puede iniciar sesión. |
+| `esAdmin` | `es_admin` | Indica si el cliente tiene permisos administrativos. |
 
-### Request
+Un cliente creado a través de `POST /api/clientes` siempre comienza con `esAdmin = false`; ese valor no se acepta desde el DTO de creación. Así se evita que un alta común se otorgue privilegios administrativos.
+
+## Administrador de prueba
+
+Al iniciar el backend, `ClienteInicializador` verifica que exista el administrador de desarrollo. Si no existe, lo crea. Si existe sin contraseña, le asigna una contraseña BCrypt válida.
+
+```text
+Email:       admin@rentar.com
+Contraseña:  123456
+esAdmin:     true
+activo:      true
+```
+
+El valor `123456` es exclusivamente para desarrollo y pruebas. En un sistema productivo debe reemplazarse por un mecanismo seguro de alta y recuperación de contraseña.
+
+## API de login
+
+### `POST /auth/login`
+
+Recibe las credenciales y devuelve un JWT si el cliente existe, está activo y la contraseña coincide con el hash guardado.
+
+Request:
 
 ```json
 {
@@ -122,172 +79,35 @@ Este endpoint recibe las credenciales del usuario y devuelve un JWT cuando las c
 }
 ```
 
-### Response
+Response:
 
 ```json
 {
   "token": "eyJ...",
   "tipo": "Bearer",
-  "rol": "ADMINISTRADOR"
+  "esAdmin": true
 }
 ```
 
-### Campos de la respuesta
-
 | Campo | Descripción |
-|---|---|
-| `token` | JWT utilizado para autenticar futuras peticiones |
-| `tipo` | Tipo de autenticación. Actualmente `Bearer` |
-| `rol` | Rol del usuario autenticado |
+| --- | --- |
+| `token` | JWT que debe enviarse en las peticiones protegidas. |
+| `tipo` | Tipo de esquema de autenticación: `Bearer`. |
+| `esAdmin` | `true` si el cliente autenticado es administrador. |
 
----
+Errores esperables:
 
-# 5. Usuario temporal actual
+| Situación | Resultado |
+| --- | --- |
+| Email inexistente | Credenciales inválidas. |
+| Contraseña incorrecta | Credenciales inválidas. |
+| Cliente inactivo | El cliente no puede iniciar sesión. |
 
-Para poder desarrollar y probar el login antes de tener implementado el modelo definitivo de usuarios, esta versión utiliza un usuario temporal.
+## JWT
 
-### Credenciales de prueba
+Después de validar las credenciales, `AuthService` crea un JWT con una vigencia de dos horas.
 
-```text
-Email:      admin@rentar.com
-Contraseña: 123456
-Rol:        ADMINISTRADOR
-Estado:     ACTIVO
-```
-
-Este usuario permite comprobar el flujo:
-
-```text
-Formulario
-    ↓
-POST /auth/login
-    ↓
-Validación
-    ↓
-JWT
-    ↓
-Frontend
-```
-
-> ⚠️ Este usuario es solamente de desarrollo. No debe considerarse el modelo definitivo de usuarios del sistema.
-
----
-
-# 6. Persistencia temporal del usuario
-
-Actualmente el login utiliza un `UsuarioRepository` temporal.
-
-La estructura utilizada es:
-
-```text
-Usuario
-├── id
-├── email
-├── password
-├── rol
-└── activo
-```
-
-Los roles disponibles son:
-
-```text
-ADMINISTRADOR
-CLIENTE
-```
-
-La contraseña no se compara directamente en texto plano. Se utiliza:
-
-```text
-BCryptPasswordEncoder
-```
-
-para validar la contraseña.
-
----
-
-# 7. Integración futura con Usuarios y MySQL
-
-## Estado actual
-
-```text
-React
-  ↓
-POST /auth/login
-  ↓
-AuthService
-  ↓
-UsuarioRepository temporal
-  ↓
-Usuario de prueba
-  ↓
-JWT
-```
-
-## Estado esperado
-
-```text
-React
-  ↓
-POST /auth/login
-  ↓
-AuthService
-  ↓
-UsuarioRepository
-  ↓
-MySQL
-  ↓
-Tabla de usuarios/clientes
-  ↓
-BCrypt
-  ↓
-JWT
-```
-
-El `UsuarioRepository` temporal deberá eliminarse y reemplazarse por un repositorio persistente.
-
-La información del usuario deberá provenir del modelo definitivo acordado por el grupo.
-
----
-
-# 8. Roles
-
-Actualmente se definieron dos roles:
-
-```text
-ADMINISTRADOR
-CLIENTE
-```
-
-## ADMINISTRADOR
-
-Posteriormente tendrá acceso a funcionalidades como:
-
-- ABM de vehículos.
-- ABM de clientes.
-- Consulta de reservas de todos los clientes.
-- Funcionalidades administrativas.
-
-## CLIENTE
-
-Posteriormente tendrá acceso a:
-
-- Consulta de disponibilidad.
-- Creación de reservas.
-- Consulta de sus propias reservas.
-- Cancelación de reservas.
-- Consulta de historial.
-
-La autorización final de cada endpoint se deberá completar cuando se integren los módulos correspondientes.
-
----
-
-# 9. JWT
-
-Después de validar las credenciales, el backend genera un JSON Web Token.
-
-El token contiene información del usuario.
-
-Ejemplo conceptual:
+Payload conceptual:
 
 ```json
 {
@@ -295,557 +115,136 @@ Ejemplo conceptual:
   "sub": "admin@rentar.com",
   "iat": 1788964187,
   "exp": 1788971387,
-  "rol": "ADMINISTRADOR"
+  "esAdmin": true
 }
 ```
 
-## Claims
+| Claim | Significado |
+| --- | --- |
+| `iss` | Emisor: `rentar`. |
+| `sub` | Email del cliente autenticado. |
+| `iat` | Instante de emisión. |
+| `exp` | Instante de expiración. |
+| `esAdmin` | Permiso administrativo del cliente. |
 
-| Claim | Descripción |
-|---|---|
-| `iss` | Emisor del token: `rentar` |
-| `sub` | Usuario autenticado, actualmente el email |
-| `iat` | Fecha/hora de emisión |
-| `exp` | Fecha/hora de expiración |
-| `rol` | Rol del usuario |
+El token usa el algoritmo HS256 y la clave definida por `jwt.secret` en `application.properties`. El frontend no debe confiar únicamente en `esAdmin` de `localStorage` para proteger operaciones sensibles: la autorización final siempre debe verificarse en el backend.
 
----
-
-# 10. Algoritmo utilizado
-
-El JWT se firma mediante:
+## Backend: clases involucradas
 
 ```text
-HS256
+backend/src/main/java/ar/unla/rentar/
+├── config/
+│   ├── ClienteInicializador.java
+│   ├── JwtConfig.java
+│   └── SecurityConfig.java
+├── controller/AuthController.java
+├── dto/
+│   ├── LoginRequestDTO.java
+│   └── LoginResponseDTO.java
+├── model/Cliente.java
+├── repository/ClienteRepository.java
+└── service/
+    ├── AuthService.java
+    └── ClienteService.java
 ```
 
-Además se utiliza un identificador de clave:
+| Clase | Responsabilidad |
+| --- | --- |
+| `AuthController` | Expone `POST /auth/login`. |
+| `AuthService` | Busca el cliente, valida su estado y contraseña, y firma el JWT. |
+| `ClienteRepository` | Busca clientes por email y documento en MySQL. |
+| `ClienteInicializador` | Garantiza el administrador de prueba para un entorno de desarrollo. |
+| `JwtConfig` | Configura el encoder y decoder JWT con HS256. |
+| `SecurityConfig` | Define CORS, sesiones stateless, endpoints públicos y JWT. |
+| `ClienteService` | Al crear un cliente, hashea su contraseña y le asigna `esAdmin = false`. |
+
+## Frontend
+
+Los archivos vinculados son:
 
 ```text
-rentar-key
+frontend/src/
+├── components/Login.jsx
+└── services/authService.js
 ```
 
-Header conceptual:
-
-```json
-{
-  "kid": "rentar-key",
-  "alg": "HS256"
-}
-```
-
----
-
-# 11. Duración del JWT
-
-Actualmente el token tiene una duración de:
-
-```text
-2 horas
-```
-
-Una vez expirado, el token deja de ser válido.
-
-En una implementación posterior puede agregarse:
-
-- Renovación de sesión.
-- Refresh token.
-- Redirección automática al login.
-- Logout.
-- Manejo de expiración desde React.
-
----
-
-# 12. Spring Security
-
-La aplicación utiliza Spring Security para proteger los recursos.
-
-La configuración establece:
-
-- `/auth/**` → acceso público.
-- Swagger/OpenAPI → acceso público.
-- Resto de endpoints → requieren autenticación.
-- Sesiones HTTP → `STATELESS`.
-- CSRF → deshabilitado para la API.
-- JWT → utilizado como mecanismo de autenticación.
-- CORS → habilitado para la comunicación con React.
-
-Flujo:
-
-```text
-POST /auth/login
-        ↓
-     público
-        ↓
-      JWT
-        ↓
-Authorization: Bearer <token>
-        ↓
-Endpoint protegido
-```
-
----
-
-# 13. CORS
-
-Durante el desarrollo:
-
-```text
-Frontend → localhost:5173
-Backend  → localhost:8080
-```
-
-Como son orígenes diferentes, se configuró CORS.
-
-Actualmente se permite:
-
-```text
-http://localhost:5173
-```
-
-Métodos habilitados:
-
-```text
-GET
-POST
-PUT
-DELETE
-OPTIONS
-```
-
-Si Vite cambia de puerto, deberá actualizarse la configuración de CORS.
-
----
-
-# 14. Estructura del Backend relacionada con Login
-
-```text
-backend/
-└── src/
-    └── main/
-        └── java/
-            └── ar/
-                └── unla/
-                    └── rentar/
-                        ├── config/
-                        │   ├── SecurityConfig.java
-                        │   └── JwtConfig.java
-                        │
-                        ├── controller/
-                        │   └── AuthController.java
-                        │
-                        ├── dto/
-                        │   ├── LoginRequestDTO.java
-                        │   └── LoginResponseDTO.java
-                        │
-                        ├── model/
-                        │   ├── Usuario.java
-                        │   └── Rol.java
-                        │
-                        ├── repository/
-                        │   └── UsuarioRepository.java
-                        │
-                        └── service/
-                            └── AuthService.java
-```
-
----
-
-# 15. Responsabilidad de las clases
-
-### `AuthController`
-
-Expone:
-
-```text
-POST /auth/login
-```
-
-Recibe `LoginRequestDTO` y devuelve `LoginResponseDTO`.
-
-### `AuthService`
-
-Contiene la lógica:
-
-1. Buscar usuario.
-2. Verificar que exista.
-3. Verificar que esté activo.
-4. Comparar contraseña con BCrypt.
-5. Crear claims JWT.
-6. Firmar JWT.
-7. Devolver respuesta.
-
-### `UsuarioRepository`
-
-Actualmente es temporal. Su responsabilidad futura será buscar usuarios reales en MySQL.
-
-### `Usuario`
-
-Modelo temporal:
-
-```text
-id
-email
-password
-rol
-activo
-```
-
-### `Rol`
-
-Enum:
-
-```java
-ADMINISTRADOR
-CLIENTE
-```
-
-### `LoginRequestDTO`
-
-Representa:
-
-```json
-{
-  "email": "...",
-  "password": "..."
-}
-```
-
-### `LoginResponseDTO`
-
-Representa:
-
-```json
-{
-  "token": "...",
-  "tipo": "Bearer",
-  "rol": "ADMINISTRADOR"
-}
-```
-
-### `JwtConfig`
-
-Configura:
-
-- Clave de firma.
-- Algoritmo HS256.
-- `JwtEncoder`.
-- `JwtDecoder`.
-- Clave `rentar-key`.
-
-### `SecurityConfig`
-
-Configura:
-
-- Spring Security.
-- CORS.
-- CSRF.
-- Sesiones.
-- Endpoints públicos.
-- Endpoints protegidos.
-- JWT Resource Server.
-
----
-
-# 16. Frontend del Login
-
-La funcionalidad utiliza:
-
-```text
-frontend/
-└── src/
-    ├── components/
-    │   └── Login.jsx
-    │
-    ├── services/
-    │   └── authService.js
-    │
-    ├── App.jsx
-    ├── App.css
-    ├── index.css
-    └── main.jsx
-```
-
----
-
-# 17. `Login.jsx`
-
-El componente se encarga de:
-
-- Mostrar el formulario.
-- Capturar email.
-- Capturar contraseña.
-- Mostrar errores.
-- Mostrar estado de carga.
-- Llamar al servicio de autenticación.
-- Guardar el JWT.
-- Guardar el rol.
-
-Flujo:
-
-```text
-Usuario completa formulario
-          ↓
-      Ingresar
-          ↓
-     authService
-          ↓
- POST /auth/login
-          ↓
-       Backend
-          ↓
-       JWT + rol
-          ↓
-     localStorage
-```
-
----
-
-# 18. `authService.js`
-
-El archivo:
-
-```text
-frontend/src/services/authService.js
-```
-
-centraliza la comunicación con el backend.
-
-Endpoint:
-
-```text
-http://localhost:8080/auth/login
-```
-
-Realiza:
-
-```http
-POST /auth/login
-```
-
-enviando:
-
-```json
-{
-  "email": "...",
-  "password": "..."
-}
-```
-
----
-
-# 19. Almacenamiento del token
-
-Después de un login exitoso, React guarda:
-
-```text
-localStorage
-├── token
-└── rol
-```
-
-Conceptualmente:
+Luego de un login exitoso, `Login.jsx` almacena:
 
 ```javascript
 localStorage.setItem("token", data.token);
-localStorage.setItem("rol", data.rol);
+localStorage.setItem("esAdmin", String(data.esAdmin));
 ```
 
-Esto permitirá que las futuras pantallas recuperen el token.
-
----
-
-# 20. Uso del JWT en futuras peticiones
-
-Las peticiones protegidas deberán enviar:
-
-```http
-Authorization: Bearer <JWT>
-```
-
-Ejemplo:
+Para llamar a un endpoint protegido, las futuras pantallas deben enviar el token:
 
 ```javascript
-fetch("http://localhost:8080/endpoint", {
-    headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-    }
+fetch("http://localhost:8080/api/recurso", {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`
+  }
 });
 ```
 
-El endpoint concreto dependerá de los módulos implementados por el equipo.
+## Base de datos
 
----
+El script [`script_rentar_V2.sql`](./script_rentar_V2.sql) crea las tablas `cliente`, `vehiculo` y `reserva`, junto con datos de ejemplo. Las claves primarias y foráneas usan `BIGINT`, igual que los IDs `Long` de las entidades Java.
 
-# 21. Autenticación vs autorización
+La tabla `cliente` incluye `password` y `es_admin`. El script deja la contraseña del admin vacía para no versionar un hash de ejemplo; `ClienteInicializador` la reemplaza por el hash BCrypt de `123456` cuando el backend inicia.
 
-## Autenticación
+Cada integrante trabaja con su propia base MySQL local. Git comparte el esquema y el código, pero no los datos que cada persona modifique después de importar el script.
 
-Responde:
+## Configuración local
 
-> ¿Quién es el usuario?
-
-```text
-Email + contraseña
-       ↓
-     JWT
-```
-
-## Autorización
-
-Responde:
-
-> ¿Qué puede hacer ese usuario?
-
-```text
-ADMINISTRADOR
-CLIENTE
-```
-
-La seguridad definitiva debe validarse en el backend y no depender únicamente de ocultar botones en React.
-
----
-
-# 22. Cómo levantar el Backend
-
-Desde:
-
-```text
-E:\TpDistribuidos\backend
-```
-
-ejecutar:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-También puede utilizarse:
-
-```powershell
-mvn spring-boot:run
-```
-
-si Maven está instalado.
-
-El backend se ejecuta en:
-
-```text
-http://localhost:8080
-```
-
-Para detenerlo:
-
-```text
-Ctrl + C
-```
-
----
-
-# 23. Configuración de MySQL
-
-El proyecto utiliza:
-
-```text
-MySQL 8.4
-```
-
-Base:
-
-```text
-rentar
-```
-
-Crear la base:
-
-```sql
-CREATE DATABASE rentar;
-```
-
-> La persistencia real del usuario todavía queda pendiente de integración.
-
----
-
-# 24. Configuración de `application.properties`
-
-Archivo:
-
-```text
-backend/src/main/resources/application.properties
-```
-
-Configuración conceptual:
+El archivo `backend/src/main/resources/application.properties` obtiene la conexión desde variables de entorno:
 
 ```properties
-spring.application.name=rentar
-
-spring.datasource.url=jdbc:mysql://localhost:3306/rentar
-spring.datasource.username=root
-spring.datasource.password=TU_PASSWORD
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
-
-jwt.secret=TU_JWT_SECRET
+spring.datasource.url=jdbc:mysql://localhost:${DB_PORT}/${DB_NAME}
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
 ```
 
-Cada desarrollador debe configurar sus propios valores locales.
-
-> ⚠️ No subir contraseñas reales de MySQL al repositorio público.
-
-> ⚠️ No publicar el secreto real utilizado para firmar JWT.
-
----
-
-# 25. Levantar el Frontend
-
-Abrir una segunda terminal.
-
-Desde:
-
-```text
-E:\TpDistribuidos\frontend
-```
-
-instalar dependencias:
+Antes de iniciar el backend, configurarlas en la misma terminal de PowerShell:
 
 ```powershell
-npm install
+$env:DB_PORT = "3306"
+$env:DB_NAME = "rentar"
+$env:DB_USER = "root"
+$env:DB_PASSWORD = 'TU_CONTRASEÑA_MYSQL'
 ```
 
-Luego:
+No se deben subir credenciales reales de MySQL ni cambiar `jwt.secret` por un secreto productivo dentro de un repositorio público.
+
+## Inicio desde cero
+
+### 1. Crear e importar MySQL
+
+Desde la raíz del repositorio:
 
 ```powershell
-npm run dev
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS rentar;"
+Get-Content .\script_rentar_V2.sql | mysql -u root -p rentar
 ```
 
-Vite mostrará normalmente:
+> El script recrea sus tablas y datos de ejemplo. No ejecutarlo sobre una base con información que se quiera conservar.
 
-```text
-http://localhost:5173
-```
-
----
-
-# 26. Ejecutar todo el sistema
-
-Se necesitan dos terminales.
-
-## Terminal 1 — Backend
+### 2. Levantar backend
 
 ```powershell
 cd E:\TpDistribuidos\backend
+
+$env:DB_PORT = "3306"
+$env:DB_NAME = "rentar"
+$env:DB_USER = "root"
+$env:DB_PASSWORD = 'TU_CONTRASEÑA_MYSQL'
+
 .\mvnw.cmd spring-boot:run
 ```
 
-Backend:
+Backend: `http://localhost:8080`
 
-```text
-http://localhost:8080
-```
+### 3. Levantar frontend
 
-## Terminal 2 — Frontend
+En una segunda terminal:
 
 ```powershell
 cd E:\TpDistribuidos\frontend
@@ -853,393 +252,44 @@ npm install
 npm run dev
 ```
 
-Frontend:
+Frontend: normalmente `http://localhost:5173`
 
-```text
-http://localhost:5173
+Si NVM informa que no puede confiar en el ejecutable de npm, ejecutar una vez:
+
+```powershell
+nvm reshim
 ```
 
----
+## Pruebas manuales
 
-# 27. Abrir el Login
+### Desde el navegador
 
-Con ambos procesos ejecutándose:
+Abrir `http://localhost:5173` y usar las credenciales del administrador de prueba.
 
-```text
-http://localhost:5173
-```
-
-Utilizar:
-
-```text
-Email:      admin@rentar.com
-Contraseña: 123456
-```
-
-Presionar:
-
-```text
-Ingresar
-```
-
----
-
-# 28. Resultado esperado
-
-El flujo completo es:
-
-```text
-React
-  ↓
-POST /auth/login
-  ↓
-Spring Boot
-  ↓
-Validación BCrypt
-  ↓
-JWT HS256
-  ↓
-Response
-  ↓
-React
-  ↓
-localStorage
-```
-
-Respuesta:
-
-```json
-{
-  "token": "eyJ...",
-  "tipo": "Bearer",
-  "rol": "ADMINISTRADOR"
-}
-```
-
-El frontend guarda:
-
-```text
-token
-rol
-```
-
-La prueba funcional realizada durante el desarrollo confirmó:
-
-```text
-Bienvenido. Rol: ADMINISTRADOR
-```
-
----
-
-# 29. Prueba manual con PowerShell
-
-También se puede probar el backend sin React:
+### Desde PowerShell
 
 ```powershell
 $body = @{
-    email = "admin@rentar.com"
-    password = "123456"
+  email = "admin@rentar.com"
+  password = "123456"
 } | ConvertTo-Json -Compress
 
-$response = Invoke-RestMethod `
-    -Uri "http://localhost:8080/auth/login" `
-    -Method POST `
-    -ContentType "application/json" `
-    -Body $body
-
-$response
+Invoke-RestMethod `
+  -Uri "http://localhost:8080/auth/login" `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body $body
 ```
 
-Respuesta esperada:
+La respuesta debe contener un `token`, `tipo: Bearer` y `esAdmin: true`.
 
-```text
-token : eyJ...
-tipo  : Bearer
-rol   : ADMINISTRADOR
-```
+## Seguridad actual y próximos pasos
 
----
+Implementado:
 
-# 30. Problemas frecuentes
-
-## `Failed to fetch`
-
-Verificar:
-
-```text
-Backend → localhost:8080
-Frontend → localhost:5173
-```
-
-También verificar CORS.
-
-## Error 403
-
-Verificar:
-
-- `/auth/**` permitido.
-- Backend iniciado.
-- Configuración de Spring Security.
-- JWT válido en endpoints protegidos.
-
-## Error 401
-
-Puede significar:
-
-- No se envió JWT.
-- JWT expiró.
-- JWT inválido.
-- Firma incorrecta.
-
-Formato correcto:
-
-```http
-Authorization: Bearer <token>
-```
-
-## Error de conexión con MySQL
-
-Verificar:
-
-- MySQL ejecutándose.
-- Puerto 3306.
-- Base `rentar`.
-- Usuario correcto.
-- Contraseña correcta.
-
-## Error de Maven
-
-Verificar:
-
-```powershell
-java -version
-```
-
-Debe utilizarse Java 17.
-
-Preferentemente:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-## Error de npm
-
-Verificar:
-
-```powershell
-node -v
-npm -v
-```
-
-Luego:
-
-```powershell
-npm install
-npm run dev
-```
-
----
-
-# 31. Estado actual
-
-## Implementado
-
-- [x] Pantalla de login.
-- [x] Campo email.
-- [x] Campo contraseña.
-- [x] Validación básica del formulario.
-- [x] Endpoint `POST /auth/login`.
-- [x] Validación de usuario.
-- [x] Validación de usuario activo.
-- [x] BCrypt.
-- [x] Generación de JWT.
-- [x] Firma HS256.
-- [x] Claim de rol.
-- [x] Spring Security.
-- [x] JWT Resource Server.
-- [x] JWT Decoder.
-- [x] JWT Encoder.
-- [x] CORS.
-- [x] Comunicación React → Spring Boot.
-- [x] Almacenamiento del token.
-- [x] Almacenamiento del rol.
-- [x] Usuario administrador temporal.
-- [x] Prueba funcional end-to-end.
-
-## Pendiente
-
-- [ ] Reemplazar `UsuarioRepository` temporal por persistencia real.
-- [ ] Crear/integrar entidad definitiva de usuario.
-- [ ] Conectar usuarios con MySQL.
-- [ ] Integrar usuarios con el modelo definitivo de Cliente.
-- [ ] Definir definitivamente la relación Usuario ↔ Cliente.
-- [ ] Configurar autorización específica por roles.
-- [ ] Proteger endpoints según `ADMINISTRADOR` o `CLIENTE`.
-- [ ] Integrar login con el router/navegación general de React.
-- [ ] Implementar panel de administrador.
-- [ ] Implementar panel de cliente.
-- [ ] Implementar logout.
-- [ ] Manejar expiración del JWT.
-- [ ] Mover secretos a variables de entorno.
-- [ ] Agregar pruebas específicas de autenticación.
-- [ ] Integrar con vehículos, clientes y reservas.
-
----
-
-# 32. Integración con el Frontend general
-
-El login desarrollado en esta rama constituye la base de autenticación.
-
-Actualmente se obtiene:
-
-```javascript
-data.token
-data.tipo
-data.rol
-```
-
-El frontend general podrá utilizar el rol para decidir qué interfaz mostrar:
-
-```javascript
-if (data.rol === "ADMINISTRADOR") {
-    // Panel administrador
-}
-
-if (data.rol === "CLIENTE") {
-    // Panel cliente
-}
-```
-
-La implementación de las pantallas de administrador y cliente corresponde a la integración posterior con el frontend general.
-
----
-
-# 33. Integración futura con el sistema completo
-
-```text
-                         ┌───────────────┐
-                         │    LOGIN      │
-                         └───────┬───────┘
-                                 │
-                         JWT + ROL
-                                 │
-                ┌────────────────┴────────────────┐
-                │                                 │
-                ▼                                 ▼
-        ADMINISTRADOR                         CLIENTE
-                │                                 │
-        ┌───────┼───────┐                 ┌───────┼───────┐
-        ▼       ▼       ▼                 ▼       ▼       ▼
-    Vehículos Clientes Reservas       Dispon. Reservas Historial
-```
-
-Los permisos deberán ser validados en el backend.
-
----
-
-# 35. Checklist para otro integrante
-
-```text
-[ ] Clonar el repositorio
-[ ] Cambiar a feature/creamoslogin
-[ ] Tener Java 17
-[ ] Tener Maven
-[ ] Tener Node.js
-[ ] Tener npm
-[ ] Tener MySQL
-[ ] Crear base rentar
-[ ] Configurar application.properties
-[ ] Configurar jwt.secret
-[ ] Levantar backend
-[ ] Levantar frontend
-[ ] Abrir localhost:5173
-[ ] Usar admin@rentar.com
-[ ] Usar 123456
-[ ] Presionar Ingresar
-[ ] Verificar JWT
-[ ] Verificar rol ADMINISTRADOR
-```
-
----
-
-# 36. Comandos rápidos
-
-## Backend
-
-```powershell
-cd backend
-.\mvnw.cmd spring-boot:run
-```
-
-## Frontend
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-## Tests del backend
-
-```powershell
-cd backend
-.\mvnw.cmd clean test
-```
-
----
-
-# 37. URLs
-
-| Servicio | URL |
-|---|---|
-| Frontend | http://localhost:5173 |
-| Backend | http://localhost:8080 |
-| Login | http://localhost:8080/auth/login |
-| Swagger | http://localhost:8080/swagger-ui.html |
-| OpenAPI | http://localhost:8080/v3/api-docs |
-| GraphQL | http://localhost:8080/graphql |
-
----
-
-# 38. Resumen
-
-La rama `feature/creamoslogin` incorpora una primera implementación funcional de autenticación para Rentar.
-
-El flujo implementado es:
-
-```text
-Usuario
-   ↓
-Email + contraseña
-   ↓
-POST /auth/login
-   ↓
-Spring Security
-   ↓
-BCrypt
-   ↓
-JWT HS256
-   ↓
-Rol
-   ↓
-Frontend
-   ↓
-localStorage
-```
-
-Actualmente funciona con un usuario administrador temporal.
-
-La implementación queda preparada para integrarse posteriormente con:
-
-- Usuarios reales.
-- MySQL.
-- Clientes.
-- Autorización por roles.
-- Vehículos.
-- Reservas.
-- Historial.
-- Panel de administrador.
-- Panel de cliente.
-
-La persistencia definitiva de usuarios y la autorización completa deberán realizarse durante la integración con el resto del sistema.
+- Login contra clientes persistidos en MySQL.
+- Contraseñas almacenadas como hashes BCrypt.
+- Cliente activo/inactivo.
+- Indicador `esAdmin` persistido, devuelto por el login e incluido en el JWT.
+- JWT HS256 con vencimiento de dos horas.
+- CORS habilitado para `http://localhost:5173`.

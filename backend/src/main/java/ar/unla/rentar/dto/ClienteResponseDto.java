@@ -13,6 +13,7 @@ public class ClienteResponseDto {
     private String telefono;
     private LocalDate fechaNacimiento;
     private boolean activo;
+    private boolean esAdmin;
 
     public ClienteResponseDto() {}
 
@@ -79,6 +80,14 @@ public class ClienteResponseDto {
 
     public void setActivo(boolean activo) { 
         this.activo = activo; 
+    }
+
+    public boolean isEsAdmin() {
+        return esAdmin;
+    }
+
+    public void setEsAdmin(boolean esAdmin) {
+        this.esAdmin = esAdmin;
     }
     
 }

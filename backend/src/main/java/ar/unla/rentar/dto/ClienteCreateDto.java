@@ -11,6 +11,7 @@ public class ClienteCreateDto {
     private String email;
     private String telefono;
     private LocalDate fechaNacimiento;
+    private String password;
 
     public ClienteCreateDto() {}
 
@@ -61,6 +62,14 @@ public class ClienteCreateDto {
 
     public void setFechaNacimiento(LocalDate fechaNacimiento) { 
         this.fechaNacimiento = fechaNacimiento; 
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
     
 }
