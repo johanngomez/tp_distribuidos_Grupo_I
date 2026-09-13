@@ -225,9 +225,10 @@ CREATE TABLE IF NOT EXISTS reserva (
 
 ---
 
-### `6.2 Cancelar Reserva (PATCH /api/reservas/{id}/cancelar)`
+### `6.2 Cancelar Reserva (/api/reservas/{id}/cancelar)`
 
 **Ejemplo de Response (200 OK):**
+```
 {
   "id": 1,
   "cliente": { "id": 1, "nombre": "Juan Pérez" },
@@ -238,6 +239,7 @@ CREATE TABLE IF NOT EXISTS reserva (
   "importeTotal": 135000.0,
   "estado": "CANCELADA"
 }
+```
 
 ---
 
