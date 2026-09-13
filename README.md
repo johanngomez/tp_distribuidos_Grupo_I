@@ -122,7 +122,7 @@ Es la entidad JPA que representa una reserva.
 | `Double importeTotal` | `importe_total` | `DOUBLE` | Importe total calculado automáticamente |
 | `EstadoReserva estado` | `estado` | `VARCHAR(20)` | Estado (`CONFIRMADA`, `CANCELADA`, `EN_CURSO`,  `FINALIZADA`) |
 
-###ReservaCreateDTO
+### `ReservaCreateDTO`
 Se utiliza en POST /api/reservas.
 
 {
@@ -146,25 +146,25 @@ Representa la respuesta enviada al cliente:
   "estado": "CONFIRMADA"
 }
 
-###ReservaRepository.java
+### `ReservaRepository.java`
 Accede a la entidad mediante Spring Data JPA.
 
-###ReservaService.java
+### `ReservaService.java`
 Contiene la lógica de negocio:
 
-*Procesar el alta de la reserva.
+* Procesar el alta de la reserva.
 
-*Validar existencia previa de Cliente y Vehiculo.
+* Validar existencia previa de Cliente y Vehiculo.
 
-*Verificar que la fechaInicio sea anterior a la fechaFin.
+* Verificar que la fechaInicio sea anterior a la fechaFin.
 
-*Validar disponibilidad ejecutando existeSolapamiento en el repository.
+* Validar disponibilidad ejecutando existeSolapamiento en el repository.
 
-*Calcular el importeTotal basado en la diferencia en horas redondeada a días mediante Math.ceil.
+* Calcular el importeTotal basado en la diferencia en horas redondeada a días mediante Math.ceil.
 
-*Asignar el estado inicial en CONFIRMADA.
+* Asignar el estado inicial en CONFIRMADA.
 
-*Realizar la conversión entre DTOs y Entidad.
+* Realizar la conversión entre DTOs y Entidad.
 
 ### `ReservaController.java`
 Expone el endpoint REST bajo /api/reservas. Recibe las solicitudes HTTP y delega la ejecución al service.
@@ -173,6 +173,7 @@ Expone el endpoint REST bajo /api/reservas. Recibe las solicitudes HTTP y delega
 Tabla reserva
 Aunque Hibernate crea la estructura automáticamente al iniciar la aplicación (spring.jpa.hibernate.ddl-auto=update), la tabla equivalente en MySQL es:
 
+```
 CREATE TABLE IF NOT EXISTS reserva (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     cliente_id BIGINT NOT NULL,
@@ -185,6 +186,7 @@ CREATE TABLE IF NOT EXISTS reserva (
     CONSTRAINT fk_reserva_cliente FOREIGN KEY (cliente_id) REFERENCES cliente (id),
     CONSTRAINT fk_reserva_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculo (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
 
 ##6. Endpoints REST
 
@@ -198,14 +200,17 @@ CREATE TABLE IF NOT EXISTS reserva (
 ### `6.1 Crear Reserva (POST /api/reservas)`
 
 **Ejemplo de Request Body:**
+```
 {
   "clienteId": 1,
   "vehiculoId": 1,
   "fechaInicio": "2026-10-15T10:00:00",
   "fechaFin": "2026-10-18T10:00:00"
 }
+```
 
 **Ejemplo de Response (201 Created):**
+```
 {
   "id": 1,
   "cliente": { "id": 1, "nombre": "Juan Pérez" },
@@ -216,6 +221,7 @@ CREATE TABLE IF NOT EXISTS reserva (
   "importeTotal": 135000.0,
   "estado": "CONFIRMADA"
 }
+```
 
 ---
 
