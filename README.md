@@ -1,263 +1,805 @@
-# README — Módulo de Reservas
+# TP Desarrollo de Software en Sistemas Distribuidos — Grupo I
 
-## 1. Objetivo
-
-Este documento explica cómo está implementado el módulo de **Reservas** del sistema Rentar y cómo utilizarlo, levantarlo, probarlo e integrarlo con el resto del proyecto.
-
-Corresponde al **Hito 1 — Punto 4: Alta de reserva (REST)** y **Hito 1 - Punto 6: Cancelación de reserva (REST)**
-
-El módulo permite:
-- Alta de reservas asociando `Cliente` y `Vehiculo`.
-- Cálculo automático del `importeTotal` según la duración y tarifa diaria del vehículo.
-- Validación de disponibilidad de vehículo evitando el solapamiento de fechas.
-- Validación de coherencia de fechas (`fechaInicio` anterior a `fechaFin`).
-- Estado inicial automático (`CONFIRMADA`).
-- Persistencia mediante Spring Data JPA/Hibernate en MySQL.
-- Documentación y pruebas mediante Swagger.
+Sistema web de alquiler de vehículos para la empresa **Rentar**, desarrollado para el Trabajo Práctico de la materia **Desarrollo de Software en Sistemas Distribuidos — Universidad Nacional de Lanús (UNLa)**.
 
 ---
 
-## 2. Tecnologías
+## Tecnologías utilizadas
 
 ### Backend
-
-- **Java**: 17
-- **Framework**: Spring Boot 4.1.1
-- **Componentes**: Spring Web, Spring Data JPA, Spring Validation
-- **ORM**: Hibernate
-- **Base de Datos**: MySQL 8.4
-- **Documentación**: SpringDoc OpenAPI / Swagger
-- **Gestor de Dependencias**: Maven
+- Java 17
+- Spring Boot 4.1.1
+- Maven 3.9.16
+- Spring Web
+- Spring Data JPA
+- Hibernate
+- MySQL 8.4
+- Spring for GraphQL
+- Spring Validation
+- SpringDoc OpenAPI / Swagger
 
 ### Frontend
+- React
+- Vite
+- JavaScript
+- Node.js 22
+- npm
+- ESLint
 
-- **Librería/Framework**: React
-- **Herramienta de Construcción**: Vite
-- **Lenguaje**: JavaScript
-- **Entorno**: Node.js 22 & npm
+### Control de versiones
+- Git
+- GitHub
 
 ---
 
-## 3. Estructura general del proyecto
+# 1. Requisitos previos
+
+Antes de clonar y ejecutar el proyecto, cada integrante debe tener instalados:
+
+- Git
+- Java JDK 17
+- Maven
+- MySQL Server 8
+- Node.js 22
+- npm
+- Visual Studio Code (recomendado)
+
+## Versiones utilizadas
+
+```text
+Java:       17
+Maven:      3.9.16
+MySQL:      8.4
+Node.js:    22.23.2
+npm:        10.9.8
+Git:        2.55+
+```
+
+---
+
+# 2. Clonar el proyecto
+
+Desde una terminal:
+
+```bash
+git clone https://github.com/johanngomez/tp_distribuidos_Grupo_I.git
+```
+
+Ingresar al proyecto:
+
+```bash
+cd tp_distribuidos_Grupo_I
+```
+
+Estructura principal:
 
 ```text
 tp_distribuidos_Grupo_I/
-│
 ├── backend/
-│   ├── .mvn/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/ar/unla/rentar/
-│   │   │   │   ├── controller/
-│   │   │   │   ├── dto/
-│   │   │   │   ├── graphql/
-│   │   │   │   ├── model/
-│   │   │   │   ├── repository/
-│   │   │   │   ├── service/
-│   │   │   │   └── RentarApplication.java
-│   │   │   └── resources/
-│   │   │       └── application.properties
-│   │   └── test/
-│   ├── mvnw
-│   ├── mvnw.cmd
-│   └── pom.xml
-│
 ├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── eslint.config.js
-│   ├── index.html
-│   ├── package.json
-│   ├── package-lock.json
-│   └── vite.config.js
-│
 └── README.md
-
-##4. Archivos del módulo de Reservas
-
-backend/src/main/java/ar/unla/rentar/
-│
-├── controller/
-│   └── ReservaController.java
-│
-├── dto/
-│   ├── ReservaCreateDTO.java
-│   ├── ReservaResponseDTO.java
-│   └── ReservaUpdateDTO.java
-│
-├── model/
-│   ├── EstadoReserva.java
-│   └── Reserva.java
-│
-├── repository/
-│   └── ReservaRepository.java
-│
-├── service/
-│   └── ReservaService.java
-│
-backend/src/test/java/ar/unla/rentar/
-│
-└── ReservaTest.java
-```
-
-### `Reserva.java`
-
-Es la entidad JPA que representa una reserva.
-
-### `Mapeo entre Atributos Java y Tabla MySQL (`reserva`)`
-
-| Atributo Java (`Reserva.java`) | Columna MySQL (`reserva`) | Tipo de Datos SQL | Descripción / Restricciones |
-| :--- | :--- | :--- | :--- |
-| `Long id` | `id` | `BIGINT` | Clave Primaria (`AUTO_INCREMENT`) |
-| `Cliente cliente` | `cliente_id` | `BIGINT` | Clave Foránea (`FOREIGN KEY`) hacia `cliente(id)` |
-| `Vehiculo vehiculo` | `vehiculo_id` | `BIGINT` | Clave Foránea (`FOREIGN KEY`) hacia `vehiculo(id)` |
-| `LocalDateTime fechaInicio` | `fecha_inicio` | `DATETIME(6)` | Fecha y hora de inicio de la reserva |
-| `LocalDateTime fechaFin` | `fecha_fin` | `DATETIME(6)` | Fecha y hora de finalización de la reserva |
-| `Double precioDiario` | `precio_diario` | `DOUBLE` | Tarifa diaria tomada del vehículo |
-| `Double importeTotal` | `importe_total` | `DOUBLE` | Importe total calculado automáticamente |
-| `EstadoReserva estado` | `estado` | `VARCHAR(20)` | Estado (`CONFIRMADA`, `CANCELADA`, `EN_CURSO`,  `FINALIZADA`) |
-
-### `ReservaCreateDTO`
-Se utiliza en POST /api/reservas.
-
-{
-  "clienteId": 1,
-  "vehiculoId": 1,
-  "fechaInicio": "2026-10-15T10:00:00",
-  "fechaFin": "2026-10-18T10:00:00"
-}
-
-### `ReservaResponseDTO.java`
-Representa la respuesta enviada al cliente:
-
-{
-  "id": 1,
-  "cliente": { "id": 1, "nombre": "Juan Pérez", "email": "juan@email.com" },
-  "vehiculo": { "id": 1, "marca": "Ford", "modelo": "EcoSport", "patente": "AB456CD" },
-  "fechaInicio": "2026-10-15T10:00:00",
-  "fechaFin": "2026-10-18T10:00:00",
-  "precioDiario": 45000.0,
-  "importeTotal": 135000.0,
-  "estado": "CONFIRMADA"
-}
-
-### `ReservaRepository.java`
-Accede a la entidad mediante Spring Data JPA.
-
-### `ReservaService.java`
-Contiene la lógica de negocio:
-
-* Procesar el alta de la reserva.
-
-* Validar existencia previa de Cliente y Vehiculo.
-
-* Verificar que la fechaInicio sea anterior a la fechaFin.
-
-* Validar disponibilidad ejecutando existeSolapamiento en el repository.
-
-* Calcular el importeTotal basado en la diferencia en horas redondeada a días mediante Math.ceil.
-
-* Asignar el estado inicial en CONFIRMADA.
-
-* Realizar la conversión entre DTOs y Entidad.
-
-### `ReservaController.java`
-Expone el endpoint REST bajo /api/reservas. Recibe las solicitudes HTTP y delega la ejecución al service.
-
-## 5. Base de datos MySQL
-Tabla reserva
-Aunque Hibernate crea la estructura automáticamente al iniciar la aplicación (spring.jpa.hibernate.ddl-auto=update), la tabla equivalente en MySQL es:
-
-```
-CREATE TABLE IF NOT EXISTS reserva (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    cliente_id BIGINT NOT NULL,
-    vehiculo_id BIGINT NOT NULL,
-    fecha_inicio DATETIME(6) NOT NULL,
-    fecha_fin DATETIME(6) NOT NULL,
-    precio_diario DOUBLE NOT NULL,
-    importe_total DOUBLE NOT NULL,
-    estado VARCHAR(20) NOT NULL,
-    CONSTRAINT fk_reserva_cliente FOREIGN KEY (cliente_id) REFERENCES cliente (id),
-    CONSTRAINT fk_reserva_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculo (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
-
-##6. Endpoints REST
-
-| Método | Endpoint | Descripción | Estado HTTP |
-| :--- | :--- | :--- | :--- |
-| POST | /api/reservas | Crear una nueva reserva | 201 Created |
-| PATCH | /api/reservas/{id}/cancelar | Cancelar una reserva existente | 200 OK |
-
----
-
-### `6.1 Crear Reserva (POST /api/reservas)`
-
-**Ejemplo de Request Body:**
-```
-{
-  "clienteId": 1,
-  "vehiculoId": 1,
-  "fechaInicio": "2026-10-15T10:00:00",
-  "fechaFin": "2026-10-18T10:00:00"
-}
-```
-
-**Ejemplo de Response (201 Created):**
-```
-{
-  "id": 1,
-  "cliente": { "id": 1, "nombre": "Juan Pérez" },
-  "vehiculo": { "id": 1, "modelo": "EcoSport" },
-  "fechaInicio": "2026-10-15T10:00:00",
-  "fechaFin": "2026-10-18T10:00:00",
-  "precioDiario": 45000.0,
-  "importeTotal": 135000.0,
-  "estado": "CONFIRMADA"
-}
 ```
 
 ---
 
-### `6.2 Cancelar Reserva (/api/reservas/{id}/cancelar)`
+# 3. Configurar MySQL
 
-**Ejemplo de Response (200 OK):**
+El backend utiliza MySQL como base de datos.
+
+Asegurarse de que el servidor MySQL esté iniciado.
+
+Ingresar a MySQL:
+
+```bash
+mysql -u root -p
 ```
-{
-  "id": 1,
-  "cliente": { "id": 1, "nombre": "Juan Pérez" },
-  "vehiculo": { "id": 1, "modelo": "EcoSport" },
-  "fechaInicio": "2026-10-15T10:00:00",
-  "fechaFin": "2026-10-18T10:00:00",
-  "precioDiario": 45000.0,
-  "importeTotal": 135000.0,
-  "estado": "CANCELADA"
-}
+
+Crear la base de datos:
+
+```sql
+CREATE DATABASE rentar;
+```
+
+Verificar:
+
+```sql
+SHOW DATABASES;
+```
+
+Debe aparecer:
+
+```text
+rentar
+```
+
+Salir:
+
+```sql
+exit;
+```
+
+> **Importante:** cada integrante debe tener MySQL instalado y configurado en su propia computadora.
+
+---
+
+# 4. Configurar la conexión del Backend
+
+El archivo se encuentra en:
+
+```text
+backend/src/main/resources/application.properties
+```
+
+Ejemplo:
+
+```properties
+spring.application.name=rentar
+
+spring.datasource.url=jdbc:mysql://localhost:3306/rentar
+
+spring.datasource.username=root
+
+spring.datasource.password=CAMBIAR_PASSWORD ### Cada integrante debe reemplazar esto por su propia contraseña de MySQL
+
+spring.jpa.hibernate.ddl-auto=update
+
+spring.jpa.show-sql=true
+
+spring.jpa.properties.hibernate.format_sql=true
+```
+
+Cada integrante debe reemplazar `CAMBIAR_PASSWORD` por su propia contraseña de MySQL.
+
+La base de datos debe llamarse:
+
+```text
+rentar
+```
+
+y estar disponible en:
+
+```text
+localhost:3306
+```
+
+> **Seguridad:** no utilizar una contraseña real dentro del README. El valor anterior es solamente un ejemplo.
+
+---
+
+# 5. Ejecutar y probar el Backend
+
+Desde la carpeta del proyecto:
+
+```bash
+cd backend
+```
+
+En Windows:
+
+```powershell
+.\mvnw.cmd clean test
+```
+
+Si todo está correctamente configurado debe aparecer:
+
+```text
+BUILD SUCCESS
 ```
 
 ---
 
-## `7. Reglas de Negocio Aplicadas`
+# 6. Levantar el Backend
 
-| Regla | Criterio | Acción |
-| :--- | :--- | :--- |
-| Cliente y Vehículo | Existencia y activo = true | Rechaza la solicitud si no existen o están inactivos |
-| Fechas | fechaInicio futura y fechaFin > fechaInicio | Rechaza si el rango temporal es inválido |
-| Solapamiento | Fechas libres en reservas CONFIRMADAS | Rechaza si el auto ya está reservado |
-| Importe Total | Math.ceil(horas / 24.0) * precioDiario | Garantiza un cobro mínimo de 1 día |
-| Cancelación | Solo si la reserva no comenzó | Cambia a CANCELADA y libera el auto |
+Desde:
+
+```text
+tp_distribuidos_Grupo_I/backend
+```
+
+ejecutar:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+El backend se ejecutará en:
+
+```text
+http://localhost:8080
+```
+
+Para detenerlo:
+
+```text
+Ctrl + C
+```
 
 ---
 
-## `8. Ejecución y Pruebas`
+# 7. Swagger / OpenAPI
 
-| Acción | Comando / URL |
-| :--- | :--- |
-| Ejecutar Backend | .\mvnw.cmd spring-boot:run |
-| Swagger UI | http://localhost:8080/swagger-ui.html |
+Los endpoints REST serán documentados mediante Swagger/OpenAPI.
+
+Una vez que el backend esté ejecutándose:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+Especificación OpenAPI:
+
+```text
+http://localhost:8080/v3/api-docs
+```
+
+> Estas rutas estarán disponibles a medida que se incorporen los controladores REST.
+
+---
+
+# 8. GraphQL
+
+El proyecto utiliza **Spring for GraphQL**.
+
+Endpoint:
+
+```text
+http://localhost:8080/graphql
+```
+
+Las operaciones GraphQL serán incorporadas durante el desarrollo del Hito 1.
+
+---
+
+# 9. Configurar el Frontend
+
+Abrir otra terminal.
+
+Desde la raíz:
+
+```bash
+cd frontend
+```
+
+Instalar dependencias:
+
+```bash
+npm install
+```
+
+> **Importante:** `node_modules` no se sube a GitHub. Se genera automáticamente ejecutando `npm install`.
+
+---
+
+# 10. Ejecutar el Frontend
+
+Desde:
+
+```text
+tp_distribuidos_Grupo_I/frontend
+```
+
+ejecutar:
+
+```bash
+npm run dev
+```
+
+Vite mostrará una dirección similar a:
+
+```text
+http://localhost:5173/
+```
+
+Abrirla en el navegador.
+
+Para detenerlo:
+
+```text
+Ctrl + C
+```
+
+---
+
+# 11. Ejecutar el proyecto completo
+
+Se deben utilizar **dos terminales**.
+
+### Terminal 1 — Backend
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+Backend:
+
+```text
+http://localhost:8080
+```
+
+### Terminal 2 — Frontend
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend:
+
+```text
+http://localhost:5173/
+```
+
+---
+
+# 12. Estructura del Backend
+
+```text
+backend/
+└── src/
+    └── main/
+        ├── java/
+        │   └── ar/
+        │       └── unla/
+        │           └── rentar/
+        │               ├── RentarApplication.java
+        │               ├── controller/
+        │               ├── graphql/
+        │               ├── model/
+        │               ├── repository/
+        │               └── service/
+        └── resources/
+            └── application.properties
+```
+
+### `model/`
+Entidades y modelos principales.
+
+### `repository/`
+Acceso a datos mediante Spring Data JPA.
+
+### `service/`
+Lógica de negocio.
+
+### `controller/`
+Controladores REST.
+
+### `graphql/`
+Implementaciones relacionadas con GraphQL.
+
+---
+
+# 13. Estructura del Frontend
+
+```text
+frontend/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── App.jsx
+│   ├── App.css
+│   ├── index.css
+│   └── main.jsx
+├── package.json
+├── vite.config.js
+└── eslint.config.js
+```
+
+La interfaz se desarrollará incrementalmente junto con los requerimientos del TP.
+
+---
+
+# 14. Modelo general del sistema
+
+## Administrador
+
+Puede:
+
+- Realizar ABM de vehículos.
+- Realizar ABM de clientes.
+- Consultar las reservas de todos los clientes.
+
+## Cliente
+
+Puede:
+
+- Consultar disponibilidad de vehículos.
+- Crear reservas.
+- Consultar sus propias reservas.
+- Cancelar reservas.
+- Consultar su historial.
+
+---
+
+# 15. Entidades principales
+
+Relación general:
+
+```text
+Cliente
+   │
+   │ 1
+   │
+   │ N
+Reserva
+   │
+   │ N
+   │
+   │ 1
+Vehiculo
+```
+
+## Cliente
+
+- ID
+- Documento
+- Nombre
+- Apellido
+- Email
+- Teléfono
+- Fecha de nacimiento
+- Activo/Inactivo
+
+## Vehículo
+
+- ID
+- Patente
+- Marca
+- Modelo
+- Año
+- Color
+- Tipo
+- Precio diario
+- Estado
+- Activo/Inactivo
+
+Tipos:
+
+```text
+SEDAN
+SUV
+PICKUP
+COUPE
+HATCHBACK
+```
+
+Estados:
+
+```text
+DISPONIBLE
+RESERVADO
+EN_ALQUILER
+```
+
+## Reserva
+
+- ID
+- Cliente
+- Vehículo
+- Fecha/hora de inicio
+- Fecha/hora de fin
+- Precio diario
+- Total
+- Estado
+
+Estados:
+
+```text
+CONFIRMADA
+CANCELADA
+```
+
+---
+
+# 16. Hitos del Trabajo Práctico
+
+El desarrollo será incremental.
+
+## Hito 1 — REST / GraphQL
+
+Se implementarán:
+
+- Gestión de vehículos mediante REST.
+- Consulta de disponibilidad mediante GraphQL.
+- Gestión de clientes mediante REST.
+- Creación de reservas mediante REST.
+- Consulta de reservas mediante GraphQL.
+- Cancelación de reservas mediante REST.
+- Consulta del historial mediante GraphQL.
+- Interfaz web.
+- Documentación Swagger/OpenAPI.
+- Pruebas.
+
+## Hito 2 — RPC
+
+Se adaptará la arquitectura para incorporar RPC según los requerimientos del TP.
+
+## Hito 3 — Mensajería
+
+Se incorporará Apache Kafka o RabbitMQ según la decisión del grupo.
+
+> Los Hitos 2 y 3 se implementarán posteriormente. El desarrollo actual corresponde al Hito 1.
+
+---
+
+# 17. Trabajo con Git
+
+**No trabajar directamente sobre `main`.**
+
+Cada integrante debe utilizar su propia rama.
+
+Ejemplo:
+
+```text
+main
+├── feature/base-datos
+├── feature/vehiculos
+├── feature/clientes
+├── feature/reservas
+└── feature/graphql
+```
+
+## Antes de comenzar
+
+```bash
+git checkout main
+git pull
+```
+
+Cambiar a la rama propia:
+
+```bash
+git checkout feature/nombre-de-la-rama
+```
+
+Actualizarla:
+
+```bash
+git merge main
+```
+
+---
+
+# 18. Guardar cambios
+
+Verificar:
+
+```bash
+git status
+```
+
+Agregar:
+
+```bash
+git add .
+```
+
+Commit:
+
+```bash
+git commit -m "Descripcion del cambio"
+```
+
+Subir:
+
+```bash
+git push
+```
+
+Primera vez:
+
+```bash
+git push -u origin feature/nombre-de-la-rama
+```
+
+---
+
+# 19. Pull Requests
+
+Cuando un integrante termina una tarea:
+
+1. Hace `push` de su rama.
+2. Abre un Pull Request en GitHub.
+3. El grupo revisa los cambios.
+4. Se realiza el merge hacia `main`.
+5. Los demás integrantes actualizan sus ramas.
+
+Después de un merge:
+
+```bash
+git checkout main
+git pull
+```
+
+Luego:
+
+```bash
+git checkout feature/nombre-de-la-rama
+git merge main
+```
+
+---
+
+# 20. Carpetas que NO deben subirse a Git
+
+### Frontend
+
+```text
+node_modules/
+dist/
+```
+
+### Backend
+
+```text
+target/
+```
+
+Estas carpetas ya están incluidas en los respectivos `.gitignore`.
+
+Después de clonar:
+
+```bash
+cd frontend
+npm install
+```
+
+Esto vuelve a generar `node_modules`.
+
+---
+
+# 21. Solución de problemas frecuentes
+
+## Error de conexión con MySQL
+
+Si aparece:
+
+```text
+Access denied
+```
+
+verificar:
+
+- MySQL está ejecutándose.
+- El usuario es correcto.
+- La contraseña es correcta.
+- Existe la base de datos `rentar`.
+- MySQL utiliza el puerto `3306`.
+
+Probar:
+
+```bash
+mysql -u root -p
+```
+
+## No existe la base de datos
+
+```sql
+CREATE DATABASE rentar;
+```
+
+## Error al ejecutar npm
+
+Verificar:
+
+```bash
+node -v
+npm -v
+```
+
+Versiones utilizadas:
+
+```text
+Node.js 22.23.2
+npm 10.9.8
+```
+
+Luego:
+
+```bash
+npm install
+```
+
+## Error al ejecutar Maven
+
+Verificar:
+
+```bash
+java -version
+mvn -version
+```
+
+Se requiere Java 17.
+
+También se puede utilizar el Maven Wrapper:
+
+```powershell
+.\mvnw.cmd clean test
+```
+
+---
+
+# 22. Flujo recomendado para comenzar a trabajar
+
+Después de clonar:
+
+```powershell
+git clone https://github.com/johanngomez/tp_distribuidos_Grupo_I.git
+cd tp_distribuidos_Grupo_I
+```
+
+### Backend
+
+```powershell
+cd backend
+.\mvnw.cmd clean test
+.\mvnw.cmd spring-boot:run
+```
+
+### Frontend
+
+En otra terminal:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+### URLs principales
+
+Frontend:
+
+```text
+http://localhost:5173/
+```
+
+Backend:
+
+```text
+http://localhost:8080
+```
+
+Swagger:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
+GraphQL:
+
+```text
+http://localhost:8080/graphql
+```
+
+---
+
+# 23. Estado actual del proyecto
+
+El proyecto se encuentra en la etapa inicial de desarrollo del **Hito 1**.
+
+Actualmente se encuentra configurada la base tecnológica:
+
+- Proyecto Spring Boot.
+- Proyecto React + Vite.
+- Conexión con MySQL.
+- JPA/Hibernate.
+- REST.
+- GraphQL.
+- Validaciones.
+- Swagger/OpenAPI.
+- Estructura base de carpetas.
+- Configuración inicial de Git.
+
+Las funcionalidades del sistema serán implementadas progresivamente por los integrantes del grupo.
+
+---
+
+# 24. Grupo I
+
+**Universidad Nacional de Lanús — UNLa**
+
+**Materia:** Desarrollo de Software en Sistemas Distribuidos
+
+**Proyecto:** Rentar — Sistema de alquiler de vehículos
