@@ -103,7 +103,7 @@ backend/src/main/java/ar/unla/rentar/
 backend/src/test/java/ar/unla/rentar/
 │
 └── ReservaTest.java
-```text
+```
 
 ### `Reserva.java`
 
