@@ -1,6 +1,5 @@
 const API_URL = "http://localhost:8080";
 
-//arma los "headers" (información extra que viaja junto con cada pedido HTTP) como el token del usuario logueado
 function getAuthHeaders() {
     const token = localStorage.getItem("token");
 
@@ -10,7 +9,18 @@ function getAuthHeaders() {
     };
 }
 
-// Trae todos los vehículos
+async function manejarError(response, mensajePorDefecto) {
+    try {
+        const data = await response.json();
+        throw new Error(data.message || data.error || mensajePorDefecto);
+    } catch (error) {
+        if (error instanceof SyntaxError) {
+            throw new Error(mensajePorDefecto);
+        }
+        throw error;
+    }
+}
+
 export async function listarVehiculos() {
     const response = await fetch(`${API_URL}/vehiculos`, {
         method: "GET",
@@ -18,13 +28,12 @@ export async function listarVehiculos() {
     });
 
     if (!response.ok) {
-        throw new Error("No se pudieron obtener los vehículos");
+        await manejarError(response, "No se pudieron obtener los vehículos");
     }
 
     return await response.json();
 }
 
-// Trae un vehículo por id
 export async function buscarVehiculo(id) {
     const response = await fetch(`${API_URL}/vehiculos/${id}`, {
         method: "GET",
@@ -32,13 +41,12 @@ export async function buscarVehiculo(id) {
     });
 
     if (!response.ok) {
-        throw new Error("No se pudo obtener el vehículo");
+        await manejarError(response, "No se pudo obtener el vehículo");
     }
 
     return await response.json();
 }
 
-// Crea un nuevo vehículo
 export async function crearVehiculo(datos) {
     const response = await fetch(`${API_URL}/vehiculos`, {
         method: "POST",
@@ -47,13 +55,12 @@ export async function crearVehiculo(datos) {
     });
 
     if (!response.ok) {
-        throw new Error("No se pudo crear el vehículo");
+        await manejarError(response, "No se pudo crear el vehículo");
     }
 
     return await response.json();
 }
 
-// Modifica un vehículo existente
 export async function modificarVehiculo(id, datos) {
     const response = await fetch(`${API_URL}/vehiculos/${id}`, {
         method: "PUT",
@@ -62,13 +69,12 @@ export async function modificarVehiculo(id, datos) {
     });
 
     if (!response.ok) {
-        throw new Error("No se pudo modificar el vehículo");
+        await manejarError(response, "No se pudo modificar el vehículo");
     }
 
     return await response.json();
 }
 
-// Baja lógica de un vehículo
 export async function eliminarVehiculo(id) {
     const response = await fetch(`${API_URL}/vehiculos/${id}`, {
         method: "DELETE",
@@ -76,7 +82,7 @@ export async function eliminarVehiculo(id) {
     });
 
     if (!response.ok) {
-        throw new Error("No se pudo eliminar el vehículo");
+        await manejarError(response, "No se pudo eliminar el vehículo");
     }
 
     return await response.json();

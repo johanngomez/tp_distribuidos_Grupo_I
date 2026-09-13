@@ -1,12 +1,24 @@
 import { useState, useEffect } from "react";
-import { listarVehiculos, crearVehiculo } from "../services/vehiculoService";
+import { useNavigate } from "react-router-dom";
+import {
+    listarVehiculos,
+    crearVehiculo,
+    modificarVehiculo,
+    eliminarVehiculo,
+} from "../services/vehiculoService";
 
 const TIPOS = ["SEDAN", "SUV", "PICKUP", "COUPE", "HATCHBACK"];
+const ESTADOS = ["DISPONIBLE", "RESERVADO", "EN_ALQUILER"];
 
 function Vehiculos() {
+    const navigate = useNavigate();
     const [vehiculos, setVehiculos] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+
+    const [busqueda, setBusqueda] = useState("");
+
+    const [editandoId, setEditandoId] = useState(null);
 
     const [patente, setPatente] = useState("");
     const [marca, setMarca] = useState("");
@@ -15,11 +27,26 @@ function Vehiculos() {
     const [color, setColor] = useState("");
     const [tipo, setTipo] = useState(TIPOS[0]);
     const [precioDiario, setPrecioDiario] = useState("");
+    const [estado, setEstado] = useState(ESTADOS[0]);
     const [guardando, setGuardando] = useState(false);
     const [formError, setFormError] = useState("");
 
+    //si nunca se logueo e intenta ingresar a /vehiculos lo manda al loguin, si es admin lo deja, si no es admin lo manda a /disponibilidad
     useEffect(() => {
-        cargarVehiculos();
+    const token = localStorage.getItem("token");
+    const esAdmin = localStorage.getItem("esAdmin") === "true";
+
+    if (!token) {
+        navigate("/login");
+        return;
+    }
+
+    if (!esAdmin) {
+        navigate("/disponibilidad");
+        return;
+    }
+
+    cargarVehiculos();
     }, []);
 
     async function cargarVehiculos() {
@@ -36,6 +63,47 @@ function Vehiculos() {
         }
     }
 
+    function limpiarFormulario() {
+        setEditandoId(null);
+        setPatente("");
+        setMarca("");
+        setModelo("");
+        setAnio("");
+        setColor("");
+        setTipo(TIPOS[0]);
+        setPrecioDiario("");
+        setEstado(ESTADOS[0]);
+    }
+
+    function handleEditar(vehiculo) {
+        setEditandoId(vehiculo.id);
+        setPatente(vehiculo.patente);
+        setMarca(vehiculo.marca);
+        setModelo(vehiculo.modelo);
+        setAnio(vehiculo.anio);
+        setColor(vehiculo.color || "");
+        setTipo(vehiculo.tipo);
+        setPrecioDiario(vehiculo.precioDiario);
+        setEstado(vehiculo.estado);
+    }
+
+    async function handleBaja(id) {
+        const confirmar = window.confirm(
+            "¿Seguro que querés dar de baja este vehículo?"
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        try {
+            await eliminarVehiculo(id);
+            await cargarVehiculos();
+        } catch (error) {
+            setError(error.message);
+        }
+    }
+
     async function handleSubmit(event) {
         event.preventDefault();
 
@@ -43,24 +111,29 @@ function Vehiculos() {
         setGuardando(true);
 
         try {
-            await crearVehiculo({
-                patente,
-                marca,
-                modelo,
-                anio: Number(anio),
-                color,
-                tipo,
-                precioDiario: Number(precioDiario),
-            });
+            if (editandoId) {
+                await modificarVehiculo(editandoId, {
+                    marca,
+                    modelo,
+                    anio: Number(anio),
+                    color,
+                    tipo,
+                    precioDiario: Number(precioDiario),
+                    estado,
+                });
+            } else {
+                await crearVehiculo({
+                    patente,
+                    marca,
+                    modelo,
+                    anio: Number(anio),
+                    color,
+                    tipo,
+                    precioDiario: Number(precioDiario),
+                });
+            }
 
-            setPatente("");
-            setMarca("");
-            setModelo("");
-            setAnio("");
-            setColor("");
-            setTipo(TIPOS[0]);
-            setPrecioDiario("");
-
+            limpiarFormulario();
             await cargarVehiculos();
         } catch (error) {
             setFormError(error.message);
@@ -72,12 +145,15 @@ function Vehiculos() {
     if (loading) {
         return <p>Cargando vehículos...</p>;
     }
+    const vehiculosFiltrados = vehiculos.filter((v) =>
+        v.patente.toLowerCase().includes(busqueda.toLowerCase())
+    );
 
     return (
         <div>
             <h1>Gestión de vehículos</h1>
 
-            <h2>Nuevo vehículo</h2>
+            <h2>{editandoId ? "Editar vehículo" : "Nuevo vehículo"}</h2>
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -86,6 +162,7 @@ function Vehiculos() {
                         id="patente"
                         value={patente}
                         onChange={(e) => setPatente(e.target.value)}
+                        disabled={!!editandoId}
                         required
                     />
                 </div>
@@ -157,14 +234,52 @@ function Vehiculos() {
                     />
                 </div>
 
+                {editandoId && (
+                    <div className="form-group">
+                        <label htmlFor="estado">Estado</label>
+                        <select
+                            id="estado"
+                            value={estado}
+                            onChange={(e) => setEstado(e.target.value)}
+                        >
+                            {ESTADOS.map((e) => (
+                                <option key={e} value={e}>
+                                    {e}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
                 {formError && <p className="login-error">{formError}</p>}
 
                 <button type="submit" disabled={guardando}>
-                    {guardando ? "Guardando..." : "Crear vehículo"}
+                    {guardando
+                        ? "Guardando..."
+                        : editandoId
+                        ? "Guardar cambios"
+                        : "Crear vehículo"}
                 </button>
+
+                {editandoId && (
+                    <button type="button" onClick={limpiarFormulario}>
+                        Cancelar
+                    </button>
+                )}
             </form>
 
             <h2>Listado</h2>
+
+            <div className="form-group">
+                <label htmlFor="busqueda">Buscar por patente</label>
+                <input
+                    id="busqueda"
+                    type="text"
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    placeholder="Ej: AA111BB"
+                />
+            </div>
 
             {error && <p className="login-error">{error}</p>}
 
@@ -179,10 +294,11 @@ function Vehiculos() {
                         <th>Precio diario</th>
                         <th>Estado</th>
                         <th>Activo</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {vehiculos.map((vehiculo) => (
+                    {vehiculosFiltrados.map((vehiculo) => (
                         <tr key={vehiculo.id}>
                             <td>{vehiculo.patente}</td>
                             <td>{vehiculo.marca}</td>
@@ -192,12 +308,23 @@ function Vehiculos() {
                             <td>{vehiculo.precioDiario}</td>
                             <td>{vehiculo.estado}</td>
                             <td>{vehiculo.activo ? "Sí" : "No"}</td>
+                            <td>
+                                <button onClick={() => handleEditar(vehiculo)}>
+                                    Editar
+                                </button>
+                                <button
+                                    onClick={() => handleBaja(vehiculo.id)}
+                                    disabled={!vehiculo.activo}
+                                >
+                                    Dar de baja
+                                </button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
-            {vehiculos.length === 0 && <p>No hay vehículos cargados todavía.</p>}
+            {vehiculosFiltrados.length === 0 && <p>No se encontraron vehículos.</p>}
         </div>
     );
 }

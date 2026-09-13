@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
 
 function Login() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -19,9 +21,12 @@ function Login() {
             localStorage.setItem("token", data.token);
             localStorage.setItem("esAdmin", String(data.esAdmin));
 
-            console.log("Login exitoso:", data);
+            if (data.esAdmin) {
+                navigate("/vehiculos");
+            } else {
+                navigate("/disponibilidad");
+            }
 
-            alert(`Bienvenido${data.esAdmin ? ". Sos administrador." : "."}`);
         } catch (error) {
             setError(error.message);
         } finally {
