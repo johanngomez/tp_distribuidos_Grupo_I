@@ -78,7 +78,8 @@ tp_distribuidos_Grupo_I/
 │
 └── README.md
 
-4. Archivos del módulo de Reservas
+##4. Archivos del módulo de Reservas
+
 backend/src/main/java/ar/unla/rentar/
 │
 ├── controller/
@@ -103,7 +104,7 @@ backend/src/test/java/ar/unla/rentar/
 │
 └── ReservaTest.java
 
-#Reserva.java
+###Reserva.java
 
 Es la entidad JPA que representa una reserva.
 
@@ -120,7 +121,7 @@ Es la entidad JPA que representa una reserva.
 | `Double importeTotal` | `importe_total` | `DOUBLE` | Importe total calculado automáticamente |
 | `EstadoReserva estado` | `estado` | `VARCHAR(20)` | Estado (`CONFIRMADA`, `CANCELADA`, `EN_CURSO`,  `FINALIZADA`) |
 
-#ReservaCreateDTO
+###ReservaCreateDTO
 Se utiliza en POST /api/reservas.
 
 {
@@ -130,7 +131,7 @@ Se utiliza en POST /api/reservas.
   "fechaFin": "2026-10-18T10:00:00"
 }
 
-#ReservaResponseDTO.java
+###ReservaResponseDTO.java
 Representa la respuesta enviada al cliente:
 
 {
@@ -144,30 +145,30 @@ Representa la respuesta enviada al cliente:
   "estado": "CONFIRMADA"
 }
 
-#ReservaRepository.java
+###ReservaRepository.java
 Accede a la entidad mediante Spring Data JPA.
 
-#ReservaService.java
+###ReservaService.java
 Contiene la lógica de negocio:
 
-Procesar el alta de la reserva.
+*Procesar el alta de la reserva.
 
-Validar existencia previa de Cliente y Vehiculo.
+*Validar existencia previa de Cliente y Vehiculo.
 
-Verificar que la fechaInicio sea anterior a la fechaFin.
+*Verificar que la fechaInicio sea anterior a la fechaFin.
 
-Validar disponibilidad ejecutando existeSolapamiento en el repository.
+*Validar disponibilidad ejecutando existeSolapamiento en el repository.
 
-Calcular el importeTotal basado en la diferencia en horas redondeada a días mediante Math.ceil.
+*Calcular el importeTotal basado en la diferencia en horas redondeada a días mediante Math.ceil.
 
-Asignar el estado inicial en CONFIRMADA.
+*Asignar el estado inicial en CONFIRMADA.
 
-Realizar la conversión entre DTOs y Entidad.
+*Realizar la conversión entre DTOs y Entidad.
 
-#ReservaController.java
+###ReservaController.java
 Expone el endpoint REST bajo /api/reservas. Recibe las solicitudes HTTP y delega la ejecución al service.
 
-5. Base de datos MySQL
+##5. Base de datos MySQL
 Tabla reserva
 Aunque Hibernate crea la estructura automáticamente al iniciar la aplicación (spring.jpa.hibernate.ddl-auto=update), la tabla equivalente en MySQL es:
 
@@ -184,8 +185,7 @@ CREATE TABLE IF NOT EXISTS reserva (
     CONSTRAINT fk_reserva_vehiculo FOREIGN KEY (vehiculo_id) REFERENCES vehiculo (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-#6. Endpoints REST
-## 6. Endpoints REST
+##6. Endpoints REST
 
 | Método | Endpoint | Descripción | Estado HTTP |
 | :--- | :--- | :--- | :--- |
