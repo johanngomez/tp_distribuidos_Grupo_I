@@ -104,11 +104,11 @@ backend/src/test/java/ar/unla/rentar/
 │
 └── ReservaTest.java
 
-###Reserva.java
+### `Reserva.java`
 
 Es la entidad JPA que representa una reserva.
 
-### Mapeo entre Atributos Java y Tabla MySQL (`reserva`)
+### `Mapeo entre Atributos Java y Tabla MySQL (`reserva`)`
 
 | Atributo Java (`Reserva.java`) | Columna MySQL (`reserva`) | Tipo de Datos SQL | Descripción / Restricciones |
 | :--- | :--- | :--- | :--- |
@@ -131,7 +131,7 @@ Se utiliza en POST /api/reservas.
   "fechaFin": "2026-10-18T10:00:00"
 }
 
-###ReservaResponseDTO.java
+### `ReservaResponseDTO.java`
 Representa la respuesta enviada al cliente:
 
 {
@@ -165,10 +165,10 @@ Contiene la lógica de negocio:
 
 *Realizar la conversión entre DTOs y Entidad.
 
-###ReservaController.java
+### `ReservaController.java`
 Expone el endpoint REST bajo /api/reservas. Recibe las solicitudes HTTP y delega la ejecución al service.
 
-##5. Base de datos MySQL
+## 5. Base de datos MySQL
 Tabla reserva
 Aunque Hibernate crea la estructura automáticamente al iniciar la aplicación (spring.jpa.hibernate.ddl-auto=update), la tabla equivalente en MySQL es:
 
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS reserva (
 
 ---
 
-### 6.1 Crear Reserva (POST /api/reservas)
+### `6.1 Crear Reserva (POST /api/reservas)`
 
 **Ejemplo de Request Body:**
 {
@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS reserva (
 
 ---
 
-### 6.2 Cancelar Reserva (PATCH /api/reservas/{id}/cancelar)
+### `6.2 Cancelar Reserva (PATCH /api/reservas/{id}/cancelar)`
 
 **Ejemplo de Response (200 OK):**
 {
@@ -234,7 +234,7 @@ CREATE TABLE IF NOT EXISTS reserva (
 
 ---
 
-## 7. Reglas de Negocio Aplicadas
+## `7. Reglas de Negocio Aplicadas`
 
 | Regla | Criterio | Acción |
 | :--- | :--- | :--- |
@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS reserva (
 
 ---
 
-## 8. Ejecución y Pruebas
+## `8. Ejecución y Pruebas`
 
 | Acción | Comando / URL |
 | :--- | :--- |
