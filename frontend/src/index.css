@@ -1,12 +1,39 @@
-* {
-    box-sizing: border-box;
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root {
+  --color-bordo: #7A1E2E;
+  --color-bordo-dark: #5C1622;
+  --color-white: #FFFFFF;
+  --color-paper: #FBF9F8;
+  --color-ink: #241416;
+  --color-ink-soft: #5A4C4E;
+  --color-line: #E4DEDF;
+  --font-display: 'Abstract Grotesk', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
 }
 
-html,
+* {
+  box-sizing: border-box;
+}
+
 body {
-    margin: 0;
-    padding: 0;
-    min-width: 320px;
-    min-height: 100vh;
-    font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  margin: 0 0 0.5em;
+}
+
+h1 { font-size: 1.75rem; font-weight: 600; text-align: center; }
+h2 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; }
+
+a {
+  color: var(--color-bordo);
 }
