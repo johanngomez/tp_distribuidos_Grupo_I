@@ -31,6 +31,7 @@ function Vehiculos() {
     const [guardando, setGuardando] = useState(false);
     const [formError, setFormError] = useState("");
 
+    const [mostrarListado, setMostrarListado] = useState(false);
     //si nunca se logueo e intenta ingresar a /vehiculos lo manda al loguin, si es admin lo deja, si no es admin lo manda a /disponibilidad
     useEffect(() => {
     const token = localStorage.getItem("token");
@@ -150,88 +151,158 @@ function Vehiculos() {
     );
 
     return (
-        <div>
-            <h1>Gestión de vehículos</h1>
+    <div>
+        <h1>Gestión de vehículos</h1>
 
-            <h2>{editandoId ? "Editar vehículo" : "Nuevo vehículo"}</h2>
+        {error && <p className="login-error">{error}</p>}
 
-            <form onSubmit={handleSubmit}>
+        <button
+            type="button"
+            className="toggle-listado"
+            onClick={() => setMostrarListado(!mostrarListado)}
+        >
+            Vehículos registrados {mostrarListado ? "▲" : "▼"}
+        </button>
+
+        {mostrarListado && (
+            <>
                 <div className="form-group">
-                    <label htmlFor="patente">Patente</label>
+                    <label htmlFor="busqueda">Buscar por patente</label>
                     <input
-                        id="patente"
-                        value={patente}
-                        onChange={(e) => setPatente(e.target.value)}
-                        disabled={!!editandoId}
-                        required
+                        id="busqueda"
+                        type="text"
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        placeholder="Ej: AA111BB"
                     />
                 </div>
 
-                <div className="form-group">
-                    <label htmlFor="marca">Marca</label>
-                    <input
-                        id="marca"
-                        value={marca}
-                        onChange={(e) => setMarca(e.target.value)}
-                        required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="modelo">Modelo</label>
-                    <input
-                        id="modelo"
-                        value={modelo}
-                        onChange={(e) => setModelo(e.target.value)}
-                        required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="anio">Año</label>
-                    <input
-                        id="anio"
-                        type="number"
-                        value={anio}
-                        onChange={(e) => setAnio(e.target.value)}
-                        required
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="color">Color</label>
-                    <input
-                        id="color"
-                        value={color}
-                        onChange={(e) => setColor(e.target.value)}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="tipo">Tipo</label>
-                    <select
-                        id="tipo"
-                        value={tipo}
-                        onChange={(e) => setTipo(e.target.value)}
-                    >
-                        {TIPOS.map((t) => (
-                            <option key={t} value={t}>
-                                {t}
-                            </option>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Patente</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Año</th>
+                            <th>Tipo</th>
+                            <th>Precio diario</th>
+                            <th>Estado</th>
+                            <th>Activo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {vehiculosFiltrados.map((vehiculo) => (
+                            <tr key={vehiculo.id}>
+                                <td>{vehiculo.patente}</td>
+                                <td>{vehiculo.marca}</td>
+                                <td>{vehiculo.modelo}</td>
+                                <td>{vehiculo.anio}</td>
+                                <td>{vehiculo.tipo}</td>
+                                <td>{vehiculo.precioDiario}</td>
+                                <td>{vehiculo.estado}</td>
+                                <td>{vehiculo.activo ? "Sí" : "No"}</td>
+                                <td>
+                                    <button onClick={() => handleEditar(vehiculo)}>
+                                        Editar
+                                    </button>
+                                    <button
+                                        onClick={() => handleBaja(vehiculo.id)}
+                                        disabled={!vehiculo.activo}
+                                    >
+                                        Dar de baja
+                                    </button>
+                                </td>
+                            </tr>
                         ))}
-                    </select>
-                </div>
+                    </tbody>
+                </table>
 
-                <div className="form-group">
-                    <label htmlFor="precioDiario">Precio diario</label>
-                    <input
-                        id="precioDiario"
-                        type="number"
-                        step="0.01"
-                        value={precioDiario}
-                        onChange={(e) => setPrecioDiario(e.target.value)}
-                        required
-                    />
+                {vehiculosFiltrados.length === 0 && <p>No se encontraron vehículos.</p>}
+            </>
+        )}
+
+        <h2>{editandoId ? "Editar vehículo" : "Nuevo vehículo"}</h2>
+        <div className="form-card">
+            <form onSubmit={handleSubmit}>
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label htmlFor="patente">Patente</label>
+                        <input
+                            id="patente"
+                            value={patente}
+                            onChange={(e) => setPatente(e.target.value)}
+                            disabled={!!editandoId}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="marca">Marca</label>
+                        <input
+                            id="marca"
+                            value={marca}
+                            onChange={(e) => setMarca(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="modelo">Modelo</label>
+                        <input
+                            id="modelo"
+                            value={modelo}
+                            onChange={(e) => setModelo(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="anio">Año</label>
+                        <input
+                            id="anio"
+                            type="number"
+                            value={anio}
+                            onChange={(e) => setAnio(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="color">Color</label>
+                        <input
+                            id="color"
+                            value={color}
+                            onChange={(e) => setColor(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="tipo">Tipo</label>
+                        <select
+                            id="tipo"
+                            value={tipo}
+                            onChange={(e) => setTipo(e.target.value)}
+                        >
+                            {TIPOS.map((t) => (
+                                <option key={t} value={t}>
+                                    {t}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group span-2">
+                        <label htmlFor="precioDiario">Precio diario</label>
+                        <input
+                            id="precioDiario"
+                            type="number"
+                            step="0.01"
+                            value={precioDiario}
+                            onChange={(e) => setPrecioDiario(e.target.value)}
+                            required
+                        />
+                    </div>
                 </div>
 
                 {editandoId && (
@@ -252,81 +323,25 @@ function Vehiculos() {
                 )}
 
                 {formError && <p className="login-error">{formError}</p>}
-
-                <button type="submit" disabled={guardando}>
-                    {guardando
-                        ? "Guardando..."
-                        : editandoId
-                        ? "Guardar cambios"
-                        : "Crear vehículo"}
-                </button>
-
-                {editandoId && (
-                    <button type="button" onClick={limpiarFormulario}>
-                        Cancelar
+                <div className="form-actions">
+                    <button type="submit" disabled={guardando}>
+                        {guardando
+                            ? "Guardando..."
+                            : editandoId
+                            ? "Guardar cambios"
+                            : "Agregar"}
                     </button>
-                )}
+
+                    {editandoId && (
+                        <button type="button" onClick={limpiarFormulario}>
+                            Cancelar
+                        </button>
+                    )}
+                </div>
             </form>
-
-            <h2>Listado</h2>
-
-            <div className="form-group">
-                <label htmlFor="busqueda">Buscar por patente</label>
-                <input
-                    id="busqueda"
-                    type="text"
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    placeholder="Ej: AA111BB"
-                />
-            </div>
-
-            {error && <p className="login-error">{error}</p>}
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Patente</th>
-                        <th>Marca</th>
-                        <th>Modelo</th>
-                        <th>Año</th>
-                        <th>Tipo</th>
-                        <th>Precio diario</th>
-                        <th>Estado</th>
-                        <th>Activo</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {vehiculosFiltrados.map((vehiculo) => (
-                        <tr key={vehiculo.id}>
-                            <td>{vehiculo.patente}</td>
-                            <td>{vehiculo.marca}</td>
-                            <td>{vehiculo.modelo}</td>
-                            <td>{vehiculo.anio}</td>
-                            <td>{vehiculo.tipo}</td>
-                            <td>{vehiculo.precioDiario}</td>
-                            <td>{vehiculo.estado}</td>
-                            <td>{vehiculo.activo ? "Sí" : "No"}</td>
-                            <td>
-                                <button onClick={() => handleEditar(vehiculo)}>
-                                    Editar
-                                </button>
-                                <button
-                                    onClick={() => handleBaja(vehiculo.id)}
-                                    disabled={!vehiculo.activo}
-                                >
-                                    Dar de baja
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            {vehiculosFiltrados.length === 0 && <p>No se encontraron vehículos.</p>}
         </div>
-    );
+    </div>
+);
 }
 
 export default Vehiculos;
