@@ -1,31 +1,7 @@
-const API_URL = "http://localhost:8080";
-
-function getAuthHeaders() {
-    const token = localStorage.getItem("token");
-
-    return {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-    };
-}
-
-async function manejarError(response, mensajePorDefecto) {
-    try {
-        const data = await response.json();
-        throw new Error(data.message || data.error || mensajePorDefecto);
-    } catch (error) {
-        if (error instanceof SyntaxError) {
-            throw new Error(mensajePorDefecto);
-        }
-        throw error;
-    }
-}
-
+import { fetchAutenticado, manejarError } from "./httpClient";
+// Funciones para interactuar con la API de vehículos
 export async function listarVehiculos() {
-    const response = await fetch(`${API_URL}/vehiculos`, {
-        method: "GET",
-        headers: getAuthHeaders(),
-    });
+    const response = await fetchAutenticado("/vehiculos", { method: "GET" });
 
     if (!response.ok) {
         await manejarError(response, "No se pudieron obtener los vehículos");
@@ -33,11 +9,10 @@ export async function listarVehiculos() {
 
     return await response.json();
 }
-
+// Función para buscar un vehículo por su ID
 export async function buscarVehiculo(id) {
-    const response = await fetch(`${API_URL}/vehiculos/${id}`, {
+    const response = await fetchAutenticado(`/vehiculos/${id}`, {
         method: "GET",
-        headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -46,11 +21,10 @@ export async function buscarVehiculo(id) {
 
     return await response.json();
 }
-
+// Función para crear un nuevo vehículo
 export async function crearVehiculo(datos) {
-    const response = await fetch(`${API_URL}/vehiculos`, {
+    const response = await fetchAutenticado("/vehiculos", {
         method: "POST",
-        headers: getAuthHeaders(),
         body: JSON.stringify(datos),
     });
 
@@ -60,11 +34,10 @@ export async function crearVehiculo(datos) {
 
     return await response.json();
 }
-
+// Función para modificar un vehículo existente
 export async function modificarVehiculo(id, datos) {
-    const response = await fetch(`${API_URL}/vehiculos/${id}`, {
+    const response = await fetchAutenticado(`/vehiculos/${id}`, {
         method: "PUT",
-        headers: getAuthHeaders(),
         body: JSON.stringify(datos),
     });
 
@@ -74,11 +47,10 @@ export async function modificarVehiculo(id, datos) {
 
     return await response.json();
 }
-
+// Función para eliminar un vehículo por su ID
 export async function eliminarVehiculo(id) {
-    const response = await fetch(`${API_URL}/vehiculos/${id}`, {
+    const response = await fetchAutenticado(`/vehiculos/${id}`, {
         method: "DELETE",
-        headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
