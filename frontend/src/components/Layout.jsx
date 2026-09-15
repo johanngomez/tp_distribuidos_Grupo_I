@@ -40,7 +40,9 @@ function Layout() {
                             </NavLink>
                         </>
                     )}
-                    <button onClick={handleLogout}>Salir</button>
+                    <button className="logout-btn" onClick={handleLogout}>
+                        Salir
+                    </button>
                 </nav>
             </header>
 
