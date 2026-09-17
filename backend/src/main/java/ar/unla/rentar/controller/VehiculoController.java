@@ -3,7 +3,6 @@ package ar.unla.rentar.controller;
 import ar.unla.rentar.dto.VehiculoCreateDTO;
 import ar.unla.rentar.dto.VehiculoResponseDTO;
 import ar.unla.rentar.dto.VehiculoUpdateDTO;
-import ar.unla.rentar.model.Vehiculo;
 import ar.unla.rentar.service.VehiculoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
