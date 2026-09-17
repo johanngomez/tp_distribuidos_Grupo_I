@@ -1,0 +1,21 @@
+type Vehiculo {
+    patente: String!                #El ! significa que es obligatorio 
+    marca: String!
+    modelo: String!
+    anio: Int!
+    color: String
+    tipo: String!
+    precioDiario: Float!
+}
+
+type Query {
+    consultarDisponibilidad(
+        fechaInicio: String!
+        fechaFin: String!
+        tipo: String
+        marca: String
+        modelo: String
+        precioMin: Float
+        precioMax: Float
+    ): [Vehiculo]
+}
