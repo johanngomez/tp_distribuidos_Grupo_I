@@ -1,5 +1,5 @@
 type Vehiculo {
-    patente: String!                #El ! significa que es obligatorio 
+    patente: String!                #el ! significa que es obligatorio 
     marca: String!
     modelo: String!
     anio: Int!
@@ -18,4 +18,15 @@ type Query {
         precioMin: Float
         precioMax: Float
     ): [Vehiculo]
+    historialAlquileres(clienteId: ID!): [HistorialReserva]     #devuelve el historial completo de alquileres de un cliente específico mediante el ID.
+}
+
+type HistorialReserva {             #detalle de un alquiler o reserva pasada, incluyendo finalizados y cancelados.
+    vehiculo: String!
+    patente: String!
+    fechaInicio: String!
+    fechaFin: String!
+    cantidadDias: Int!
+    importeTotal: Float!
+    estado: String!
 }
