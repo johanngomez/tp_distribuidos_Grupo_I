@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import lombok.*;
 
+
 @Entity                                                     //clase representa una tabla en la base de datos
 @Table(name = "cliente")                                   //como lo llamamos en la tabla
 @Data

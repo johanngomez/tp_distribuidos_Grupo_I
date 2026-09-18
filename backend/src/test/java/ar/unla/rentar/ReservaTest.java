@@ -12,6 +12,7 @@ import ar.unla.rentar.repository.ReservaRepository;
 import ar.unla.rentar.repository.VehiculoRepository;
 import ar.unla.rentar.repository.ClienteRepository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @SpringBootTest
-@Transactional 
 class ReservaTest {
 
     @Autowired
@@ -31,6 +32,8 @@ class ReservaTest {
     private VehiculoRepository vehiculoRepository;
     @Autowired
     private ClienteRepository clienteRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
 @Test
@@ -46,6 +49,8 @@ class ReservaTest {
         cliente.setNombre("Carlos");
         cliente.setApellido("Gómez");
         cliente.setEmail("algo21@algo.com");
+        cliente.setFechaNacimiento(LocalDate.of(1990, 5, 15));
+        cliente.setPassword(passwordEncoder.encode("password123"));
 
         // 2. Instanciar Vehículo
         Vehiculo vehiculo = new Vehiculo();

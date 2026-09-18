@@ -6,7 +6,11 @@ import ar.unla.rentar.model.*;
 import ar.unla.rentar.repository.ClienteRepository;
 import ar.unla.rentar.repository.ReservaRepository;
 import ar.unla.rentar.repository.VehiculoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import ar.unla.rentar.dto.ReservaCreateDTO;
+import ar.unla.rentar.dto.ReservaFiltroDTO;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,7 +114,6 @@ public class ReservaService {
         );
     }
 
-        // --- ACTUALIZAR RESERVA ---
     @Transactional
     public ReservaResponseDTO actualizarReserva(Long reservaId, ReservaUpdateDTO dto) {
         Reserva reserva = reservaRepository.findById(reservaId)
@@ -150,6 +153,20 @@ public class ReservaService {
             // 4. Guardar cambios y retornar
             Reserva reservaActualizada = reservaRepository.save(reserva);
             return mapearADTO(reservaActualizada);
+    }
+
+    public List<Reserva> consultarReservas(ReservaFiltroDTO filtro, String emailUsuario) {
+
+        Cliente cliente = clienteRepository.findByEmail(emailUsuario)
+            .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado con email: " + emailUsuario));
+
+        if (!cliente.isEsAdmin()) {
+            return reservaRepository.findByClienteId(cliente.getId());
+        }
+
+
+
+        return reservaRepository.findAll();
     }
 }
 
