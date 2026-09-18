@@ -13,6 +13,7 @@ input FiltroReservaInput {
 
 enum EstadoReserva {
     CONFIRMADA
+    EN_CURSO
     CANCELADA
     FINALIZADA
 }

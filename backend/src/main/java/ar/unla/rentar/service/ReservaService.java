@@ -12,6 +12,7 @@ import ar.unla.rentar.dto.ReservaFiltroDTO;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -160,13 +161,50 @@ public class ReservaService {
         Cliente cliente = clienteRepository.findByEmail(emailUsuario)
             .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado con email: " + emailUsuario));
 
-        if (!cliente.isEsAdmin()) {
-            return reservaRepository.findByClienteId(cliente.getId());
+        Specification<Reserva> spec = (root, query, cb) -> {
+        if (cliente.isEsAdmin()) {
+            return cb.conjunction(); // Sin restricción (1=1)
         }
+        return cb.equal(root.get("cliente").get("id"), cliente.getId());
+    };
 
+    // si no se enviaron filtros desde null mostrar todo 
+    if (filtro == null) {
+        return reservaRepository.findAll(spec);
+    }
 
+    //El cliente es admin y quiere filtrar por un cliente
+    if (cliente.isEsAdmin() && filtro.getClienteId() != null) {
+        spec = spec.and((root, query, cb) -> 
+            cb.equal(root.get("cliente").get("id"), filtro.getClienteId()));
+    }
 
-        return reservaRepository.findAll();
+    //filtrar por id de vehiculo
+    if (filtro.getVehiculoId() != null) {
+        spec = spec.and((root, query, cb) -> 
+            cb.equal(root.get("vehiculo").get("id"), filtro.getVehiculoId()));
+    }
+
+    //filtrar por tipo de vehiculo
+    if (filtro.getTipoVehiculo() != null) {
+        spec = spec.and((root, query, cb) -> 
+            cb.equal(root.get("vehiculo").get("tipoVehiculo"), filtro.getTipoVehiculo()));
+    }
+
+    //filtrar por estado de vehiculo
+    if (filtro.getEstado() != null) {
+        spec = spec.and((root, query, cb) -> 
+            cb.equal(root.get("estado"), filtro.getEstado()));
+    }
+
+    //fitlrar por rango de fechas
+    if (filtro.getFechaInicioDesde() != null && filtro.getFechaInicioHasta() != null) {
+        spec = spec.and((root, query, cb) -> 
+            cb.between(root.get("fechaInicio"), filtro.getFechaInicioDesde(), filtro.getFechaInicioHasta()));
+    }
+
+    return reservaRepository.findAll(spec);
+
     }
 }
 
