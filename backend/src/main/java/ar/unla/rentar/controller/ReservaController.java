@@ -35,4 +35,14 @@ public class ReservaController {
     ReservaResponseDTO nuevaReserva = reservaService.crearReserva(dto);
         return new ResponseEntity<>(nuevaReserva, HttpStatus.CREATED);
     }
+
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelarReserva(@PathVariable Long id) {
+        try {
+            ReservaResponseDTO reservaCancelada = reservaService.cancelarReserva(id);
+            return ResponseEntity.ok(reservaCancelada);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al cancelar la reserva: " + e.getMessage());
+        }
+    }
 }

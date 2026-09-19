@@ -3,7 +3,7 @@ type Query {
     consultarDisponibilidad(
         fechaInicio: String!
         fechaFin: String!
-        tipo: String
+        tipo: TipoVehiculo
         marca: String
         modelo: String
         precioMin: Float
@@ -16,7 +16,7 @@ type Query {
 input FiltroReservaInput {
     clienteId: ID
     vehiculoId: ID
-    tipoVehiculo: TipoVehiculo
+    tipo: TipoVehiculo
     estado: EstadoReserva
     fechaInicioDesde: String
     fechaInicioHasta: String
@@ -68,16 +68,17 @@ type Cliente {
 
 type Vehiculo {
     id: ID!
-    patente: String!                #El ! significa que es obligatorio
+    patente: String!
     marca: String!
     modelo: String!
     anio: Int!
     color: String
     tipo: TipoVehiculo
     precioDiario: Float!
-    estado: EstadoVehiculo!
+    estadoVehiculo: EstadoVehiculo!
     activo: Boolean!
 }
+
 
 type HistorialReserva {             #detalle de un alquiler o reserva pasada, incluyendo finalizados y cancelados.
     vehiculo: String!

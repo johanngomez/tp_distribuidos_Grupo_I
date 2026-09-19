@@ -5,6 +5,8 @@ import ar.unla.rentar.dto.VehiculoResponseDTO;
 import ar.unla.rentar.dto.VehiculoUpdateDTO;
 import ar.unla.rentar.service.VehiculoService;
 import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,14 +39,16 @@ public class VehiculoController {
 
     // Post para crear un nuevo vehículo
     @PostMapping
-    public ResponseEntity<VehiculoResponseDTO> crear(
-            @Valid @RequestBody VehiculoCreateDTO dto) {
-
-        VehiculoResponseDTO nuevoVehiculo = vehiculoService.crear(dto);
-
-        return ResponseEntity
-                .created(URI.create("/vehiculos/" + nuevoVehiculo.getId()))
-                .body(nuevoVehiculo);
+    public ResponseEntity<?> crear(@Valid @RequestBody VehiculoCreateDTO dto) {
+        try {
+            VehiculoResponseDTO nuevoVehiculo = vehiculoService.crear(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoVehiculo);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                             .body("Error al guardar el vehículo.");
+        }
     }
 
     // Put para modificar un vehículo existente
