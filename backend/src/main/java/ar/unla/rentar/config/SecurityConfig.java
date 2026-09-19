@@ -75,7 +75,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/auth/**",
-                    "/error"
+                    "/error",
+                    "/graphql/**",
+                    "/graphiql/**"
                 ).permitAll()
 
                 .requestMatchers(

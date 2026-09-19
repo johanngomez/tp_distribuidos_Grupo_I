@@ -1,5 +1,16 @@
 type Query {
     reservas(filtro: FiltroReservaInput): [Reserva]
+    consultarDisponibilidad(
+        fechaInicio: String!
+        fechaFin: String!
+        tipo: String
+        marca: String
+        modelo: String
+        precioMin: Float
+        precioMax: Float
+    ): [Vehiculo]
+    historialAlquileres(clienteId: ID!): [HistorialReserva]
+    #devuelve el historial completo de alquileres de un cliente específico mediante el ID.
 }
 
 input FiltroReservaInput {
@@ -57,13 +68,23 @@ type Cliente {
 
 type Vehiculo {
     id: ID!
-    patente: String!
+    patente: String!                #El ! significa que es obligatorio
     marca: String!
     modelo: String!
     anio: Int!
     color: String
-    tipoVehiculo: TipoVehiculo
+    tipo: TipoVehiculo
     precioDiario: Float!
-    estadoVehiculo: EstadoVehiculo!
+    estado: EstadoVehiculo!
     activo: Boolean!
+}
+
+type HistorialReserva {             #detalle de un alquiler o reserva pasada, incluyendo finalizados y cancelados.
+    vehiculo: String!
+    patente: String!
+    fechaInicio: String!
+    fechaFin: String!
+    cantidadDias: Int!
+    importeTotal: Float!
+    estado: String!
 }

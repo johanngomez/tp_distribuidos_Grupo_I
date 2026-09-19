@@ -172,7 +172,7 @@
 .input-icon {
   position: relative;
 }
-
+/*icono */
 .input-icon svg {
   position: absolute;
   left: 0.75rem;
@@ -181,8 +181,9 @@
   color: var(--color-ink-soft);
   pointer-events: none;
 }
-
-.input-icon input {
+/*posicionamiento del ícono dentro del input */
+.input-icon input,
+.input-icon select {
   padding-left: 2.5rem;
 }
 

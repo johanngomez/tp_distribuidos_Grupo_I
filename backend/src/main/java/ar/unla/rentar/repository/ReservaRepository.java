@@ -13,6 +13,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpec
     List<Reserva> findByEstado(EstadoReserva estado);
     
     List<Reserva> findByClienteId(Long clienteId);
+    
 
     boolean existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(
         Long vehiculoId,
