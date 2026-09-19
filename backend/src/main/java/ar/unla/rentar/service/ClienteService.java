@@ -81,6 +81,12 @@ public class ClienteService {
         clienteRepository.save(cliente);
     }
 
+    public ClienteResponseDto buscarPorEmail(String email) {                                    //busca el cliente logueado por su email (usado en /me)
+        Cliente cliente = clienteRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con email: " + email));
+        return mapearAResponseDto(cliente);
+    }
+    
     private ClienteResponseDto mapearAResponseDto(Cliente cliente) {                            //método privado (auxiliar)para transformar a Cliente en un DTO de resp.
         ClienteResponseDto dto = new ClienteResponseDto();
         dto.setId(cliente.getId());

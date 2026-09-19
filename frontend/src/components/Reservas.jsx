@@ -2,19 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays } from "lucide-react";
 import { listarReservas } from "../services/reservaGraphQLService";
+import { formatearFecha } from "../utils/dateUtils";
 
-// Formatea una fecha ISO a un string legible en español
-function formatearFecha(fechaIso) {
-    if (!fechaIso) return "-";
-    const fecha = new Date(fechaIso);
-    return fecha.toLocaleString("es-AR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-}
 // Componente principal de la página de reservas, tanto para admin como para cliente
 function Reservas() {
     const navigate = useNavigate();

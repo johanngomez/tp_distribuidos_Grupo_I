@@ -6,6 +6,8 @@ import ar.unla.rentar.dto.ClienteUpdateDto;
 import ar.unla.rentar.service.ClienteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -22,6 +24,14 @@ public class ClienteController {
     @GetMapping                                                                             //endpoint para listar todos los clientes
     public List<ClienteResponseDto> listarTodos() {
         return clienteService.listarTodos();
+    }
+
+    @GetMapping("/me")                                                                      //endpoint para obtener los datos del cliente logueado
+    public ResponseEntity<ClienteResponseDto> obtenerPropioPerfil() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        return ResponseEntity.ok(clienteService.buscarPorEmail(email));
     }
 
     @GetMapping("/{id}")                                                                    //endpoint para buscar un cliente por su ID
@@ -60,4 +70,5 @@ public class ClienteController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 }

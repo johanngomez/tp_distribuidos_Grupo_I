@@ -32,3 +32,28 @@ export async function listarReservas(filtro = {}) {
     const data = await graphqlFetch(QUERY_RESERVAS, { filtro });
     return data.reservas;
 }
+
+// Query GraphQL para el historial de alquileres por cliente
+const QUERY_HISTORIAL_ALQUILERES = `
+    query HistorialAlquileresQuery($clienteId: ID!) {
+        historialAlquileres(clienteId: $clienteId) {
+            vehiculo
+            patente
+            fechaInicio
+            fechaFin
+            cantidadDias
+            importeTotal
+            estado
+        }
+    }
+`;
+
+/**
+ * Obtiene el historial de alquileres para un cliente específico.
+ * ID del cliente obtenido de /me
+   @param {number|string} clienteId - ID del cliente obtenido de /me
+ */
+export async function obtenerHistorialAlquileres(clienteId) {
+    const data = await graphqlFetch(QUERY_HISTORIAL_ALQUILERES, { clienteId });
+    return data.historialAlquileres;
+}
