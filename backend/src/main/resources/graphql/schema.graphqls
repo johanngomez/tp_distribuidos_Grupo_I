@@ -62,7 +62,7 @@ type Vehiculo {
     modelo: String!
     anio: Int!
     color: String
-    tipoVehiculo: TipoVehiculo!
+    tipoVehiculo: TipoVehiculo
     precioDiario: Float!
     estadoVehiculo: EstadoVehiculo!
     activo: Boolean!
