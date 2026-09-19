@@ -108,9 +108,9 @@ function Reservas() {
                                     {reserva.cliente.apellido}
                                 </td>
                             )}
-                            <td>
+                            <td><strong> 
                                 {reserva.vehiculo.marca} {reserva.vehiculo.modelo}
-                            </td>
+                            </strong></td>
                             <td>{reserva.vehiculo.patente}</td>
                             <td>{formatearFecha(reserva.fechaInicio)}</td>
                             <td>{formatearFecha(reserva.fechaFin)}</td>
