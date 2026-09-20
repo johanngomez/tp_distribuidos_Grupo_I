@@ -6,6 +6,7 @@ import { crearReserva } from "../services/reservaService";
 import { fetchAutenticado } from "../services/httpClient";
 import CampoConIcono from "./CampoConIcono";
 import { useMensajeExito } from "../utils/useMensajeExito";
+import { ahoraParaInput } from "../utils/dateUtils";
 
 const TIPOS = ["", "SEDAN", "SUV", "PICKUP", "COUPE", "HATCHBACK"];
 
@@ -124,6 +125,8 @@ function Disponibilidad() {
                             type="datetime-local"
                             value={fechaInicio}
                             onChange={(e) => setFechaInicio(e.target.value)}
+                            min={ahoraParaInput()}
+                            max="2100-12-31T23:59"
                             required
                         />
 
@@ -134,6 +137,8 @@ function Disponibilidad() {
                             type="datetime-local"
                             value={fechaFin}
                             onChange={(e) => setFechaFin(e.target.value)}
+                            min={ahoraParaInput()}
+                            max="2100-12-31T23:59"
                             required
                         />
 

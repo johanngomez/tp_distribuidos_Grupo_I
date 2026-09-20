@@ -290,9 +290,14 @@ function Vehiculos() {
                             icon={Calendar}
                             label="Año"
                             id="anio"
-                            type="number"
+                            type="text"
                             value={anio}
-                            onChange={(e) => setAnio(e.target.value)}
+                            onChange={(e) => {
+                                const valor = e.target.value.replace(/\D/g, "");
+                                if (valor.length <= 4) {
+                                    setAnio(valor);
+                                }
+                            }}
                             required
                         />
 

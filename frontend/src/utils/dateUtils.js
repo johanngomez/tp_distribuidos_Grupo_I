@@ -10,3 +10,13 @@ export function formatearFecha(fechaIso) {
         minute: "2-digit",
     });
 }
+
+// Devuelve la fecha/hora actual en el formato que necesita un
+// input datetime-local (ej: "2026-09-20T14:30"), para usarla
+// como valor mínimo y evitar que se elijan fechas pasadas
+export function ahoraParaInput() {
+    const ahora = new Date();
+    const offset = ahora.getTimezoneOffset() * 60000;
+    const local = new Date(ahora - offset);
+    return local.toISOString().slice(0, 16);
+}
