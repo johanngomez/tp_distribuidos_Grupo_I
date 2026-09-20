@@ -75,7 +75,7 @@ type Vehiculo {
     color: String
     tipo: TipoVehiculo
     precioDiario: Float!
-    estadoVehiculo: EstadoVehiculo!
+    estado: EstadoVehiculo!
     activo: Boolean!
 }
 

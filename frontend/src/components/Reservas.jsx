@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays } from "lucide-react";
 import { listarReservas } from "../services/reservaGraphQLService";
+import { cancelarReserva } from "../services/reservaService";
 import { formatearFecha } from "../utils/dateUtils";
 
 // Componente principal de la página de reservas, tanto para admin como para cliente
@@ -12,6 +13,7 @@ function Reservas() {
     const [reservas, setReservas] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [cancelandoId, setCancelandoId] = useState(null);
 
     // filtros, solo se muestran/usan si es admin
     const [estadoFiltro, setEstadoFiltro] = useState("");
@@ -43,10 +45,33 @@ function Reservas() {
     }
     // Función para manejar el submit del formulario de filtrado
     function handleFiltrar(event) {
-        event.preventDefault();  
+        event.preventDefault();
         cargarReservas({ // Solo aplica el filtro de estado si es admin
             estado: estadoFiltro || null, // Si el filtro está vacío, pasa null para no filtrar por estado
         });
+    }
+
+    // Cancela una reserva propia, con confirmación previa
+    async function handleCancelar(id) {
+        const confirmar = window.confirm(
+            "¿Estás seguro que querés cancelar esta reserva?"
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        setError("");
+        setCancelandoId(id);
+
+        try {
+            await cancelarReserva(id);
+            await cargarReservas();
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setCancelandoId(null);
+        }
     }
 
     if (loading) {
@@ -61,7 +86,7 @@ function Reservas() {
                     ? "Consultá las reservas de todos los clientes."
                     : "Consultá el estado de tus reservas."}
             </p>
-                    
+
             {error && <p className="login-error">{error}</p>}
 
             {esAdmin && (
@@ -97,6 +122,7 @@ function Reservas() {
                         <th>Precio diario</th>
                         <th>Importe total</th>
                         <th>Estado</th>
+                        {!esAdmin && <th>Acciones</th>}
                     </tr>
                 </thead>
                 <tbody>
@@ -108,15 +134,31 @@ function Reservas() {
                                     {reserva.cliente.apellido}
                                 </td>
                             )}
-                            <td><strong> 
-                                {reserva.vehiculo.marca} {reserva.vehiculo.modelo}
-                            </strong></td>
+                            <td>
+                                <strong>
+                                    {reserva.vehiculo.marca} {reserva.vehiculo.modelo}
+                                </strong>
+                            </td>
                             <td>{reserva.vehiculo.patente}</td>
                             <td>{formatearFecha(reserva.fechaInicio)}</td>
                             <td>{formatearFecha(reserva.fechaFin)}</td>
-                            <td>{reserva.precioDiario}</td>
-                            <td>{reserva.importeTotal}</td>
+                            <td>${reserva.precioDiario}</td>
+                            <td>${reserva.importeTotal}</td>
                             <td>{reserva.estado}</td>
+                            {!esAdmin && (
+                                <td>
+                                    {reserva.estado === "CONFIRMADA" && (
+                                        <button
+                                            onClick={() => handleCancelar(reserva.id)}
+                                            disabled={cancelandoId === reserva.id}
+                                        >
+                                            {cancelandoId === reserva.id
+                                                ? "Cancelando..."
+                                                : "Cancelar"}
+                                        </button>
+                                    )}
+                                </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>

@@ -8,6 +8,7 @@ import {
     bajaLogicaCliente,
 } from "../services/clienteService";
 import CampoConIcono from "./CampoConIcono";
+import { useMensajeExito } from "../utils/useMensajeExito";
 
 function Clientes() {
     const navigate = useNavigate();
@@ -29,6 +30,7 @@ function Clientes() {
     const [password, setPassword] = useState("");
     const [guardando, setGuardando] = useState(false);
     const [formError, setFormError] = useState("");
+    const [mensajeExito, mostrarMensajeExito] = useMensajeExito();
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -125,9 +127,11 @@ function Clientes() {
                     password,
                 });
             }
-
+            
+            mostrarMensajeExito(editandoId ? "Cliente modificado con éxito" : "Cliente agregado con éxito");
             limpiarFormulario();
             await cargarClientes();
+
         } catch (error) {
             setFormError(error.message);
         } finally {
@@ -217,7 +221,7 @@ function Clientes() {
                     )}
                 </>
             )}
-
+            {mensajeExito && <p className="mensaje-exito">{mensajeExito}</p>}
             <div className="form-card">
                 <div className="card-header">
                     <span className="icon-circle">

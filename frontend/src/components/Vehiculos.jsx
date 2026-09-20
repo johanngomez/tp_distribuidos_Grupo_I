@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMensajeExito } from "../utils/useMensajeExito";
+
 //importamos iconos de lucide-react
 import {
     IdCard,
@@ -43,6 +45,8 @@ function Vehiculos() {
     const [estado, setEstado] = useState(ESTADOS[0]);
     const [guardando, setGuardando] = useState(false);
     const [formError, setFormError] = useState("");
+    const [mensajeExito, mostrarMensajeExito] = useMensajeExito();
+    
     //ingresar a /vehiculos solo si es admin
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -143,6 +147,9 @@ function Vehiculos() {
                     precioDiario: Number(precioDiario),
                 });
             }
+            mostrarMensajeExito(editandoId ? "Vehículo modificado con éxito" : "Vehículo agregado con éxito");
+            limpiarFormulario();
+            await cargarVehiculos();
 
             limpiarFormulario();
             await cargarVehiculos();
@@ -240,6 +247,7 @@ function Vehiculos() {
                 </>
             )}
 
+            {mensajeExito && <p className="mensaje-exito">{mensajeExito}</p>}
             <div className="form-card">
                 <div className="card-header">
                     <span className="icon-circle">

@@ -357,3 +357,13 @@ table button {
   margin-top: -0.5rem;
   margin-bottom: 1.5rem;
 }
+/*mensaje de éxito */
+.mensaje-exito {
+    color: #1a7a3f;
+    font-size: 0.875rem;
+    background: #E6F4EA;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #1a7a3f;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}

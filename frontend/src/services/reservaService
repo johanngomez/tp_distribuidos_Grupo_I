@@ -1,0 +1,26 @@
+import { fetchAutenticado, manejarError } from "./httpClient";
+
+export async function crearReserva(datos) {
+    const response = await fetchAutenticado("/api/reservas", {
+        method: "POST",
+        body: JSON.stringify(datos),
+    });
+
+    if (!response.ok) {
+        await manejarError(response, "No se pudo crear la reserva");
+    }
+
+    return await response.json();
+}
+
+export async function cancelarReserva(id) {
+    const response = await fetchAutenticado(`/api/reservas/${id}/cancelar`, {
+        method: "PUT",
+    });
+
+    if (!response.ok) {
+        await manejarError(response, "No se pudo cancelar la reserva");
+    }
+
+    return await response.json();
+}

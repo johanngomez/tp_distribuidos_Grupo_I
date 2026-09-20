@@ -81,6 +81,7 @@ public class ReservaService {
         reserva.setFechaInicio(dto.getFechaInicio());
         reserva.setFechaFin(dto.getFechaFin());
         reserva.setEstado(EstadoReserva.CONFIRMADA);
+        reserva.setPrecioDiario(vehiculo.getPrecioDiario());
 
         // 5. Calcular importe total según la duración de la reserva y el precio diario del vehículo
         Double importeTotal = calcularImporteTotal(dto.getFechaInicio(), dto.getFechaFin(), vehiculo.getPrecioDiario());
