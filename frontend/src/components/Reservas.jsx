@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays } from "lucide-react";
 import { listarReservas } from "../services/reservaGraphQLService";
-import { cancelarReserva } from "../services/reservaService";
 import { formatearFecha } from "../utils/dateUtils";
-import { useMensajeExito } from "../utils/useMensajeExito";
+import { cancelarReserva } from "../services/reservaService";
 
 // Componente principal de la página de reservas, tanto para admin como para cliente
 function Reservas() {
@@ -14,7 +13,11 @@ function Reservas() {
     const [reservas, setReservas] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
-    const [cancelandoId, setCancelandoId] = useState(null);
+    const [clienteIdFiltro, setClienteIdFiltro] = useState("");
+    const [vehiculoIdFiltro, setVehiculoIdFiltro] = useState("");
+    const [tipoVehiculoFiltro, setTipoVehiculoFiltro] = useState("");
+    const [fechaDesde, setFechaDesde] = useState("");
+    const [fechaHasta, setFechaHasta] = useState("");
 
     // filtros, solo se muestran/usan si es admin
     const [estadoFiltro, setEstadoFiltro] = useState("");
@@ -46,52 +49,134 @@ function Reservas() {
     }
     // Función para manejar el submit del formulario de filtrado
     function handleFiltrar(event) {
-        event.preventDefault();
-        cargarReservas({ // Solo aplica el filtro de estado si es admin
-            estado: estadoFiltro || null, // Si el filtro está vacío, pasa null para no filtrar por estado
-        });
-    }
+        event.preventDefault();  
+        
+const filtro = {
+        clienteId: esAdmin && clienteIdFiltro ? parseInt(clienteIdFiltro) : null,
+        vehiculoId: vehiculoIdFiltro ? parseInt(vehiculoIdFiltro) : null,
+        tipo: tipoVehiculoFiltro || null, 
+        estado: estadoFiltro || null,            
+        fechaInicioDesde: fechaDesde || null,    
+        fechaInicioHasta: fechaHasta || null   
+    };
 
-    // Cancela una reserva propia, con confirmación previa
-    async function handleCancelar(id) {
-        const confirmar = window.confirm(
-            "¿Estás seguro que querés cancelar esta reserva?"
-        );
+    cargarReservas(filtro);
 
-        if (!confirmar) {
-            return;
-        }
-
-        setError("");
-        setCancelandoId(id);
-
-        try {
-            await cancelarReserva(id);
-            await cargarReservas();
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setCancelandoId(null);
-        }
     }
 
     if (loading) {
         return <p>Cargando reservas...</p>;
     }
 
+    const handleCancelarReserva = async (reservaId) => {
+    const confirmar = window.confirm("¿Estás seguro de que querés cancelar esta reserva?");
+    if (!confirmar) return;
+
+    try {
+        await cancelarReserva(reservaId);
+
+
+        setReservas((prevReservas) =>
+            prevReservas.map((reserva) =>
+                reserva.id === reservaId ? { ...reserva, estado: "CANCELADA" } : reserva
+            )
+        );
+
+        
+        alert("Reserva cancelada con éxito");
+
+    cargarReservas(); //recargar reservas
+
+    } catch (error) {
+        const mensaje = error.response?.data?.message || error.message || "Error al cancelar la reserva.";
+        alert(mensaje);
+    }
+};
+
     return (
-        <div>
+    <div className="filters-card">
+
             <h1>{esAdmin ? "Reservas" : "Mis reservas"}</h1>
             <p className="page-subtitle">
                 {esAdmin
                     ? "Consultá las reservas de todos los clientes."
                     : "Consultá el estado de tus reservas."}
             </p>
-
+                    
             {error && <p className="login-error">{error}</p>}
 
+              <h3>Filtros de Búsqueda</h3>
+
+<div className="filters-grid">
             {esAdmin && (
-                <form onSubmit={handleFiltrar} className="form-card">
+    <div className="form-group">
+        <label htmlFor="clienteIdFiltro">Cliente</label>
+        <select
+            id="clienteIdFiltro"
+            value={clienteIdFiltro}
+            onChange={(e) => setClienteIdFiltro(e.target.value)}
+        >
+            <option value="">Todos los clientes</option>
+            {Array.from(
+                new Map(
+                    reservas
+                        ?.filter((r) => r.cliente)
+                        .map((r) => [r.cliente.id, r.cliente])
+                ).values()
+            ).map((c) => (
+                <option key={c.id} value={c.id}>
+                    {c.nombre} {c.apellido}
+                </option>
+            ))}
+        </select>
+    </div>
+)}
+
+
+<div className="form-group">
+    <label htmlFor="vehiculoIdFiltro">Vehículo</label>
+    <select
+        id="vehiculoIdFiltro"
+        value={vehiculoIdFiltro}
+        onChange={(e) => setVehiculoIdFiltro(e.target.value)}
+    >
+        <option value="">Todos los vehículos</option>
+        {Array.from(
+            new Map(
+                reservas
+                    ?.filter((r) => r.vehiculo)
+                    .map((r) => [r.vehiculo.id, r.vehiculo])
+            ).values()
+        ).map((v) => (
+            <option key={v.id} value={v.id}>
+                {v.marca} {v.modelo}
+            </option>
+        ))}
+    </select>
+    </div>
+
+
+
+
+            <div className="form-group">
+                <label htmlFor="tipoVehiculoFiltro">Tipo de vehículo</label>
+                <select
+                    id="tipoVehiculoFiltro"
+                    value={tipoVehiculoFiltro}
+                    onChange={(e) => setTipoVehiculoFiltro(e.target.value)}
+                >
+                    <option value="">Todos los tipos</option>
+                    <option value="SEDAN">Sedán</option>
+                    <option value="SUV">SUV</option>
+                    <option value="PICKUP">Pickup</option>
+                    <option value="COUPE">Coupé</option>
+                    <option value="HATCHBACK">Hatchback</option>
+                </select>
+            </div>
+
+
+            {esAdmin && (
+                <form onSubmit={handleFiltrar} className="form-group">
                     <div className="form-group">
                         <label htmlFor="estadoFiltro">Filtrar por estado</label>
                         <select
@@ -105,14 +190,49 @@ function Reservas() {
                             <option value="FINALIZADA">Finalizada</option>
                         </select>
                     </div>
-
-                    <div className="form-actions">
-                        <button type="submit">Filtrar</button>
-                    </div>
                 </form>
             )}
 
-            <table>
+<div className="filters-card">
+            <div className="form-group">
+                <label htmlFor="fechaDesde">Fecha desde</label>
+                <input
+                    type="date"
+                    id="fechaDesde"
+                    value={fechaDesde}
+                    onChange={(e) => setFechaDesde(e.target.value)}
+                />
+            </div>
+                        </div>
+
+<div className="filters-card">
+            <div className="form-group">
+                <label htmlFor="fechaHasta">Fecha hasta</label>
+                <input
+                    type="date"
+                    id="fechaHasta"
+                    value={fechaHasta}
+                    onChange={(e) => setFechaHasta(e.target.value)}
+                />
+            </div>
+
+                                <div className="form-actions">
+                        <button type="submit">Filtrar</button>
+                    </div>
+                    </div>
+            </div>
+
+                                                       
+
+
+
+            
+
+                        
+
+
+
+            <table className="tabla-reservas">
                 <thead>
                     <tr>
                         {esAdmin && <th>Cliente</th>}
@@ -123,10 +243,83 @@ function Reservas() {
                         <th>Precio diario</th>
                         <th>Importe total</th>
                         <th>Estado</th>
-                        {!esAdmin && <th>Acciones</th>}
-                    </tr>
-                </thead>
-                <tbody>
+            {!esAdmin && <th>Acciones</th>}
+        </tr>
+    </thead>
+    <tbody>
+        {reservas.map((reserva) => (
+            <tr key={reserva.id}>
+
+                <td>{reserva.cliente ? `${reserva.cliente.nombre} ${reserva.cliente.apellido}` : 'Sin cliente'}</td>
+  <td>
+    {reserva.vehiculo
+      ? `${reserva.vehiculo.marca || ''} ${reserva.vehiculo.modelo || ''}`.trim()
+      : reserva.vehiculoNombre || reserva.modelo || "-"}
+  </td>
+
+  {/* 2. Patente */}
+  <td>{reserva.vehiculo?.patente || reserva.patente || "-"}</td>
+
+  {/* 3. Fecha inicio */}
+<td>
+  {reserva.fechaInicio ? (
+    <>
+      <div>{reserva.fechaInicio.split('T')[0]}</div>
+      <small style={{ color: '#666', fontSize: '0.85em' }}>
+        {reserva.fechaInicio.split('T')[1]?.substring(0, 5)} hs
+      </small>
+    </>
+  ) : (
+    '-'
+  )}
+</td>
+
+  {/* 4. Fecha fin */}
+  <td >
+  {reserva.fechaFin ? (
+    <>
+      <div>{reserva.fechaFin.split('T')[0]}</div>
+      <small style={{ color: '#666', fontSize: '0.85em' }}>
+        {reserva.fechaFin.split('T')[1]?.substring(0, 5)} hs
+      </small>
+    </>
+  ) : (
+    '-'
+  )}
+</td>
+
+  {/* 5. Precio diario */}
+  <td>{reserva.precioDiario || reserva.vehiculo?.precioDiario || "-"}</td>
+
+  {/* 6. Importe total */}
+  <td>{reserva.montoTotal || reserva.importeTotal || "-"}</td>
+
+  {/* 7. Estado */}
+  <td>{reserva.estado || "-"}</td>
+                {!esAdmin && (
+                    <td>
+                        {reserva.estado !== "CANCELADA" && reserva.estado !== "FINALIZADA" ? (
+                            <button
+                                onClick={() => handleCancelarReserva(reserva.id)}
+                                style={{
+                                    backgroundColor: '#e53e3e',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    padding: '6px 12px',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '13px',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                        ) : null} 
+                    </td>
+                )}
+            </tr>
+        ))}
+                    
                     {reservas.map((reserva) => (
                         <tr key={reserva.id}>
                             {esAdmin && (
@@ -135,31 +328,15 @@ function Reservas() {
                                     {reserva.cliente.apellido}
                                 </td>
                             )}
-                            <td>
-                                <strong>
-                                    {reserva.vehiculo.marca} {reserva.vehiculo.modelo}
-                                </strong>
-                            </td>
+                            <td><strong> 
+                                {reserva.vehiculo.marca} {reserva.vehiculo.modelo}
+                            </strong></td>
                             <td>{reserva.vehiculo.patente}</td>
                             <td>{formatearFecha(reserva.fechaInicio)}</td>
                             <td>{formatearFecha(reserva.fechaFin)}</td>
-                            <td>${reserva.precioDiario}</td>
-                            <td>${reserva.importeTotal}</td>
+                            <td>{reserva.precioDiario}</td>
+                            <td>{reserva.importeTotal}</td>
                             <td>{reserva.estado}</td>
-                            {!esAdmin && (
-                                <td>
-                                    {reserva.estado === "CONFIRMADA" && (
-                                        <button
-                                            onClick={() => handleCancelar(reserva.id)}
-                                            disabled={cancelandoId === reserva.id}
-                                        >
-                                            {cancelandoId === reserva.id
-                                                ? "Cancelando..."
-                                                : "Cancelar"}
-                                        </button>
-                                    )}
-                                </td>
-                            )}
                         </tr>
                     ))}
                 </tbody>

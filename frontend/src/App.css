@@ -323,6 +323,20 @@ table button {
   margin-right: 0.4rem;
 }
 
+.tabla-reservas tbody td {
+  white-space: normal;
+  text-align: left;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
 /* botón "X registrados" que muestra/oculta el buscador + la tabla */
 .toggle-listado {
   display: flex;

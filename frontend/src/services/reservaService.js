@@ -16,7 +16,6 @@ export async function crearReserva(datos) {
         throw new Error(errorDelBack);
     }
 
-
     return await response.text();
     } catch (error) {
         console.log("Error atrapado en crearReserva:", error);
