@@ -31,9 +31,15 @@ public class ReservaController {
     }
 
     @PostMapping
-    public ResponseEntity<ReservaResponseDTO> crearReserva(@Valid @RequestBody ReservaCreateDTO dto) {
+    public ResponseEntity<?> crearReserva(@Valid @RequestBody ReservaCreateDTO dto) {
+        try {
     ReservaResponseDTO nuevaReserva = reservaService.crearReserva(dto);
         return new ResponseEntity<>(nuevaReserva, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error al crear la reserva: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}/cancelar")
@@ -41,6 +47,8 @@ public class ReservaController {
         try {
             ReservaResponseDTO reservaCancelada = reservaService.cancelarReserva(id);
             return ResponseEntity.ok(reservaCancelada);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error al cancelar la reserva: " + e.getMessage());
         }
