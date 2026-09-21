@@ -164,7 +164,7 @@ public class ReservaService {
 
         Specification<Reserva> spec = (root, query, cb) -> {
         if (cliente.isEsAdmin()) {
-            return cb.conjunction(); // Sin restricción (1=1)
+            return cb.conjunction();
         }
         return cb.equal(root.get("cliente").get("id"), cliente.getId());
     };

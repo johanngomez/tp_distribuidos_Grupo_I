@@ -233,14 +233,19 @@ function Clientes() {
                 <form onSubmit={handleSubmit}>
                     <div className="form-grid">
                         <CampoConIcono
-                            icon={FileText}
-                            label="Documento"
-                            id="documento"
-                            value={documento}
-                            onChange={(e) => setDocumento(e.target.value)}
-                            disabled={!!editandoId}
-                            required
-                        />
+                        icon={FileText}
+                        label="Documento"
+                        id="documento"
+                        value={documento}
+                        onChange={(e) => {
+                            const valor = e.target.value.replace(/\D/g, "");
+                            if (valor.length <= 8) {
+                                setDocumento(valor);
+                            }
+                        }}
+                        disabled={!!editandoId}
+                        required
+                    />
 
                         <CampoConIcono
                             icon={User}
@@ -276,7 +281,12 @@ function Clientes() {
                             label="Teléfono"
                             id="telefono"
                             value={telefono}
-                            onChange={(e) => setTelefono(e.target.value)}
+                            onChange={(e) => {
+                                const valor = e.target.value.replace(/\D/g, "");
+                                if (valor.length <= 10) {
+                                    setTelefono(valor);
+                                }
+                            }}
                         />
 
                         <CampoConIcono
@@ -286,6 +296,8 @@ function Clientes() {
                             type="date"
                             value={fechaNacimiento}
                             onChange={(e) => setFechaNacimiento(e.target.value)}
+                            min="1900-01-01"
+                            max="2024-12-31"
                         />
 
                         {!editandoId && (
