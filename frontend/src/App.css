@@ -337,6 +337,11 @@ table button {
   margin-bottom: 20px;
 }
 
+.filters-grid button {
+  justify-self: end;
+  grid-column: 3;
+}
+
 /* botón "X registrados" que muestra/oculta el buscador + la tabla */
 .toggle-listado {
   display: flex;

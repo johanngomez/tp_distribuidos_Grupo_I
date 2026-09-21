@@ -216,12 +216,12 @@ const filtro = {
                 />
             </div>
 
-                                <div className="form-actions">
-                        <button type="submit">Filtrar</button>
-                    </div>
                     </div>
             </div>
 
+                                <div className="form-actions">
+                        <button type="submit">Filtrar</button>
+                    </div>
                                                        
 
 
@@ -250,7 +250,9 @@ const filtro = {
         {reservas.map((reserva) => (
             <tr key={reserva.id}>
 
-                <td>{reserva.cliente ? `${reserva.cliente.nombre} ${reserva.cliente.apellido}` : 'Sin cliente'}</td>
+               {esAdmin && (
+        <td>{reserva.cliente ? `${reserva.cliente.nombre} ${reserva.cliente.apellido}` : '-'}</td>
+      )}
   <td>
     {reserva.vehiculo
       ? `${reserva.vehiculo.marca || ''} ${reserva.vehiculo.modelo || ''}`.trim()
