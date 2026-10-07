@@ -15,28 +15,44 @@ class Settings:
 
 def load_settings() -> Settings:
     """Lee la configuración del entorno; los puertos locales son provisorios."""
-    frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173").strip()
+
+    frontend_origin = os.getenv(
+        "FRONTEND_ORIGIN",
+        "http://localhost:5173",
+    ).strip()
+
     if not frontend_origin or frontend_origin == "*":
-        raise ValueError("FRONTEND_ORIGIN debe indicar un origen concreto, no vacío ni '*'")
+        raise ValueError(
+            "FRONTEND_ORIGIN debe indicar un origen concreto, no vacío ni '*'"
+        )
 
     targets = {}
+
     for name, default in (
         ("VEHICLE_GRPC_TARGET", "localhost:50051"),
         ("CUSTOMER_GRPC_TARGET", "localhost:50052"),
         ("RENTAL_GRPC_TARGET", "localhost:50053"),
     ):
         value = os.getenv(name, default).strip()
+
         if not value:
             raise ValueError(f"{name} no puede estar vacío")
+
         targets[name] = value
 
     try:
-        timeout = float(os.getenv("GRPC_TIMEOUT_SECONDS", "5"))
+        timeout = float(
+            os.getenv("GRPC_TIMEOUT_SECONDS", "5")
+        )
     except ValueError as error:
-        raise ValueError("GRPC_TIMEOUT_SECONDS debe ser un número mayor que cero") from error
+        raise ValueError(
+            "GRPC_TIMEOUT_SECONDS debe ser un número mayor que cero"
+        ) from error
 
     if not math.isfinite(timeout) or timeout <= 0:
-        raise ValueError("GRPC_TIMEOUT_SECONDS debe ser un número finito mayor que cero")
+        raise ValueError(
+            "GRPC_TIMEOUT_SECONDS debe ser un número finito mayor que cero"
+        )
 
     return Settings(
         frontend_origin=frontend_origin,
