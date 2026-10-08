@@ -83,12 +83,6 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- XML -->
-		<dependency>
-    		 <groupId>org.springframework.boot</groupId>
-   			 <artifactId>spring-boot-starter-graphql</artifactId>
-		</dependency>
-
 		<!-- =============================== -->
 		<!-- SEGURIDAD / LOGIN -->
 		<!-- =============================== -->
