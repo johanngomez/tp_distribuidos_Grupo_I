@@ -1,8 +1,6 @@
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
-// Ejecuta una query/mutation GraphQL, agregando el token
-// automáticamente. Igual que fetchAutenticado (httpClient.js),
-// si el backend responde 401 limpia la sesión y redirige al login.
+// Ejecuta una query/mutation GraphQL hacia el API Gateway
 export async function graphqlFetch(query, variables = {}) {
     const token = localStorage.getItem("token");
     
@@ -21,6 +19,10 @@ export async function graphqlFetch(query, variables = {}) {
         throw new Error("Sesión expirada");
     }
 
+    if (response.status === 503) {
+        throw new Error("El servicio gRPC no se encuentra disponible momentáneamente.");
+    }
+    
     const json = await response.json();
 
     // GraphQL responde 200 casi siempre, incluso con errores;

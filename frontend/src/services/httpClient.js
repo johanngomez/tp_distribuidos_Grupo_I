@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 // Headers con el token guardado, reutilizado por todos los services
 function getAuthHeaders() {
@@ -27,10 +27,14 @@ async function fetchAutenticado(path, options = {}) {
         throw new Error("Sesión expirada");
     }
 
+    if (response.status === 503) {
+        throw new Error("El servicio gRPC no se encuentra disponible momentáneamente.");
+    }
+
     return response;
 }
 
-// Lee el mensaje de error real del backend, sea que venga como
+// Lee el mensaje de error real del backend o Gateway, sea que venga como
 // JSON (vehículos) o como texto plano (clientes)
 async function manejarError(response, mensajePorDefecto) {
     const contentType = response.headers.get("content-type") || "";
