@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080";
+const API_URL = "http://localhost:8000";
 
 // Ejecuta una query/mutation GraphQL, agregando el token
 // automáticamente. Igual que fetchAutenticado (httpClient.js),

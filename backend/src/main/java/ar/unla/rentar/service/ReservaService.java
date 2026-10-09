@@ -41,9 +41,14 @@ public class ReservaService {
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + id));
     }
 
+     public List<Reserva> obtenerPorClienteId(Long clienteId) {
+        return reservaRepository.findByClienteId(clienteId);
+     }
+
     @Transactional
     public ReservaResponseDTO crearReserva(ReservaCreateDTO dto)
     {
+        // 1. Validar fechas
         if (dto.getFechaFin().isBefore(dto.getFechaInicio()) || dto.getFechaInicio().isEqual(dto.getFechaFin())) {
             throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.");
         }
@@ -51,6 +56,7 @@ public class ReservaService {
             throw new IllegalArgumentException("No se pueden realizar reservas para fechas pasadas.");
         }
 
+        // 2. Obtener y validar Cliente
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + dto.getClienteId()));
         
@@ -66,7 +72,7 @@ public class ReservaService {
             throw new IllegalStateException("El vehículo inactivo no puede utilizarse para nuevos alquileres.");
         }
 
-        // 4. Validar solapamiento de fechas
+        // 4. Ahora que tenemos el vehiculo, validar solapamiento de fechas
         List<EstadoReserva> estadosActivos = List.of(EstadoReserva.CONFIRMADA, EstadoReserva.EN_CURSO); //Buscar solamente reservas que esten activas
         boolean existeReserva = reservaRepository.existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(dto.getVehiculoId(), estadosActivos, dto.getFechaFin(), dto.getFechaInicio());
         
@@ -189,7 +195,7 @@ public class ReservaService {
     //filtrar por tipo de vehiculo
     if (filtro.getTipoVehiculo() != null) {
         spec = spec.and((root, query, cb) -> 
-            cb.equal(root.get("vehiculo").get("tipoVehiculo"), filtro.getTipoVehiculo()));
+            cb.equal(root.get("vehiculo").get("tipo"), filtro.getTipoVehiculo()));
     }
 
     //filtrar por estado de vehiculo

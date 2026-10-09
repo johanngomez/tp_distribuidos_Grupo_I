@@ -6,6 +6,7 @@ option java_multiple_files = true;
 option java_outer_classname = "VehicleProto";
 option java_package = "ar.unla.rentar.grpc.vehicle.v1";
 
+
 // Contrato acordado para el primer flujo Gateway Python ↔ Vehicle Service Java.
 service VehicleService {
   rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);

@@ -1,5 +1,7 @@
 const API_URL = "http://localhost:8080";
 
+
+
 // esto genera un token de acceso y lo devuelve al frontend
 export async function login(email, password) {
     const response = await fetch(`${API_URL}/auth/login`, {

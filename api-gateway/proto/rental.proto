@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ar.unla.rentar.grpc.rental.v1";
+
+package rentar.rental.v1;
+
+import "vehicle.proto";
+
+service RentalService {
+
+    rpc CrearReserva (CrearReservaRequest) returns (ReservaResponse);
+    rpc ConsultarReservas (ConsultarReservasRequest) returns (ConsultarReservasResponse);
+    rpc CancelarReserva (CancelarReservaRequest) returns (CancelarReservaResponse);
+    rpc ConsultarHistorialCliente (ConsultarHistorialClienteRequest) returns (ConsultarHistorialClienteResponse);
+
+}
+
+enum EstadoReserva {
+    SIN_ESPECIFICAR = 0;
+    EN_CURSO = 1;
+    CONFIRMADA = 2;
+    FINALIZADA = 3;
+    CANCELADA = 4;
+}
+
+//request
+
+message CrearReservaRequest {
+    int64 cliente_id = 1;
+    int64 vehiculo_id = 2;
+    string fecha_inicio = 3;
+    string fecha_fin = 4;
+}
+
+//todos los campos son opcionales, si no se envía un campo, no se filtrará por ese campo
+message ConsultarReservasRequest {
+  string email_cliente = 1;
+  int64 cliente_id = 2;
+  int64 vehiculo_id = 3;
+  rentar.vehicle.v1.VehicleType tipo_vehiculo = 4;
+  EstadoReserva estado = 5;
+  string fecha_inicio = 6;
+  string fecha_fin = 7;
+
+}
+
+message CancelarReservaRequest {
+  int64 reserva_id = 1;
+  string cliente_email = 2;
+}
+
+message ConsultarHistorialClienteRequest {
+  int64 cliente_id= 1;
+}
+
+//responses
+
+message ReservaResponse {
+    int64 id = 1;
+    int64 cliente_id = 2;
+    int64 vehiculo_id = 3;
+    string fecha_inicio = 4;
+    string fecha_fin = 5;
+    double precio_diario = 6;
+    double importe_total = 7;
+    EstadoReserva estado = 8;
+}
+
+message ConsultarReservasResponse {
+  repeated ReservaResponse reservas = 1;
+}
+
+message CancelarReservaResponse {
+  bool exito = 1;
+  ReservaResponse reserva = 2;
+}
+
+message HistorialResponse {
+  string vehiculo = 1;
+  string patente = 2;
+  string fecha_inicio = 3;
+  string fecha_fin = 4;
+  int64 cantidad_dias = 5;
+  double importe_total = 6;
+  string estado = 7;
+}
+
+message ConsultarHistorialClienteResponse {
+  repeated HistorialResponse reservas = 1;
+}
+
