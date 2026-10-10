@@ -1,6 +1,7 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import health, auth, vehicles
+from app.routes import auth, customers, health, rentals, vehicles
+from app.graphql.schema import router as graphql_router
 from app.config.settings import load_settings
 
 app = FastAPI(title="Rentar API Gateway")
@@ -19,3 +20,6 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(vehicles.router)
+app.include_router(customers.router)
+app.include_router(rentals.router)
+app.include_router(graphql_router, prefix="/graphql")

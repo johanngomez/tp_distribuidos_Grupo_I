@@ -26,8 +26,7 @@ if _version_not_supported:
 
 
 class VehicleServiceStub:
-    """Contrato acordado para el primer flujo Gateway Python ↔ Vehicle Service Java.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -40,13 +39,56 @@ class VehicleServiceStub:
                 request_serializer=vehicle__pb2.ListVehiclesRequest.SerializeToString,
                 response_deserializer=vehicle__pb2.ListVehiclesResponse.FromString,
                 _registered_method=True)
+        self.CreateVehicle = channel.unary_unary(
+                '/rentar.vehicle.v1.VehicleService/CreateVehicle',
+                request_serializer=vehicle__pb2.CreateVehicleRequest.SerializeToString,
+                response_deserializer=vehicle__pb2.Vehicle.FromString,
+                _registered_method=True)
+        self.UpdateVehicle = channel.unary_unary(
+                '/rentar.vehicle.v1.VehicleService/UpdateVehicle',
+                request_serializer=vehicle__pb2.UpdateVehicleRequest.SerializeToString,
+                response_deserializer=vehicle__pb2.Vehicle.FromString,
+                _registered_method=True)
+        self.GetVehicle = channel.unary_unary(
+                '/rentar.vehicle.v1.VehicleService/GetVehicle',
+                request_serializer=vehicle__pb2.GetVehicleRequest.SerializeToString,
+                response_deserializer=vehicle__pb2.Vehicle.FromString,
+                _registered_method=True)
+        self.DeleteVehicle = channel.unary_unary(
+                '/rentar.vehicle.v1.VehicleService/DeleteVehicle',
+                request_serializer=vehicle__pb2.DeleteVehicleRequest.SerializeToString,
+                response_deserializer=vehicle__pb2.DeleteVehicleResponse.FromString,
+                _registered_method=True)
 
 
 class VehicleServiceServicer:
-    """Contrato acordado para el primer flujo Gateway Python ↔ Vehicle Service Java.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def ListVehicles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CreateVehicle(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def UpdateVehicle(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetVehicle(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteVehicle(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -60,6 +102,26 @@ def add_VehicleServiceServicer_to_server(servicer, server):
                     request_deserializer=vehicle__pb2.ListVehiclesRequest.FromString,
                     response_serializer=vehicle__pb2.ListVehiclesResponse.SerializeToString,
             ),
+            'CreateVehicle': grpc.unary_unary_rpc_method_handler(
+                    servicer.CreateVehicle,
+                    request_deserializer=vehicle__pb2.CreateVehicleRequest.FromString,
+                    response_serializer=vehicle__pb2.Vehicle.SerializeToString,
+            ),
+            'UpdateVehicle': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateVehicle,
+                    request_deserializer=vehicle__pb2.UpdateVehicleRequest.FromString,
+                    response_serializer=vehicle__pb2.Vehicle.SerializeToString,
+            ),
+            'GetVehicle': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetVehicle,
+                    request_deserializer=vehicle__pb2.GetVehicleRequest.FromString,
+                    response_serializer=vehicle__pb2.Vehicle.SerializeToString,
+            ),
+            'DeleteVehicle': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteVehicle,
+                    request_deserializer=vehicle__pb2.DeleteVehicleRequest.FromString,
+                    response_serializer=vehicle__pb2.DeleteVehicleResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'rentar.vehicle.v1.VehicleService', rpc_method_handlers)
@@ -69,8 +131,7 @@ def add_VehicleServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class VehicleService:
-    """Contrato acordado para el primer flujo Gateway Python ↔ Vehicle Service Java.
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def ListVehicles(request,
@@ -89,6 +150,114 @@ class VehicleService:
             '/rentar.vehicle.v1.VehicleService/ListVehicles',
             vehicle__pb2.ListVehiclesRequest.SerializeToString,
             vehicle__pb2.ListVehiclesResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CreateVehicle(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rentar.vehicle.v1.VehicleService/CreateVehicle',
+            vehicle__pb2.CreateVehicleRequest.SerializeToString,
+            vehicle__pb2.Vehicle.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateVehicle(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rentar.vehicle.v1.VehicleService/UpdateVehicle',
+            vehicle__pb2.UpdateVehicleRequest.SerializeToString,
+            vehicle__pb2.Vehicle.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetVehicle(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rentar.vehicle.v1.VehicleService/GetVehicle',
+            vehicle__pb2.GetVehicleRequest.SerializeToString,
+            vehicle__pb2.Vehicle.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DeleteVehicle(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/rentar.vehicle.v1.VehicleService/DeleteVehicle',
+            vehicle__pb2.DeleteVehicleRequest.SerializeToString,
+            vehicle__pb2.DeleteVehicleResponse.FromString,
             options,
             channel_credentials,
             insecure,

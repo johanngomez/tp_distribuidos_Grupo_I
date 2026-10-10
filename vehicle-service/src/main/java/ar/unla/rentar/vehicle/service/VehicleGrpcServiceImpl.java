@@ -66,6 +66,29 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     }
 
     @Override
+    public void updateVehicle(UpdateVehicleRequest request, StreamObserver<Vehicle> responseObserver) {
+        Vehiculo vehiculo = vehiculoRepository.findById(request.getId()).orElse(null);
+
+        if (vehiculo == null) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Vehículo no encontrado con ID: " + request.getId())
+                    .asRuntimeException());
+            return;
+        }
+
+        vehiculo.setPatente(request.getPatente());
+        vehiculo.setMarca(request.getMarca());
+        vehiculo.setModelo(request.getModelo());
+        vehiculo.setAnio(request.getAnio());
+        vehiculo.setColor(request.getColor());
+        vehiculo.setTipo(TipoVehiculo.valueOf(request.getTipo().name()));
+        vehiculo.setPrecioDiario(request.getPrecioDiario());
+
+        responseObserver.onNext(mapToProto(vehiculoRepository.save(vehiculo)));
+        responseObserver.onCompleted();
+    }
+
+    @Override
     public void deleteVehicle(DeleteVehicleRequest request, StreamObserver<DeleteVehicleResponse> responseObserver) {
         Vehiculo vehiculo = vehiculoRepository.findById(request.getId()).orElse(null);
 

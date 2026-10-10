@@ -35,10 +35,40 @@ class CustomerServiceStub:
         Args:
             channel: A grpc.Channel.
         """
+        self.Login = channel.unary_unary(
+                '/CustomerService/Login',
+                request_serializer=customer__pb2.LoginRequest.SerializeToString,
+                response_deserializer=customer__pb2.LoginResponse.FromString,
+                _registered_method=True)
+        self.ListarClientes = channel.unary_unary(
+                '/CustomerService/ListarClientes',
+                request_serializer=customer__pb2.ListarClientesRequest.SerializeToString,
+                response_deserializer=customer__pb2.ListarClientesResponse.FromString,
+                _registered_method=True)
         self.GetCliente = channel.unary_unary(
                 '/CustomerService/GetCliente',
                 request_serializer=customer__pb2.ClienteRequest.SerializeToString,
                 response_deserializer=customer__pb2.ClienteResponse.FromString,
+                _registered_method=True)
+        self.ObtenerClientePorEmail = channel.unary_unary(
+                '/CustomerService/ObtenerClientePorEmail',
+                request_serializer=customer__pb2.ClienteEmailRequest.SerializeToString,
+                response_deserializer=customer__pb2.ClienteResponse.FromString,
+                _registered_method=True)
+        self.CrearCliente = channel.unary_unary(
+                '/CustomerService/CrearCliente',
+                request_serializer=customer__pb2.CrearClienteRequest.SerializeToString,
+                response_deserializer=customer__pb2.ClienteResponse.FromString,
+                _registered_method=True)
+        self.ModificarCliente = channel.unary_unary(
+                '/CustomerService/ModificarCliente',
+                request_serializer=customer__pb2.ModificarClienteRequest.SerializeToString,
+                response_deserializer=customer__pb2.ClienteResponse.FromString,
+                _registered_method=True)
+        self.DarDeBajaCliente = channel.unary_unary(
+                '/CustomerService/DarDeBajaCliente',
+                request_serializer=customer__pb2.DarDeBajaClienteRequest.SerializeToString,
+                response_deserializer=customer__pb2.OperacionClienteResponse.FromString,
                 _registered_method=True)
         self.ValidarCliente = channel.unary_unary(
                 '/CustomerService/ValidarCliente',
@@ -51,7 +81,43 @@ class CustomerServiceServicer:
     """definimos los métodos que el Gateway de Python va a poder llamar
     """
 
+    def Login(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListarClientes(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetCliente(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ObtenerClientePorEmail(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CrearCliente(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ModificarCliente(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DarDeBajaCliente(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -66,10 +132,40 @@ class CustomerServiceServicer:
 
 def add_CustomerServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'Login': grpc.unary_unary_rpc_method_handler(
+                    servicer.Login,
+                    request_deserializer=customer__pb2.LoginRequest.FromString,
+                    response_serializer=customer__pb2.LoginResponse.SerializeToString,
+            ),
+            'ListarClientes': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListarClientes,
+                    request_deserializer=customer__pb2.ListarClientesRequest.FromString,
+                    response_serializer=customer__pb2.ListarClientesResponse.SerializeToString,
+            ),
             'GetCliente': grpc.unary_unary_rpc_method_handler(
                     servicer.GetCliente,
                     request_deserializer=customer__pb2.ClienteRequest.FromString,
                     response_serializer=customer__pb2.ClienteResponse.SerializeToString,
+            ),
+            'ObtenerClientePorEmail': grpc.unary_unary_rpc_method_handler(
+                    servicer.ObtenerClientePorEmail,
+                    request_deserializer=customer__pb2.ClienteEmailRequest.FromString,
+                    response_serializer=customer__pb2.ClienteResponse.SerializeToString,
+            ),
+            'CrearCliente': grpc.unary_unary_rpc_method_handler(
+                    servicer.CrearCliente,
+                    request_deserializer=customer__pb2.CrearClienteRequest.FromString,
+                    response_serializer=customer__pb2.ClienteResponse.SerializeToString,
+            ),
+            'ModificarCliente': grpc.unary_unary_rpc_method_handler(
+                    servicer.ModificarCliente,
+                    request_deserializer=customer__pb2.ModificarClienteRequest.FromString,
+                    response_serializer=customer__pb2.ClienteResponse.SerializeToString,
+            ),
+            'DarDeBajaCliente': grpc.unary_unary_rpc_method_handler(
+                    servicer.DarDeBajaCliente,
+                    request_deserializer=customer__pb2.DarDeBajaClienteRequest.FromString,
+                    response_serializer=customer__pb2.OperacionClienteResponse.SerializeToString,
             ),
             'ValidarCliente': grpc.unary_unary_rpc_method_handler(
                     servicer.ValidarCliente,
@@ -89,6 +185,60 @@ class CustomerService:
     """
 
     @staticmethod
+    def Login(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/CustomerService/Login',
+            customer__pb2.LoginRequest.SerializeToString,
+            customer__pb2.LoginResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListarClientes(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/CustomerService/ListarClientes',
+            customer__pb2.ListarClientesRequest.SerializeToString,
+            customer__pb2.ListarClientesResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
     def GetCliente(request,
             target,
             options=(),
@@ -105,6 +255,114 @@ class CustomerService:
             '/CustomerService/GetCliente',
             customer__pb2.ClienteRequest.SerializeToString,
             customer__pb2.ClienteResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ObtenerClientePorEmail(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/CustomerService/ObtenerClientePorEmail',
+            customer__pb2.ClienteEmailRequest.SerializeToString,
+            customer__pb2.ClienteResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CrearCliente(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/CustomerService/CrearCliente',
+            customer__pb2.CrearClienteRequest.SerializeToString,
+            customer__pb2.ClienteResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ModificarCliente(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/CustomerService/ModificarCliente',
+            customer__pb2.ModificarClienteRequest.SerializeToString,
+            customer__pb2.ClienteResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DarDeBajaCliente(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/CustomerService/DarDeBajaCliente',
+            customer__pb2.DarDeBajaClienteRequest.SerializeToString,
+            customer__pb2.OperacionClienteResponse.FromString,
             options,
             channel_credentials,
             insecure,
