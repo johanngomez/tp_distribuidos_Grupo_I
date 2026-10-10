@@ -57,5 +57,5 @@ export async function eliminarVehiculo(id) {
         await manejarError(response, "No se pudo eliminar el vehículo");
     }
 
-    return await response.json();
+    return null;
 }

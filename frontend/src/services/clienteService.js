@@ -59,5 +59,5 @@ export async function bajaLogicaCliente(id) {
         await manejarError(response, "No se pudo dar de baja el cliente");
     }
 
-    return await response.text();
+    return null;
 }
