@@ -42,6 +42,7 @@ function Reservas() {
             const data = await listarReservas(filtro);
             setReservas(data);
         } catch (error) {
+            console.log("Filtro enviado a listarReservas:", filtro);
             setError(error.message);
         } finally {
             setLoading(false);
@@ -60,7 +61,15 @@ const filtro = {
         fechaInicioHasta: fechaHasta || null   
     };
 
-    cargarReservas(filtro);
+    console.log("Objeto filtro enviado al backend:", filtro);
+
+    try {
+        cargarReservas(filtro);
+    } catch (error) {
+        console.log("Filtro enviado a cargarReservas:", filtro);
+        setError(error.message);
+    }
+
 
     }
 
@@ -106,7 +115,7 @@ const filtro = {
             {error && <p className="login-error">{error}</p>}
 
               <h3>Filtros de Búsqueda</h3>
-
+<form onSubmit={handleFiltrar} className="form-group">
 <div className="filters-grid">
             {esAdmin && (
     <div className="form-group">
@@ -176,7 +185,6 @@ const filtro = {
 
 
             {esAdmin && (
-                <form onSubmit={handleFiltrar} className="form-group">
                     <div className="form-group">
                         <label htmlFor="estadoFiltro">Filtrar por estado</label>
                         <select
@@ -190,8 +198,9 @@ const filtro = {
                             <option value="FINALIZADA">Finalizada</option>
                         </select>
                     </div>
-                </form>
             )}
+
+                    
 
 <div className="filters-card">
             <div className="form-group">
@@ -222,6 +231,7 @@ const filtro = {
                                 <div className="form-actions">
                         <button type="submit">Filtrar</button>
                     </div>
+                    </form>
                                                        
 
 

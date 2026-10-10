@@ -359,7 +359,7 @@ table button {
   font-size: 1rem;
   border-radius: 12px;
 }
-/* cambia cuando el mouse pasa por encima del botón */*/
+/* cambia cuando el mouse pasa por encima del botón */
 .toggle-listado:hover {
   background: #FBF0F1;
   border-color: var(--color-bordo);

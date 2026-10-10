@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+//le dicen a Maven cómo generar el código en Java
+option java_package = "ar.edu.unla.rentar.customer.grpc";
+option java_multiple_files = true;
+
+//definimos los métodos que el Gateway de Python va a poder llamar
+service CustomerService {
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc ListarClientes (ListarClientesRequest) returns (ListarClientesResponse);
+  rpc GetCliente (ClienteRequest) returns (ClienteResponse);
+  rpc ObtenerClientePorEmail (ClienteEmailRequest) returns (ClienteResponse);
+  rpc CrearCliente (CrearClienteRequest) returns (ClienteResponse);
+  rpc ModificarCliente (ModificarClienteRequest) returns (ClienteResponse);
+  rpc DarDeBajaCliente (DarDeBajaClienteRequest) returns (OperacionClienteResponse);
+  rpc ValidarCliente (ClienteRequest) returns (ValidacionResponse);
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+  string tipo = 2;
+  bool es_admin = 3;
+}
+
+message ListarClientesRequest {}
+
+message ListarClientesResponse {
+  repeated ClienteResponse clientes = 1;
+}
+
+//"message" son las variables que viajan por la red
+message ClienteRequest {
+  int64 id_cliente = 1;
+}
+
+message ClienteEmailRequest {
+  string email = 1;
+}
+
+message ClienteResponse {
+  int64 id_cliente = 1;
+  string documento = 2;
+  string nombre = 3;
+  string apellido = 4;
+  string email = 5;
+  string telefono = 6;
+  string fecha_nacimiento = 7;
+  bool activo = 8;
+  bool es_admin = 9;
+}
+
+message CrearClienteRequest {
+  string documento = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string email = 4;
+  string telefono = 5;
+  string fecha_nacimiento = 6;
+  string password = 7;
+}
+
+message ModificarClienteRequest {
+  int64 id_cliente = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string telefono = 4;
+  string fecha_nacimiento = 5;
+}
+
+message DarDeBajaClienteRequest {
+  int64 id_cliente = 1;
+}
+
+message OperacionClienteResponse {
+  bool exito = 1;
+  string mensaje = 2;
+}
+
+message ValidacionResponse {
+  bool existe = 1;
+  bool activo = 2;
+  bool puede_alquilar = 3;
+}
