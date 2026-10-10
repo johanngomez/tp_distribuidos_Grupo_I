@@ -1,5 +1,4 @@
 package ar.unla.rentar.repository;
-
 import ar.unla.rentar.model.Cliente;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

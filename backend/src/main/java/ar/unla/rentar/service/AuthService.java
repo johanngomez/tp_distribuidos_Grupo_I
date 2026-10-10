@@ -7,7 +7,6 @@ import ar.unla.rentar.dto.LoginRequestDTO;
 import ar.unla.rentar.dto.LoginResponseDTO;
 import ar.unla.rentar.model.Cliente;
 import ar.unla.rentar.repository.ClienteRepository;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+//le dicen a Maven cómo generar el código en Java
+option java_package = "ar.edu.unla.rentar.customer.grpc";
+option java_multiple_files = true;
+
+//definimos los métodos que el Gateway de Python va a poder llamar
+service CustomerService {
+  rpc GetCliente (ClienteRequest) returns (ClienteResponse);
+  rpc ValidarCliente (ClienteRequest) returns (ValidacionResponse);
+}
+
+//"message" son las variables que viajan por la red
+message ClienteRequest {
+  int32 id_cliente = 1;
+}
+
+message ClienteResponse {
+  int32 id_cliente = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string dni = 4;
+  bool activo = 5;
+}
+
+message ValidacionResponse {
+  bool existe = 1;
+  bool activo = 2;
+  bool puede_alquilar = 3;
+}
