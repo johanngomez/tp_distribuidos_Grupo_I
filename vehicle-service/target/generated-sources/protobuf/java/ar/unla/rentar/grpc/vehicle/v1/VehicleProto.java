@@ -30,6 +30,21 @@ public final class VehicleProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_rentar_vehicle_v1_CreateVehicleRequest_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_rentar_vehicle_v1_GetVehicleRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_rentar_vehicle_v1_GetVehicleRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_rentar_vehicle_v1_DeleteVehicleRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_rentar_vehicle_v1_DeleteVehicleRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_rentar_vehicle_v1_DeleteVehicleResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_rentar_vehicle_v1_DeleteVehicleResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_rentar_vehicle_v1_Vehicle_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -50,25 +65,32 @@ public final class VehicleProto {
       "nte\030\001 \001(\t\022\r\n\005marca\030\002 \001(\t\022\016\n\006modelo\030\003 \001(\t" +
       "\022\014\n\004anio\030\004 \001(\005\022\022\n\005color\030\005 \001(\tH\000\210\001\001\022,\n\004ti" +
       "po\030\006 \001(\0162\036.rentar.vehicle.v1.VehicleType" +
-      "\022\025\n\rprecio_diario\030\007 \001(\001B\010\n\006_color\"\370\001\n\007Ve" +
-      "hicle\022\n\n\002id\030\001 \001(\003\022\017\n\007patente\030\002 \001(\t\022\r\n\005ma" +
-      "rca\030\003 \001(\t\022\016\n\006modelo\030\004 \001(\t\022\014\n\004anio\030\005 \001(\005\022" +
-      "\022\n\005color\030\006 \001(\tH\000\210\001\001\022,\n\004tipo\030\007 \001(\0162\036.rent" +
-      "ar.vehicle.v1.VehicleType\022\025\n\rprecio_diar" +
-      "io\030\010 \001(\001\0220\n\006estado\030\t \001(\0162 .rentar.vehicl" +
-      "e.v1.VehicleStatus\022\016\n\006activo\030\n \001(\010B\010\n\006_c" +
-      "olor*e\n\013VehicleType\022\034\n\030VEHICLE_TYPE_UNSP" +
-      "ECIFIED\020\000\022\t\n\005SEDAN\020\001\022\007\n\003SUV\020\002\022\n\n\006PICKUP\020" +
-      "\003\022\t\n\005COUPE\020\004\022\r\n\tHATCHBACK\020\005*_\n\rVehicleSt" +
-      "atus\022\036\n\032VEHICLE_STATUS_UNSPECIFIED\020\000\022\016\n\n" +
-      "DISPONIBLE\020\001\022\r\n\tRESERVADO\020\002\022\017\n\013EN_ALQUIL" +
-      "ER\020\0032\307\001\n\016VehicleService\022_\n\014ListVehicles\022" +
-      "&.rentar.vehicle.v1.ListVehiclesRequest\032" +
-      "\'.rentar.vehicle.v1.ListVehiclesResponse" +
-      "\022T\n\rCreateVehicle\022\'.rentar.vehicle.v1.Cr" +
-      "eateVehicleRequest\032\032.rentar.vehicle.v1.V" +
-      "ehicleB0\n\036ar.unla.rentar.grpc.vehicle.v1" +
-      "B\014VehicleProtoP\001b\006proto3"
+      "\022\025\n\rprecio_diario\030\007 \001(\001B\010\n\006_color\"\037\n\021Get" +
+      "VehicleRequest\022\n\n\002id\030\001 \001(\003\"\"\n\024DeleteVehi" +
+      "cleRequest\022\n\n\002id\030\001 \001(\003\"(\n\025DeleteVehicleR" +
+      "esponse\022\017\n\007success\030\001 \001(\010\"\370\001\n\007Vehicle\022\n\n\002" +
+      "id\030\001 \001(\003\022\017\n\007patente\030\002 \001(\t\022\r\n\005marca\030\003 \001(\t" +
+      "\022\016\n\006modelo\030\004 \001(\t\022\014\n\004anio\030\005 \001(\005\022\022\n\005color\030" +
+      "\006 \001(\tH\000\210\001\001\022,\n\004tipo\030\007 \001(\0162\036.rentar.vehicl" +
+      "e.v1.VehicleType\022\025\n\rprecio_diario\030\010 \001(\001\022" +
+      "0\n\006estado\030\t \001(\0162 .rentar.vehicle.v1.Vehi" +
+      "cleStatus\022\016\n\006activo\030\n \001(\010B\010\n\006_color*e\n\013V" +
+      "ehicleType\022\034\n\030VEHICLE_TYPE_UNSPECIFIED\020\000" +
+      "\022\t\n\005SEDAN\020\001\022\007\n\003SUV\020\002\022\n\n\006PICKUP\020\003\022\t\n\005COUP" +
+      "E\020\004\022\r\n\tHATCHBACK\020\005*_\n\rVehicleStatus\022\036\n\032V" +
+      "EHICLE_STATUS_UNSPECIFIED\020\000\022\016\n\nDISPONIBL" +
+      "E\020\001\022\r\n\tRESERVADO\020\002\022\017\n\013EN_ALQUILER\020\0032\373\002\n\016" +
+      "VehicleService\022_\n\014ListVehicles\022&.rentar." +
+      "vehicle.v1.ListVehiclesRequest\032\'.rentar." +
+      "vehicle.v1.ListVehiclesResponse\022T\n\rCreat" +
+      "eVehicle\022\'.rentar.vehicle.v1.CreateVehic" +
+      "leRequest\032\032.rentar.vehicle.v1.Vehicle\022N\n" +
+      "\nGetVehicle\022$.rentar.vehicle.v1.GetVehic" +
+      "leRequest\032\032.rentar.vehicle.v1.Vehicle\022b\n" +
+      "\rDeleteVehicle\022\'.rentar.vehicle.v1.Delet" +
+      "eVehicleRequest\032(.rentar.vehicle.v1.Dele" +
+      "teVehicleResponseB0\n\036ar.unla.rentar.grpc" +
+      ".vehicle.v1B\014VehicleProtoP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -92,8 +114,26 @@ public final class VehicleProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_rentar_vehicle_v1_CreateVehicleRequest_descriptor,
         new java.lang.String[] { "Patente", "Marca", "Modelo", "Anio", "Color", "Tipo", "PrecioDiario", "Color", });
-    internal_static_rentar_vehicle_v1_Vehicle_descriptor =
+    internal_static_rentar_vehicle_v1_GetVehicleRequest_descriptor =
       getDescriptor().getMessageTypes().get(3);
+    internal_static_rentar_vehicle_v1_GetVehicleRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_rentar_vehicle_v1_GetVehicleRequest_descriptor,
+        new java.lang.String[] { "Id", });
+    internal_static_rentar_vehicle_v1_DeleteVehicleRequest_descriptor =
+      getDescriptor().getMessageTypes().get(4);
+    internal_static_rentar_vehicle_v1_DeleteVehicleRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_rentar_vehicle_v1_DeleteVehicleRequest_descriptor,
+        new java.lang.String[] { "Id", });
+    internal_static_rentar_vehicle_v1_DeleteVehicleResponse_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_rentar_vehicle_v1_DeleteVehicleResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_rentar_vehicle_v1_DeleteVehicleResponse_descriptor,
+        new java.lang.String[] { "Success", });
+    internal_static_rentar_vehicle_v1_Vehicle_descriptor =
+      getDescriptor().getMessageTypes().get(6);
     internal_static_rentar_vehicle_v1_Vehicle_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_rentar_vehicle_v1_Vehicle_descriptor,

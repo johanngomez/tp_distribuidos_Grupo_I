@@ -77,6 +77,68 @@ public final class VehicleServiceGrpc {
     return getCreateVehicleMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest,
+      ar.unla.rentar.grpc.vehicle.v1.Vehicle> getGetVehicleMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetVehicle",
+      requestType = ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest.class,
+      responseType = ar.unla.rentar.grpc.vehicle.v1.Vehicle.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest,
+      ar.unla.rentar.grpc.vehicle.v1.Vehicle> getGetVehicleMethod() {
+    io.grpc.MethodDescriptor<ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest, ar.unla.rentar.grpc.vehicle.v1.Vehicle> getGetVehicleMethod;
+    if ((getGetVehicleMethod = VehicleServiceGrpc.getGetVehicleMethod) == null) {
+      synchronized (VehicleServiceGrpc.class) {
+        if ((getGetVehicleMethod = VehicleServiceGrpc.getGetVehicleMethod) == null) {
+          VehicleServiceGrpc.getGetVehicleMethod = getGetVehicleMethod =
+              io.grpc.MethodDescriptor.<ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest, ar.unla.rentar.grpc.vehicle.v1.Vehicle>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetVehicle"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  ar.unla.rentar.grpc.vehicle.v1.Vehicle.getDefaultInstance()))
+              .setSchemaDescriptor(new VehicleServiceMethodDescriptorSupplier("GetVehicle"))
+              .build();
+        }
+      }
+    }
+    return getGetVehicleMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest,
+      ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse> getDeleteVehicleMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "DeleteVehicle",
+      requestType = ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest.class,
+      responseType = ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest,
+      ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse> getDeleteVehicleMethod() {
+    io.grpc.MethodDescriptor<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest, ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse> getDeleteVehicleMethod;
+    if ((getDeleteVehicleMethod = VehicleServiceGrpc.getDeleteVehicleMethod) == null) {
+      synchronized (VehicleServiceGrpc.class) {
+        if ((getDeleteVehicleMethod = VehicleServiceGrpc.getDeleteVehicleMethod) == null) {
+          VehicleServiceGrpc.getDeleteVehicleMethod = getDeleteVehicleMethod =
+              io.grpc.MethodDescriptor.<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest, ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "DeleteVehicle"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new VehicleServiceMethodDescriptorSupplier("DeleteVehicle"))
+              .build();
+        }
+      }
+    }
+    return getDeleteVehicleMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -138,6 +200,20 @@ public final class VehicleServiceGrpc {
         io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehicle> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getCreateVehicleMethod(), responseObserver);
     }
+
+    /**
+     */
+    default void getVehicle(ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest request,
+        io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehicle> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetVehicleMethod(), responseObserver);
+    }
+
+    /**
+     */
+    default void deleteVehicle(ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest request,
+        io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDeleteVehicleMethod(), responseObserver);
+    }
   }
 
   /**
@@ -182,6 +258,22 @@ public final class VehicleServiceGrpc {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getCreateVehicleMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     */
+    public void getVehicle(ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest request,
+        io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehicle> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetVehicleMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
+    public void deleteVehicle(ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest request,
+        io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getDeleteVehicleMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -212,6 +304,20 @@ public final class VehicleServiceGrpc {
     public ar.unla.rentar.grpc.vehicle.v1.Vehicle createVehicle(ar.unla.rentar.grpc.vehicle.v1.CreateVehicleRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getCreateVehicleMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public ar.unla.rentar.grpc.vehicle.v1.Vehicle getVehicle(ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetVehicleMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse deleteVehicle(ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getDeleteVehicleMethod(), getCallOptions(), request);
     }
   }
 
@@ -246,10 +352,28 @@ public final class VehicleServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getCreateVehicleMethod(), getCallOptions()), request);
     }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<ar.unla.rentar.grpc.vehicle.v1.Vehicle> getVehicle(
+        ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetVehicleMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse> deleteVehicle(
+        ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getDeleteVehicleMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_LIST_VEHICLES = 0;
   private static final int METHODID_CREATE_VEHICLE = 1;
+  private static final int METHODID_GET_VEHICLE = 2;
+  private static final int METHODID_DELETE_VEHICLE = 3;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -275,6 +399,14 @@ public final class VehicleServiceGrpc {
         case METHODID_CREATE_VEHICLE:
           serviceImpl.createVehicle((ar.unla.rentar.grpc.vehicle.v1.CreateVehicleRequest) request,
               (io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehicle>) responseObserver);
+          break;
+        case METHODID_GET_VEHICLE:
+          serviceImpl.getVehicle((ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest) request,
+              (io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehicle>) responseObserver);
+          break;
+        case METHODID_DELETE_VEHICLE:
+          serviceImpl.deleteVehicle((ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest) request,
+              (io.grpc.stub.StreamObserver<ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -308,6 +440,20 @@ public final class VehicleServiceGrpc {
               ar.unla.rentar.grpc.vehicle.v1.CreateVehicleRequest,
               ar.unla.rentar.grpc.vehicle.v1.Vehicle>(
                 service, METHODID_CREATE_VEHICLE)))
+        .addMethod(
+          getGetVehicleMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              ar.unla.rentar.grpc.vehicle.v1.GetVehicleRequest,
+              ar.unla.rentar.grpc.vehicle.v1.Vehicle>(
+                service, METHODID_GET_VEHICLE)))
+        .addMethod(
+          getDeleteVehicleMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleRequest,
+              ar.unla.rentar.grpc.vehicle.v1.DeleteVehicleResponse>(
+                service, METHODID_DELETE_VEHICLE)))
         .build();
   }
 
@@ -358,6 +504,8 @@ public final class VehicleServiceGrpc {
               .setSchemaDescriptor(new VehicleServiceFileDescriptorSupplier())
               .addMethod(getListVehiclesMethod())
               .addMethod(getCreateVehicleMethod())
+              .addMethod(getGetVehicleMethod())
+              .addMethod(getDeleteVehicleMethod())
               .build();
         }
       }

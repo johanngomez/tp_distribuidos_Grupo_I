@@ -5,6 +5,7 @@ import ar.unla.rentar.vehicle.model.EstadoVehiculo;
 import ar.unla.rentar.vehicle.model.TipoVehiculo;
 import ar.unla.rentar.vehicle.model.Vehiculo;
 import ar.unla.rentar.vehicle.repository.VehiculoRepository;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +21,10 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     @Override
     public void listVehicles(ListVehiclesRequest request, StreamObserver<ListVehiclesResponse> responseObserver) {
         List<Vehiculo> vehiculos = vehiculoRepository.findAll();
-
         ListVehiclesResponse.Builder responseBuilder = ListVehiclesResponse.newBuilder();
 
         for (Vehiculo v : vehiculos) {
-            Vehicle vehicleProto = Vehicle.newBuilder()
-                    .setId(v.getId())
-                    .setPatente(v.getPatente())
-                    .setMarca(v.getMarca())
-                    .setModelo(v.getModelo())
-                    .setAnio(v.getAnio())
-                    .setColor(v.getColor() != null ? v.getColor() : "")
-                    .setTipo(VehicleType.valueOf(v.getTipo().name()))
-                    .setPrecioDiario(v.getPrecioDiario())
-                    .setEstado(VehicleStatus.valueOf(v.getEstado().name()))
-                    .setActivo(v.getActivo())
-                    .build();
-
-            responseBuilder.addVehicles(vehicleProto);
+            responseBuilder.addVehicles(mapToProto(v));
         }
 
         responseObserver.onNext(responseBuilder.build());
@@ -46,7 +33,6 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
 
     @Override
     public void createVehicle(CreateVehicleRequest request, StreamObserver<Vehicle> responseObserver) {
-        // 1. Mapear request gRPC a Entidad JPA
         Vehiculo vehiculo = new Vehiculo();
         vehiculo.setPatente(request.getPatente());
         vehiculo.setMarca(request.getMarca());
@@ -58,25 +44,62 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         vehiculo.setEstado(EstadoVehiculo.DISPONIBLE);
         vehiculo.setActivo(true);
 
-        // 2. Guardar en MySQL
         Vehiculo guardado = vehiculoRepository.save(vehiculo);
 
-        // 3. Mapear Entidad JPA a respuesta gRPC
-        Vehicle response = Vehicle.newBuilder()
-                .setId(guardado.getId())
-                .setPatente(guardado.getPatente())
-                .setMarca(guardado.getMarca())
-                .setModelo(guardado.getModelo())
-                .setAnio(guardado.getAnio())
-                .setColor(guardado.getColor() != null ? guardado.getColor() : "")
-                .setTipo(VehicleType.valueOf(guardado.getTipo().name()))
-                .setPrecioDiario(guardado.getPrecioDiario())
-                .setEstado(VehicleStatus.valueOf(guardado.getEstado().name()))
-                .setActivo(guardado.getActivo())
+        responseObserver.onNext(mapToProto(guardado));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getVehicle(GetVehicleRequest request, StreamObserver<Vehicle> responseObserver) {
+        Vehiculo vehiculo = vehiculoRepository.findById(request.getId()).orElse(null);
+
+        if (vehiculo == null) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Vehículo no encontrado con ID: " + request.getId())
+                    .asRuntimeException());
+            return;
+        }
+
+        responseObserver.onNext(mapToProto(vehiculo));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void deleteVehicle(DeleteVehicleRequest request, StreamObserver<DeleteVehicleResponse> responseObserver) {
+        Vehiculo vehiculo = vehiculoRepository.findById(request.getId()).orElse(null);
+
+        if (vehiculo == null) {
+            responseObserver.onError(Status.NOT_FOUND
+                    .withDescription("Vehículo no encontrado con ID: " + request.getId())
+                    .asRuntimeException());
+            return;
+        }
+
+        // Borrado lógico
+        vehiculo.setActivo(false);
+        vehiculoRepository.save(vehiculo);
+
+        DeleteVehicleResponse response = DeleteVehicleResponse.newBuilder()
+                .setSuccess(true)
                 .build();
 
-        // 4. Enviar respuesta y finalizar
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    private Vehicle mapToProto(Vehiculo v) {
+        return Vehicle.newBuilder()
+                .setId(v.getId())
+                .setPatente(v.getPatente())
+                .setMarca(v.getMarca())
+                .setModelo(v.getModelo())
+                .setAnio(v.getAnio())
+                .setColor(v.getColor() != null ? v.getColor() : "")
+                .setTipo(VehicleType.valueOf(v.getTipo().name()))
+                .setPrecioDiario(v.getPrecioDiario())
+                .setEstado(VehicleStatus.valueOf(v.getEstado().name()))
+                .setActivo(v.getActivo())
+                .build();
     }
 }

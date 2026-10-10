@@ -9,6 +9,8 @@ option java_package = "ar.unla.rentar.grpc.vehicle.v1";
 service VehicleService {
   rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);
   rpc CreateVehicle(CreateVehicleRequest) returns (Vehicle);
+  rpc GetVehicle(GetVehicleRequest) returns (Vehicle);
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
 }
 
 message ListVehiclesRequest {}
@@ -25,6 +27,18 @@ message CreateVehicleRequest {
   optional string color = 5;
   VehicleType tipo = 6;
   double precio_diario = 7;
+}
+
+message GetVehicleRequest {
+  int64 id = 1;
+}
+
+message DeleteVehicleRequest {
+  int64 id = 1;
+}
+
+message DeleteVehicleResponse {
+  bool success = 1;
 }
 
 enum VehicleType {

@@ -1,4 +1,4 @@
-syntax = "proto3";
+﻿syntax = "proto3";
 
 package rentar.vehicle.v1;
 
@@ -6,9 +6,11 @@ option java_multiple_files = true;
 option java_outer_classname = "VehicleProto";
 option java_package = "ar.unla.rentar.grpc.vehicle.v1";
 
-// Contrato acordado para el primer flujo Gateway Python ↔ Vehicle Service Java.
 service VehicleService {
   rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);
+  rpc CreateVehicle(CreateVehicleRequest) returns (Vehicle);
+  rpc GetVehicle(GetVehicleRequest) returns (Vehicle);
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
 }
 
 message ListVehiclesRequest {}
@@ -17,7 +19,28 @@ message ListVehiclesResponse {
   repeated Vehicle vehicles = 1;
 }
 
-// Valores equivalentes a ar.unla.rentar.model.TipoVehiculo.
+message CreateVehicleRequest {
+  string patente = 1;
+  string marca = 2;
+  string modelo = 3;
+  int32 anio = 4;
+  optional string color = 5;
+  VehicleType tipo = 6;
+  double precio_diario = 7;
+}
+
+message GetVehicleRequest {
+  int64 id = 1;
+}
+
+message DeleteVehicleRequest {
+  int64 id = 1;
+}
+
+message DeleteVehicleResponse {
+  bool success = 1;
+}
+
 enum VehicleType {
   VEHICLE_TYPE_UNSPECIFIED = 0;
   SEDAN = 1;
@@ -27,7 +50,6 @@ enum VehicleType {
   HATCHBACK = 5;
 }
 
-// Valores equivalentes a ar.unla.rentar.model.EstadoVehiculo.
 enum VehicleStatus {
   VEHICLE_STATUS_UNSPECIFIED = 0;
   DISPONIBLE = 1;
@@ -35,7 +57,6 @@ enum VehicleStatus {
   EN_ALQUILER = 3;
 }
 
-// Campos equivalentes a VehiculoResponseDTO del Hito 1.
 message Vehicle {
   int64 id = 1;
   string patente = 2;
