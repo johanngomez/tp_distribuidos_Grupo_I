@@ -85,7 +85,7 @@ class HistoryNode:
     estado: str
 
 
-@strawberry.input
+@strawberry.input(name="FiltroReservaInput")
 class ReservationFilter:
     clienteId: Optional[strawberry.ID] = None
     vehiculoId: Optional[strawberry.ID] = None
@@ -93,6 +93,13 @@ class ReservationFilter:
     estado: Optional[RentalState] = None
     fechaInicioDesde: Optional[str] = None
     fechaInicioHasta: Optional[str] = None
+
+
+def _grpc_date(value: Optional[str]) -> str:
+    """Convierte fechas HTML (YYYY-MM-DD) al formato LocalDateTime del RPC."""
+    if not value:
+        return ""
+    return value if "T" in value else f"{value}T00:00:00"
 
 
 def _clients(info: Info):
@@ -175,8 +182,8 @@ class Query:
             email="" if user.es_admin else user.email,
             customer_id=int(filtro.clienteId) if filtro and filtro.clienteId else 0,
             vehicle_id=int(filtro.vehiculoId) if filtro and filtro.vehiculoId else 0,
-            start_date=filtro.fechaInicioDesde if filtro and filtro.fechaInicioDesde else "",
-            end_date=filtro.fechaInicioHasta if filtro and filtro.fechaInicioHasta else "",
+            start_date=_grpc_date(filtro.fechaInicioDesde if filtro else None),
+            end_date=_grpc_date(filtro.fechaInicioHasta if filtro else None),
         )
         if filtro and filtro.estado:
             reservations = [item for item in reservations if item.estado == filtro.estado.value]

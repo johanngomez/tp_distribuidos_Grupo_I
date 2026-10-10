@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.grpc_clients.errors import GrpcServiceError
 from app.grpc_clients.rental_client import RentalGrpcClient
+from app.grpc_clients.customer_client import CustomerGrpcClient
+from app.grpc_clients.vehicle_client import VehicleGrpcClient
 from app.schemas.rentals import (
     RentalCancellationResponse,
     RentalCreateRequest,
@@ -24,6 +26,16 @@ def _rental_client(request: Request) -> RentalGrpcClient:
         target=settings.rental_grpc_target,
         timeout_seconds=settings.grpc_timeout_seconds,
     )
+
+
+def _customer_client(request: Request) -> CustomerGrpcClient:
+    settings = request.app.state.settings
+    return CustomerGrpcClient(settings.customer_grpc_target, settings.grpc_timeout_seconds)
+
+
+def _vehicle_client(request: Request) -> VehicleGrpcClient:
+    settings = request.app.state.settings
+    return VehicleGrpcClient(settings.vehicle_grpc_target, settings.grpc_timeout_seconds)
 
 
 def _map_error(error: GrpcServiceError) -> HTTPException:
@@ -48,6 +60,17 @@ async def create_rental(
     _user: CurrentUser,
 ) -> RentalResponse:
     try:
+        # El Gateway coordina las validaciones de los dominios antes de crear la reserva.
+        customer = await _customer_client(request).validate_customer(data.clienteId)
+        if not customer.existe:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente inexistente")
+        if not customer.activo or not customer.puede_alquilar:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Cliente inactivo o no habilitado")
+        vehicle = await _vehicle_client(request).get_vehicle(data.vehiculoId)
+        if not vehicle.activo:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Vehículo inactivo")
+        if vehicle.estado != "DISPONIBLE":
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Vehículo no disponible")
         return await _rental_client(request).create_rental(
             customer_id=data.clienteId,
             vehicle_id=data.vehiculoId,

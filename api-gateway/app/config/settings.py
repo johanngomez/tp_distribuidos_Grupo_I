@@ -30,9 +30,7 @@ def load_settings() -> Settings:
 
     for name, default in (
         ("VEHICLE_GRPC_TARGET", "localhost:50051"),
-        # Customer y Rental están temporalmente en el mismo backend Java.
-        # Se separará cuando Customer Service tenga su aplicación independiente.
-        ("CUSTOMER_GRPC_TARGET", "localhost:50053"),
+        ("CUSTOMER_GRPC_TARGET", "localhost:50052"),
         ("RENTAL_GRPC_TARGET", "localhost:50053"),
     ):
         value = os.getenv(name, default).strip()
