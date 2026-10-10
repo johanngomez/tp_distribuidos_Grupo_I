@@ -1,34 +1,62 @@
+"""Operaciones de consulta disponibles para clientes y administradores."""
 type Query {
+    """Devuelve reservas visibles para el usuario autenticado y aplica los filtros opcionales."""
     reservas(filtro: FiltroReservaInput): [Reserva]
+
+    """Consulta vehículos disponibles dentro de un rango y filtros opcionales."""
     consultarDisponibilidad(
+        """Inicio del período en formato ISO-8601: YYYY-MM-DDTHH:MM:SS."""
         fechaInicio: String!
+        """Fin del período en formato ISO-8601: YYYY-MM-DDTHH:MM:SS."""
         fechaFin: String!
+        """Tipo de vehículo requerido."""
         tipo: TipoVehiculo
+        """Marca del vehículo, si se desea filtrar."""
         marca: String
+        """Modelo del vehículo, si se desea filtrar."""
         modelo: String
+        """Precio diario mínimo incluido en el resultado."""
         precioMin: Float
+        """Precio diario máximo incluido en el resultado."""
         precioMax: Float
     ): [Vehiculo]
-    historialAlquileres(clienteId: ID!): [HistorialReserva]
-    #devuelve el historial completo de alquileres de un cliente específico mediante el ID.
+
+    """Devuelve el historial de reservas de un cliente identificado por su ID."""
+    historialAlquileres(
+        """Identificador numérico del cliente."""
+        clienteId: ID!
+    ): [HistorialReserva]
 }
 
+"""Filtros opcionales para consultar reservas."""
 input FiltroReservaInput {
+    """Identificador del cliente."""
     clienteId: ID
+    """Identificador del vehículo."""
     vehiculoId: ID
+    """Tipo de vehículo."""
     tipo: TipoVehiculo
+    """Estado actual de la reserva."""
     estado: EstadoReserva
+    """Fecha y hora de inicio mínima, en formato ISO-8601."""
     fechaInicioDesde: String
+    """Fecha y hora de inicio máxima, en formato ISO-8601."""
     fechaInicioHasta: String
 }
 
+"""Estados posibles de una reserva."""
 enum EstadoReserva {
-    CONFIRMADA
+    """Reserva actualmente en curso."""
     EN_CURSO
+    """Reserva confirmada y pendiente de comenzar."""
+    CONFIRMADA
+    """Reserva cancelada antes de comenzar."""
     CANCELADA
+    """Reserva finalizada."""
     FINALIZADA
 }
 
+"""Tipos de vehículos disponibles en el sistema."""
 enum TipoVehiculo {
     SEDAN
     SUV
@@ -37,23 +65,28 @@ enum TipoVehiculo {
     HATCHBACK
 }
 
+"""Estados operativos posibles de un vehículo."""
 enum EstadoVehiculo {
     DISPONIBLE
     RESERVADO
     EN_ALQUILER
 }
 
+"""Información de una reserva junto con sus entidades relacionadas."""
 type Reserva {
     id: ID!
     cliente: Cliente!
     vehiculo: Vehiculo!
+    """Inicio de la reserva en formato ISO-8601."""
     fechaInicio: String!
+    """Fin de la reserva en formato ISO-8601."""
     fechaFin: String!
     precioDiario: Float!
     importeTotal: Float!
     estado: EstadoReserva!
 }
 
+"""Datos públicos de un cliente."""
 type Cliente {
     id: ID!
     documento: String!
@@ -61,11 +94,13 @@ type Cliente {
     apellido: String!
     email: String!
     telefono: String
+    """Fecha de nacimiento en formato ISO-8601: YYYY-MM-DD."""
     fechaNacimiento: String
     activo: Boolean!
     esAdmin: Boolean!
 }
 
+"""Datos de un vehículo."""
 type Vehiculo {
     id: ID!
     patente: String!
@@ -79,13 +114,15 @@ type Vehiculo {
     activo: Boolean!
 }
 
-
-type HistorialReserva {             #detalle de un alquiler o reserva pasada, incluyendo finalizados y cancelados.
+"""Detalle de una reserva incluida en el historial del cliente."""
+type HistorialReserva {
     vehiculo: String!
     patente: String!
+    """Inicio de la reserva en formato ISO-8601."""
     fechaInicio: String!
+    """Fin de la reserva en formato ISO-8601."""
     fechaFin: String!
     cantidadDias: Int!
     importeTotal: Float!
-    estado: String!
+    estado: EstadoReserva!
 }
