@@ -40,7 +40,7 @@ class CustomerGrpcClient:
                     timeout=self.timeout_seconds,
                 )
                 return CustomerResponse(
-                    id_cliente=response.id_cliente,
+                    id=response.id_cliente,
                     documento=response.documento,
                     nombre=response.nombre,
                     apellido=response.apellido,
@@ -122,7 +122,7 @@ class CustomerGrpcClient:
     @staticmethod
     def _to_response(response) -> CustomerResponse:
         return CustomerResponse(
-            id_cliente=response.id_cliente,
+            id=response.id_cliente,
             documento=response.documento,
             nombre=response.nombre,
             apellido=response.apellido,

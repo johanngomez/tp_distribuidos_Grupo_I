@@ -138,7 +138,7 @@ async def _gather_details(customer_awaitable, vehicle_awaitable):
 
 def _customer_node(customer) -> CustomerNode:
     return CustomerNode(
-        id=strawberry.ID(str(customer.id_cliente)),
+        id=strawberry.ID(str(customer.id)),
         documento=customer.documento,
         nombre=customer.nombre,
         apellido=customer.apellido,
