@@ -1,4 +1,4 @@
-package ar.unla.rentar.service;
+package ar.unla.rentar.grpc;
 
 import ar.edu.unla.rentar.customer.grpc.ClienteEmailRequest;
 import ar.edu.unla.rentar.customer.grpc.ClienteRequest;
@@ -16,6 +16,8 @@ import ar.edu.unla.rentar.customer.grpc.ValidacionResponse;
 import ar.unla.rentar.dto.ClienteCreateDto;
 import ar.unla.rentar.dto.ClienteResponseDto;
 import ar.unla.rentar.dto.ClienteUpdateDto;
+import ar.unla.rentar.service.AuthService;
+import ar.unla.rentar.service.ClienteService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;

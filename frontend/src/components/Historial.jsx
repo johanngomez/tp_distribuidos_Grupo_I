@@ -40,14 +40,19 @@ export default function Historial() {
                 method: "GET",
             });
 
+                   
+
             if (!resMe.ok) {
                 throw new Error("No se pudo obtener el perfil del cliente");
             }
 
             const cliente = await resMe.json();
 
+                      console.log(cliente.id_cliente);
+
             // 2. Pedir su historial con ese id
-            const data = await obtenerHistorialAlquileres(cliente.id);
+            const data = await obtenerHistorialAlquileres(cliente.id_cliente);
+  
             setHistorial(data);
         } catch (error) {
             setError(error.message);
