@@ -21,6 +21,7 @@ class RentalState(Enum):
     FINALIZADA = "FINALIZADA"
 
 
+@strawberry.enum(name="TipoVehiculo")
 class VehicleKind(Enum):
     SEDAN = "SEDAN"
     SUV = "SUV"
