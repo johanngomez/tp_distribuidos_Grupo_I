@@ -4,5 +4,6 @@ PyJWT==2.15.1
 grpcio==1.84.0
 grpcio-tools==1.84.0
 strawberry-graphql[fastapi]==0.287.2
-
+pytest>=8.0.0
+httpx>=0.27.0
 graphql-core==3.2.6
