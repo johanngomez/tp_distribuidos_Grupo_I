@@ -73,10 +73,8 @@ class RentalGrpcClient:
         end_date: str = "",
     ) -> list[RentalResponse]:
         try:
-            print(f"DEBUG list_rentals - Preparando llamada a gRPC con email: {email}", flush=True)
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = rental_pb2_grpc.RentalServiceStub(channel)
-                print(f"DEBUG gRPC RENTAL PAYLOAD -> email: '{email}', customer_id: {customer_id}, vehicle_id: {vehicle_id}, start: '{start_date}', end: '{end_date}'", flush=True)
                 response = await stub.ConsultarReservas(
                     rental_pb2.ConsultarReservasRequest(
                         email_cliente=email,

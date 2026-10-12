@@ -294,12 +294,14 @@ def test_listar_reservas_con_filtros():
     """
     # Pasamos parámetros query string en la petición GET
     params = {
+        "email_cliente": "algo@rentar.com",
         "cliente_id": CLIENTE_TEST_ID if CLIENTE_TEST_ID else 1,
         "vehiculo_id": VEHICULO_TEST_ID if VEHICULO_TEST_ID else 1,
         "fecha_inicio": "2026-12-05T18:00:00",
         "fecha_fin": "2027-12-05T18:00:00"
     }
     response = client.get("/api/reservas", params=params, headers=AUTH_HEADER)
+    print("Respuesta:", response.text)
     
     assert response.status_code in [200]
     if response.status_code == 200:
@@ -315,6 +317,9 @@ def test_cancelar_reserva_exitoso_o_inexistente():
     response = client.put(f"/api/reservas/{rental_id}/cancelar", headers=AUTH_HEADER)
     
     # Puede retornar 404 si no existe, 400/409 si no se puede cancelar, o 200 si se cancela con éxito.
+
+    print("Respuesta:", response.text)
+    
     assert response.status_code in [200, 400, 404]
     data = response.json()
     assert "detail" in data or "success" in data or isinstance(data, dict)

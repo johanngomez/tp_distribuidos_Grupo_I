@@ -94,12 +94,8 @@ async def list_rentals(
     fecha_fin: str = Query(default=""),
 ) -> list[RentalResponse]:
     try:
-        print("--------------------------------------------------", flush=True)
-        print(f"DEBUG VALORES - Email: '{email}', Es Admin?: {user.es_admin if 'user' in locals() else 'N/A'}", flush=True)
-        print("--------------------------------------------------", flush=True)
-        logger.info(f"DEBUG - es_admin: {user.es_admin}, email_usuario: {user.email}")
         return await _rental_client(request).list_rentals(
-            email="" if user.es_admin else user.email,
+            email= user.email,
             customer_id=cliente_id or 0,
             vehicle_id=vehiculo_id or 0,
             start_date=fecha_inicio,
@@ -121,4 +117,16 @@ async def cancel_rental(
             customer_email=user.email,
         )
     except GrpcServiceError as error:
-        raise _map_error(error) from error
+        print("Tipo de error:", type(error))
+        print("Mensaje original:", repr(error))
+        print("Atributos:", vars(error))
+        if "Reserva no encontrada" in error.details:
+            raise HTTPException(
+                status_code=404,
+                detail=error.details
+        )
+        else:
+            raise HTTPException(
+                status_code=502,
+                detail="Error de comunicación con el servicio Rental"
+            )
