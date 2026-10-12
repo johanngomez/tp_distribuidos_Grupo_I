@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FileText, User, Mail, Phone, Calendar, Lock, Plus, Users } from "lucide-react";
 import {
@@ -31,6 +31,7 @@ function Clientes() {
     const [guardando, setGuardando] = useState(false);
     const [formError, setFormError] = useState("");
     const [mensajeExito, mostrarMensajeExito] = useMensajeExito();
+    const formularioRef = useRef(null);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -81,8 +82,11 @@ function Clientes() {
         setApellido(cliente.apellido);
         setEmail(cliente.email);
         setTelefono(cliente.telefono || "");
-        setFechaNacimiento(cliente.fechaNacimiento || "");
+        setFechaNacimiento(cliente.fechaNacimiento || cliente.fecha_nacimiento || "");
         setPassword("");
+        requestAnimationFrame(() => {
+            formularioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
     }
 
     async function handleBaja(id) {
@@ -201,10 +205,11 @@ function Clientes() {
                                     <td>{cliente.telefono}</td>
                                     <td>{cliente.activo ? "Sí" : "No"}</td>
                                     <td>
-                                        <button onClick={() => handleEditar(cliente)}>
+                                        <button type="button" onClick={() => handleEditar(cliente)}>
                                             Editar
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => handleBaja(cliente.id)}
                                             disabled={!cliente.activo}
                                         >
@@ -222,7 +227,7 @@ function Clientes() {
                 </>
             )}
             {mensajeExito && <p className="mensaje-exito">{mensajeExito}</p>}
-            <div className="form-card">
+            <div className="form-card" ref={formularioRef}>
                 <div className="card-header">
                     <span className="icon-circle">
                         <Plus size={16} />

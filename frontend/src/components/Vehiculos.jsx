@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMensajeExito } from "../utils/useMensajeExito";
 
@@ -46,6 +46,7 @@ function Vehiculos() {
     const [guardando, setGuardando] = useState(false);
     const [formError, setFormError] = useState("");
     const [mensajeExito, mostrarMensajeExito] = useMensajeExito();
+    const formularioRef = useRef(null);
     
     //ingresar a /vehiculos solo si es admin
     useEffect(() => {
@@ -101,6 +102,9 @@ function Vehiculos() {
         setTipo(vehiculo.tipo);
         setPrecioDiario(vehiculo.precioDiario);
         setEstado(vehiculo.estado);
+        requestAnimationFrame(() => {
+            formularioRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
     }
     //dar de baja un vehiculo, se confirma la accion y se llama a la funcion eliminarVehiculo
     async function handleBaja(id) {
@@ -128,6 +132,7 @@ function Vehiculos() {
         try {
             if (editandoId) {
                 await modificarVehiculo(editandoId, {
+                    patente,
                     marca,
                     modelo,
                     anio: Number(anio),
@@ -226,10 +231,11 @@ function Vehiculos() {
                                     <td>{vehiculo.estado}</td>
                                     <td>{vehiculo.activo ? "Sí" : "No"}</td>
                                     <td>
-                                        <button onClick={() => handleEditar(vehiculo)}>
+                                        <button type="button" onClick={() => handleEditar(vehiculo)}>
                                             Editar
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => handleBaja(vehiculo.id)}
                                             disabled={!vehiculo.activo}
                                         >
@@ -248,7 +254,7 @@ function Vehiculos() {
             )}
 
             {mensajeExito && <p className="mensaje-exito">{mensajeExito}</p>}
-            <div className="form-card">
+            <div className="form-card" ref={formularioRef}>
                 <div className="card-header">
                     <span className="icon-circle">
                         <Plus size={16} />
