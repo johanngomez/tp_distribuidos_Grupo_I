@@ -55,7 +55,7 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
     public void listarClientes(ListarClientesRequest request,
                                StreamObserver<ListarClientesResponse> responseObserver) {
         List<ClienteResponse> clientes = clienteService.listarTodos().stream()
-                .map(this::toProto)
+            .map(cliente -> toProto(cliente))
                 .toList();
         responseObserver.onNext(ListarClientesResponse.newBuilder().addAllClientes(clientes).build());
         responseObserver.onCompleted();
