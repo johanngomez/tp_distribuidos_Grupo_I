@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays } from "lucide-react";
 import { listarReservas } from "../services/reservaGraphQLService";
-import { formatearFecha } from "../utils/dateUtils";
 import { cancelarReserva } from "../services/reservaService";
 
 // Componente principal de la página de reservas, tanto para admin como para cliente
@@ -332,25 +331,6 @@ const filtro = {
             </tr>
         ))}
                     
-                    {reservas.map((reserva) => (
-                        <tr key={reserva.id}>
-                            {esAdmin && (
-                                <td>
-                                    {reserva.cliente.nombre}{" "}
-                                    {reserva.cliente.apellido}
-                                </td>
-                            )}
-                            <td><strong> 
-                                {reserva.vehiculo.marca} {reserva.vehiculo.modelo}
-                            </strong></td>
-                            <td>{reserva.vehiculo.patente}</td>
-                            <td>{formatearFecha(reserva.fechaInicio)}</td>
-                            <td>{formatearFecha(reserva.fechaFin)}</td>
-                            <td>{reserva.precioDiario}</td>
-                            <td>{reserva.importeTotal}</td>
-                            <td>{reserva.estado}</td>
-                        </tr>
-                    ))}
                 </tbody>
             </table>
 
