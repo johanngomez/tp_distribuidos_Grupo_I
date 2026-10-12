@@ -42,6 +42,7 @@ function Reservas() {
             const data = await listarReservas(filtro);
             setReservas(data);
         } catch (error) {
+            console.log("Filtro enviado a listarReservas:", filtro);
             setError(error.message);
         } finally {
             setLoading(false);
@@ -60,7 +61,15 @@ const filtro = {
         fechaInicioHasta: fechaHasta || null   
     };
 
-    cargarReservas(filtro);
+    console.log("Objeto filtro enviado al backend:", filtro);
+
+    try {
+        cargarReservas(filtro);
+    } catch (error) {
+        console.log("Filtro enviado a cargarReservas:", filtro);
+        setError(error.message);
+    }
+
 
     }
 
@@ -106,7 +115,7 @@ const filtro = {
             {error && <p className="login-error">{error}</p>}
 
               <h3>Filtros de Búsqueda</h3>
-
+<form onSubmit={handleFiltrar} className="form-group">
 <div className="filters-grid">
             {esAdmin && (
     <div className="form-group">
@@ -176,7 +185,6 @@ const filtro = {
 
 
             {esAdmin && (
-                <form onSubmit={handleFiltrar} className="form-group">
                     <div className="form-group">
                         <label htmlFor="estadoFiltro">Filtrar por estado</label>
                         <select
@@ -190,8 +198,9 @@ const filtro = {
                             <option value="FINALIZADA">Finalizada</option>
                         </select>
                     </div>
-                </form>
             )}
+
+                    
 
 <div className="filters-card">
             <div className="form-group">
@@ -222,6 +231,7 @@ const filtro = {
                                 <div className="form-actions">
                         <button type="submit">Filtrar</button>
                     </div>
+                    </form>
                                                        
 
 
@@ -243,102 +253,75 @@ const filtro = {
                         <th>Precio diario</th>
                         <th>Importe total</th>
                         <th>Estado</th>
-            {!esAdmin && <th>Acciones</th>}
-        </tr>
-    </thead>
-    <tbody>
-        {reservas.map((reserva) => (
-            <tr key={reserva.id}>
-
-               {esAdmin && (
-        <td>{reserva.cliente ? `${reserva.cliente.nombre} ${reserva.cliente.apellido}` : '-'}</td>
-      )}
-  <td>
-    {reserva.vehiculo
-      ? `${reserva.vehiculo.marca || ''} ${reserva.vehiculo.modelo || ''}`.trim()
-      : reserva.vehiculoNombre || reserva.modelo || "-"}
-  </td>
-
-  {/* 2. Patente */}
-  <td>{reserva.vehiculo?.patente || reserva.patente || "-"}</td>
-
-  {/* 3. Fecha inicio */}
-<td>
-  {reserva.fechaInicio ? (
-    <>
-      <div>{reserva.fechaInicio.split('T')[0]}</div>
-      <small style={{ color: '#666', fontSize: '0.85em' }}>
-        {reserva.fechaInicio.split('T')[1]?.substring(0, 5)} hs
-      </small>
-    </>
-  ) : (
-    '-'
-  )}
-</td>
-
-  {/* 4. Fecha fin */}
-  <td >
-  {reserva.fechaFin ? (
-    <>
-      <div>{reserva.fechaFin.split('T')[0]}</div>
-      <small style={{ color: '#666', fontSize: '0.85em' }}>
-        {reserva.fechaFin.split('T')[1]?.substring(0, 5)} hs
-      </small>
-    </>
-  ) : (
-    '-'
-  )}
-</td>
-
-  {/* 5. Precio diario */}
-  <td>{reserva.precioDiario || reserva.vehiculo?.precioDiario || "-"}</td>
-
-  {/* 6. Importe total */}
-  <td>{reserva.montoTotal || reserva.importeTotal || "-"}</td>
-
-  {/* 7. Estado */}
-  <td>{reserva.estado || "-"}</td>
-                {!esAdmin && (
-                    <td>
-                        {reserva.estado !== "CANCELADA" && reserva.estado !== "FINALIZADA" ? (
-                            <button
-                                onClick={() => handleCancelarReserva(reserva.id)}
-                                style={{
-                                    backgroundColor: '#e53e3e',
-                                    color: '#ffffff',
-                                    border: 'none',
-                                    padding: '6px 12px',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontSize: '13px',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                Cancelar
-                            </button>
-                        ) : null} 
-                    </td>
-                )}
-            </tr>
-        ))}
-                    
+                        {!esAdmin && <th>Acciones</th>}
+                    </tr>
+                </thead>
+                <tbody>
+                    {/* ÚNICO MAP que dibuja cada reserva correctamente */}
                     {reservas.map((reserva) => (
                         <tr key={reserva.id}>
-                            {esAdmin && (
+                           {esAdmin && (
+                                <td>{reserva.cliente ? `${reserva.cliente.nombre} ${reserva.cliente.apellido}` : '-'}</td>
+                           )}
+                           <td>
+                                {reserva.vehiculo
+                                  ? `${reserva.vehiculo.marca || ''} ${reserva.vehiculo.modelo || ''}`.trim()
+                                  : reserva.vehiculoNombre || reserva.modelo || "-"}
+                           </td>
+
+                           <td>{reserva.vehiculo?.patente || reserva.patente || "-"}</td>
+
+                           <td>
+                              {reserva.fechaInicio ? (
+                                <>
+                                  <div>{reserva.fechaInicio.split('T')[0]}</div>
+                                  <small style={{ color: '#666', fontSize: '0.85em' }}>
+                                    {reserva.fechaInicio.split('T')[1]?.substring(0, 5)} hs
+                                  </small>
+                                </>
+                              ) : (
+                                '-'
+                              )}
+                           </td>
+
+                           <td>
+                              {reserva.fechaFin ? (
+                                <>
+                                  <div>{reserva.fechaFin.split('T')[0]}</div>
+                                  <small style={{ color: '#666', fontSize: '0.85em' }}>
+                                    {reserva.fechaFin.split('T')[1]?.substring(0, 5)} hs
+                                  </small>
+                                </>
+                              ) : (
+                                '-'
+                              )}
+                           </td>
+
+                           <td>{reserva.precioDiario || reserva.vehiculo?.precioDiario || "-"}</td>
+                           <td>{reserva.montoTotal || reserva.importeTotal || "-"}</td>
+                           <td>{reserva.estado || "-"}</td>
+
+                           {!esAdmin && (
                                 <td>
-                                    {reserva.cliente.nombre}{" "}
-                                    {reserva.cliente.apellido}
+                                    {reserva.estado !== "CANCELADA" && reserva.estado !== "FINALIZADA" ? (
+                                        <button
+                                            onClick={() => handleCancelarReserva(reserva.id)}
+                                            style={{
+                                                backgroundColor: '#e53e3e',
+                                                color: '#ffffff',
+                                                border: 'none',
+                                                padding: '6px 12px',
+                                                borderRadius: '6px',
+                                                cursor: 'pointer',
+                                                fontSize: '13px',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    ) : null} 
                                 </td>
-                            )}
-                            <td><strong> 
-                                {reserva.vehiculo.marca} {reserva.vehiculo.modelo}
-                            </strong></td>
-                            <td>{reserva.vehiculo.patente}</td>
-                            <td>{formatearFecha(reserva.fechaInicio)}</td>
-                            <td>{formatearFecha(reserva.fechaFin)}</td>
-                            <td>{reserva.precioDiario}</td>
-                            <td>{reserva.importeTotal}</td>
-                            <td>{reserva.estado}</td>
+                           )}
                         </tr>
                     ))}
                 </tbody>

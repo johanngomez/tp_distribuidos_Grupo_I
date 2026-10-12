@@ -12,3 +12,13 @@ class VehicleResponse(BaseModel):
     precioDiario: float
     estado: str
     activo: bool
+
+
+class VehicleWriteRequest(BaseModel):
+    patente: str
+    marca: str
+    modelo: str
+    anio: int
+    color: str | None = None
+    tipo: str
+    precioDiario: float

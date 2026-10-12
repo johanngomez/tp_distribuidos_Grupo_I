@@ -1,203 +1,447 @@
 # Rentar API Gateway
 
-Aplicación Python del Hito 2, desarrollada en paralelo al backend Java del Hito 1.
+API Gateway del Hito 2 del Trabajo Práctico de Desarrollo de Software en Sistemas Distribuidos de la Universidad Nacional de Lanús.
 
-## Estado actual
+El Gateway está implementado en Python y es el único punto de entrada que utiliza el frontend. Expone REST y GraphQL hacia React y se comunica con los servicios internos mediante gRPC.
 
-`GET /health` responde HTTP 200 con
-`{"status":"ok"}`. Indica que la aplicación HTTP responde; no comprueba
-servicios gRPC ni MySQL.
+## Arquitectura
 
-La aplicación también carga y valida la configuración de los futuros clientes
-gRPC. Leer estas direcciones no abre conexiones a los servicios.
+text
+React + Vite
+      |
+      | REST / GraphQL
+      v
+API Gateway (Python / FastAPI)
+      |
+      | gRPC
+      +-------------------+-------------------+
+      |                   |                   |
+      v                   v                   v
+Vehicle Service      Customer Service     Rental Service
+Java + Spring        Java + Spring        Java + Spring
+      |                   |                   |
+      v                   v                   v
+MySQL                 MySQL                MySQL
 
-Se habilitó CORS para el origen de React, configurable mediante `FRONTEND_ORIGIN`.
 
-`GET /auth/me` valida un JWT y devuelve su email y el permiso `esAdmin`.
-El login sigue en Java: el Gateway todavía no emite tokens.
+El Gateway no accede directamente a las tablas de vehículos, clientes o reservas. Cada servicio interno mantiene la lógica y la persistencia de su dominio.
 
-La integración con gRPC, REST de los dominios y GraphQL queda para
-los siguientes pasos. React sigue usando el backend Java en el puerto 8080.
+El backend Java original del Hito 1 se conserva para no romper la aplicación existente. Los servicios del Hito 2 se ejecutan como aplicaciones independientes.
 
-## Archivos
+## Responsabilidades del Gateway
 
-- `app/main.py`: crea la aplicación FastAPI, configura CORS y registra sus rutas.
-- `app/routes/health.py`: define el endpoint de salud.
-- `app/routes/auth.py`: expone la identidad del token en `/auth/me`.
-- `app/security/jwt.py`: valida firma HS256, emisor, fechas y claims del JWT.
-- `app/security/dependencies.py`: exige un token válido y ofrece un control de
-  administrador reutilizable para las futuras rutas.
-- `app/config/settings.py`: lee el origen de React, direcciones gRPC y el tiempo de espera desde
-  variables de entorno; `main.py` las guarda en `app.state.settings`.
-- Los archivos `__init__.py` identifican los paquetes Python.
-- `requirements.txt`: declara las versiones de FastAPI, Uvicorn y PyJWT probadas
-  con Python 3.13.15. Sus dependencias transitivas no están fijadas.
-- `.gitignore`: excluye el entorno virtual, cachés y el archivo `.env`.
+- Recibir solicitudes REST y GraphQL desde React.
+- Validar JWT, roles y permisos.
+- Mantener los contratos públicos utilizados por el frontend.
+- Seleccionar el servicio interno correspondiente.
+- Convertir solicitudes HTTP/GraphQL en mensajes gRPC.
+- Convertir respuestas gRPC en respuestas HTTP/GraphQL.
+- Traducir errores gRPC a códigos HTTP apropiados.
+- Coordinar operaciones que involucran varios servicios.
+- Aplicar CORS para el origen del frontend.
 
-FastAPI define la API HTTP. Uvicorn es el servidor que ejecuta la aplicación.
-PyJWT verifica la firma y el contenido del token; no accede a MySQL.
+En la creación de una reserva el Gateway coordina este flujo:
 
-## JWT: aceptar tokens del login Java
+text
+POST /api/reservas
+      |
+      +--> Customer Service: validar cliente
+      |
+      +--> Vehicle Service: verificar existencia, estado y disponibilidad
+      |
+      +--> Rental Service: crear reserva
 
-El Gateway valida el contrato observado en `AuthService.java` y `JwtConfig.java`:
-algoritmo HS256, emisor `rentar`, sujeto `sub` con el email, fecha de emisión `iat`,
-vencimiento `exp` y booleano `esAdmin`. Java emite tokens con dos horas de duración.
-El Gateway verifica el vencimiento recibido y no lo renueva.
 
-Para verificar la firma, ambos procesos deben tener exactamente el mismo
-`JWT_SECRET`, interpretado como bytes UTF-8 (sin decodificar Base64). No guardes
-la clave ni tokens en el repositorio. La configuración oculta el secreto al imprimirse.
+## Tecnologías
 
-Si la terminal del Gateway todavía no tiene la variable, antes de iniciarlo
-definí `JWT_SECRET` con el mismo valor que usa tu backend Java. Este comando
-contiene un marcador que debés reemplazar localmente:
+- Python 3.13+
+- FastAPI
+- Uvicorn
+- grpcio
+- grpcio-tools
+- Strawberry GraphQL
+- PyJWT
+- Java 17 para los servicios internos
+- Spring Boot
+- MySQL
 
-```powershell
-$env:JWT_SECRET = "REEMPLAZAR_POR_EL_MISMO_SECRETO_DE_JAVA"
-```
+## Estructura
 
-Reiniciá el Gateway después de configurar la variable. Si falta la clave,
-`/health` sigue disponible y una solicitud con Bearer a `/auth/me` devuelve
-503: autenticación no configurada. No se usa una clave predeterminada.
+text
+api-gateway/
+├── app/
+│   ├── main.py
+│   ├── config/settings.py
+│   ├── generated/                 # stubs Python generados desde .proto
+│   ├── graphql/schema.py
+│   ├── grpc_clients/
+│   │   ├── customer_client.py
+│   │   ├── rental_client.py
+│   │   ├── vehicle_client.py
+│   │   └── errors.py
+│   ├── routes/
+│   │   ├── auth.py
+│   │   ├── customers.py
+│   │   ├── health.py
+│   │   ├── rentals.py
+│   │   └── vehicles.py
+│   ├── schemas/                    # modelos públicos REST
+│   └── security/                   # JWT y dependencias de autorización
+├── proto/
+│   ├── customer.proto
+│   ├── rental.proto
+│   └── vehicle.proto
+├── scripts/generate_stubs.ps1
+├── tests/test_security.py
+├── requirements.txt
+└── README.md
 
-### Probar desde la documentación interactiva
 
-1. Abrí http://127.0.0.1:8000/docs.
-2. Probá `GET /auth/me` sin autorizar: debe devolver 401.
-3. Obtené un token vigente desde el login Java existente (`POST /auth/login`
-   con JSON que contenga `email` y `password`). También podés usar el token de
-   una sesión de React: herramientas del navegador, Application/Aplicación,
-   Local Storage del frontend, campo `token`.
-4. En `/docs`, pulsá **Authorize** y pegá solamente el token, sin `Bearer`.
-5. Volvé a ejecutar `GET /auth/me`: debe responder 200 con `email` y `esAdmin`.
+Cada cliente gRPC es independiente. Las rutas no acceden a repositorios Java ni a MySQL.
 
-Swagger agrega el encabezado `Authorization: Bearer <token>` automáticamente.
-Un token inválido, vencido o ausente devuelve 401 y `WWW-Authenticate: Bearer`.
-El control `require_admin` devuelve 403 para un usuario válido sin permiso
-de administrador; aún no hay rutas de negocio que lo utilicen.
+## Requisitos previos
 
-`/auth/me` devuelve únicamente identidad declarada en un token verificado.
-No reemplaza `/api/clientes/me`, que devuelve un perfil consultado en el servicio
-de clientes. Tampoco comprueba cambios de rol o bajas de clientes posteriores
-a la emisión del token: esa integración se acordará con Customer Service.
+- Python 3.13 o compatible.
+- Java JDK 17.
+- Maven 3.9 o compatible.
+- MySQL 8.
+- Node.js y npm para ejecutar el frontend.
 
-### Pruebas de seguridad
+MySQL debe estar iniciado antes de ejecutar los servicios Java. Las bases utilizadas son:
 
-Desde `api-gateway/`:
+text
+rentar              clientes y reservas
+rentar_vehiculos    vehículos
 
-```powershell
-.\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
-```
 
-Las pruebas usan una clave ficticia y un servidor HTTP local temporal en un puerto
-libre. Cubren tokens de cliente y administrador, firma incorrecta, algoritmo no
-permitido, vencimiento, emisor incorrecto, claims ausentes o inválidos, ausencia
-del secreto y acceso público a `/health`. No arrancan Java ni acceden a MySQL.
-Los tokens se firman con la biblioteca estándar siguiendo el formato Java;
-la prueba con un token realmente emitido por Java se realiza por separado.
+Si todavía no existen, crearlas desde MySQL:
 
-## Configuración de servicios internos
+sql
+CREATE DATABASE rentar;
+CREATE DATABASE rentar_vehiculos;
 
-Los valores predeterminados son ejemplos locales, pendientes de acuerdo con
-los responsables de los servicios Java:
 
-| Variable | Valor predeterminado | Uso futuro |
-|---|---|---|
-| `VEHICLE_GRPC_TARGET` | `localhost:50051` | Servicio de vehículos |
-| `CUSTOMER_GRPC_TARGET` | `localhost:50052` | Servicio de clientes |
-| `RENTAL_GRPC_TARGET` | `localhost:50053` | Servicio de reservas |
-| `GRPC_TIMEOUT_SECONDS` | `5` | Máximo de segundos por llamada gRPC |
+## Instalación del Gateway
 
-Una variable de entorno permite cambiar un valor sin editar código. Por ejemplo,
-en la misma terminal PowerShell donde se iniciará el Gateway:
+Desde la raíz del repositorio:
 
-```powershell
-$env:VEHICLE_GRPC_TARGET = "localhost:50061"
-$env:GRPC_TIMEOUT_SECONDS = "3"
-```
-
-Si no definís variables, se usan los valores de la tabla. No se carga un archivo
-`.env` automáticamente. Reiniciá el Gateway después de cambiar las variables.
-Las direcciones no pueden estar vacías y el tiempo debe ser finito y mayor que cero;
-si no se cumplen esas condiciones, el arranque informa el error.
-
-Para ver la configuración desde `api-gateway/`, sin conectar ningún servicio:
-
-```powershell
-.\.venv\Scripts\python.exe -c "from app.config.settings import load_settings; print(load_settings())"
-```
-
-## CORS: permitir solicitudes desde React
-
-El navegador identifica un origen por su protocolo, host y puerto. React en
-`http://localhost:5173` y el Gateway en `http://127.0.0.1:8000` tienen orígenes
-distintos. CORS indica al navegador desde qué origen puede leerse la respuesta.
-No sustituye la autenticación ni impide llamadas desde otros clientes HTTP.
-
-`FRONTEND_ORIGIN` vale `http://localhost:5173` por defecto. Para cambiarlo,
-definí esta variable antes de iniciar el Gateway en la misma terminal:
-
-```powershell
-$env:FRONTEND_ORIGIN = "http://localhost:5173"
-```
-
-Usá un origen exacto, sin ruta ni barra final. `http://127.0.0.1:5173` es un
-origen diferente de `http://localhost:5173`. No se permiten valores vacíos ni `*`.
-
-Se permiten los métodos GET, POST, PUT, DELETE y OPTIONS, y los encabezados
-`Content-Type` y `Authorization`. No se habilitan credenciales mediante cookies:
-React envía el JWT explícitamente en `Authorization`, que está permitido.
-El middleware también responde las consultas previas OPTIONS (preflight)
-que realiza el navegador antes de ciertas solicitudes.
-
-Para comprobar CORS con el Gateway iniciado, pegá cada comando en una sola línea:
-
-```powershell
-$corsResponse = Invoke-WebRequest -UseBasicParsing -Method Options -Uri http://127.0.0.1:8000/health -Headers @{Origin="http://localhost:5173"; "Access-Control-Request-Method"="GET"; "Access-Control-Request-Headers"="authorization,content-type"}
-$corsResponse.StatusCode
-$corsResponse.Headers["Access-Control-Allow-Origin"]
-```
-
-Se espera `200` y `http://localhost:5173`. La prueba OPTIONS comprueba el permiso
-del navegador; no ejecuta una operación de negocio. Abrir `/health` directamente
-en una pestaña no prueba CORS.
-
-## Preparación del entorno (PowerShell)
-
-Desde la raíz del repositorio, cuando se acuerde realizar la instalación:
-
-```powershell
+powershell
 cd api-gateway
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
 
-El entorno virtual mantiene las dependencias de este proyecto separadas
-de las del Python global. No hace falta activar el entorno para usar estos comandos.
 
-## Ejecutar
+No es necesario activar el entorno virtual si se utiliza directamente .\.venv\Scripts\python.exe.
 
-Desde `api-gateway/`:
+## Configuración
 
-```powershell
+El Gateway utiliza variables de entorno:
+
+| Variable | Valor predeterminado | Uso |
+|---|---|---|
+| FRONTEND_ORIGIN | http://localhost:5173 | Origen permitido por CORS |
+| VEHICLE_GRPC_TARGET | localhost:50051 | Vehicle Service |
+| CUSTOMER_GRPC_TARGET | localhost:50052 | Customer Service |
+| RENTAL_GRPC_TARGET | localhost:50053 | Rental Service |
+| GRPC_TIMEOUT_SECONDS | 5 | Tiempo máximo de cada llamada gRPC |
+| JWT_SECRET | sin valor predeterminado | Clave para verificar JWT |
+
+JWT_SECRET debe coincidir con la clave utilizada por Customer Service y por el backend Java que emite los tokens. No guardar claves ni tokens en el repositorio.
+
+Para consultar la configuración sin conectarse a los servicios:
+
+powershell
+.\.venv\Scripts\python.exe -c "from app.config.settings import load_settings; print(load_settings())"
+
+
+## Ejecución completa en Windows
+
+Cada proceso debe ejecutarse en una terminal diferente. MySQL debe estar iniciado previamente.
+
+### 1. Vehicle Service
+
+powershell
+cd vehicle-service
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:mysql://localhost:3306/rentar_vehiculos --spring.datasource.username=root --spring.datasource.password=TU_CLAVE_MYSQL"
+
+
+Escucha gRPC en localhost:50051.
+
+### 2. Customer Service
+
+powershell
+cd customer-service
+$env:DB_PORT="3306"
+$env:DB_NAME="rentar"
+$env:DB_USER="root"
+$env:DB_PASSWORD="TU_CLAVE_MYSQL"
+$env:JWT_SECRET="RentarClaveSecreta2026ParaJWT123456789"
+mvn spring-boot:run
+
+
+Escucha gRPC en localhost:50052.
+
+### 3. Rental Service
+
+powershell
+cd rental-service
+$env:DB_PORT="3306"
+$env:DB_NAME="rentar"
+$env:DB_USER="root"
+$env:DB_PASSWORD="TU_CLAVE_MYSQL"
+$env:CUSTOMER_GRPC_TARGET="localhost:50052"
+$env:VEHICLE_GRPC_TARGET="localhost:50051"
+mvn spring-boot:run
+
+
+Escucha gRPC en localhost:50053.
+
+### 4. API Gateway
+
+powershell
+cd api-gateway
+$env:JWT_SECRET="RentarClaveSecreta2026ParaJWT123456789"
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
 
-`app.main:app` identifica la variable `app` del módulo `app/main.py`.
-`--reload` reinicia el servidor cuando cambia el código y se usa para desarrollo.
 
-## Probar
+Expone REST y GraphQL en http://127.0.0.1:8000.
 
-Con el servidor iniciado, abrir en el navegador:
+### 5. Frontend
 
-- Salud: http://127.0.0.1:8000/health
-- Documentación interactiva: http://127.0.0.1:8000/docs
+powershell
+cd frontend
+npm install
+npm run dev
 
-O ejecutar desde otra terminal PowerShell:
 
-```powershell
+Vite normalmente publica la aplicación en http://localhost:5173.
+
+## Verificación rápida
+
+Comprobar el estado del Gateway:
+
+powershell
 Invoke-RestMethod http://127.0.0.1:8000/health
-```
 
-La respuesta debe contener `status` con valor `ok`.
-Detener el servidor con `Ctrl+C`.
+
+La respuesta esperada es:
+
+json
+{"status":"ok"}
+
+
+Comprobar los puertos:
+
+powershell
+netstat -ano | findstr ":50051 :50052 :50053 :8000"
+
+
+La ruta /health solo comprueba que el proceso HTTP del Gateway responde. Las operaciones de negocio también requieren que los servicios gRPC y MySQL estén activos.
+
+## REST
+
+La documentación interactiva está disponible en:
+
+text
+http://127.0.0.1:8000/docs
+
+
+Rutas principales:
+
+| Método | Ruta | Servicio interno |
+|---|---|---|
+| POST | /auth/login | Customer Service |
+| GET | /auth/me | Validación local del JWT |
+| GET | /api/vehiculos | Vehicle Service |
+| POST | /api/vehiculos | Vehicle Service |
+| PUT | /api/vehiculos/{id} | Vehicle Service |
+| DELETE | /api/vehiculos/{id} | Vehicle Service |
+| GET | /api/clientes | Customer Service |
+| GET | /api/clientes/me | Customer Service |
+| POST | /api/clientes | Customer Service |
+| PUT | /api/clientes/{id} | Customer Service |
+| DELETE | /api/clientes/{id} | Customer Service |
+| POST | /api/reservas | Customer + Vehicle + Rental |
+| GET | /api/reservas | Rental Service |
+| PUT | /api/reservas/{id}/cancelar | Rental Service |
+
+Las rutas protegidas esperan:
+
+text
+Authorization: Bearer <JWT>
+
+
+La creación, modificación y baja de vehículos requieren permisos de administrador. Las respuestas de disponibilidad, validación o caída de un servicio se traducen a códigos HTTP como 400, 401, 403, 404, 409, 502 y 503, según corresponda.
+
+Para crear una reserva, las fechas deben enviarse en formato ISO-8601:
+
+json
+{
+  "clienteId": 1,
+  "vehiculoId": 1,
+  "fechaInicio": "2026-10-10T00:00:00",
+  "fechaFin": "2026-10-15T00:00:00"
+}
+
+
+## GraphQL
+
+El endpoint GraphQL es:
+
+text
+http://127.0.0.1:8000/graphql
+
+
+El schema mantiene el tipo público FiltroReservaInput utilizado por el frontend.
+
+Ejemplo de consulta de reservas:
+
+graphql
+query($filtro: FiltroReservaInput) {
+  reservas(filtro: $filtro) {
+    id
+    fechaInicio
+    fechaFin
+    precioDiario
+    importeTotal
+    estado
+    cliente { id nombre apellido }
+    vehiculo { id patente marca modelo }
+  }
+}
+
+
+Variables de ejemplo:
+
+json
+{
+  "filtro": {
+    "fechaInicioDesde": "2026-10-10",
+    "fechaInicioHasta": "2026-10-31"
+  }
+}
+
+
+El Gateway convierte automáticamente esas fechas al formato LocalDateTime requerido por Rental Service. GraphQL también expone consultas de disponibilidad e historial.
+
+## Login y JWT
+
+POST /auth/login envía las credenciales al Customer Service mediante gRPC. El Gateway devuelve el token emitido por el servicio.
+
+El Gateway verifica localmente:
+
+- firma HS256;
+- emisor rentar;
+- sujeto con el email;
+- fechas iat y exp;
+- claim esAdmin.
+
+Para probar desde Swagger:
+
+1. Ejecutar POST /auth/login.
+2. Copiar el token recibido.
+3. Pulsar **Authorize**.
+4. Pegar el token sin escribir manualmente Bearer.
+5. Ejecutar las rutas protegidas.
+
+## CORS
+
+El origen predeterminado de React es http://localhost:5173.
+
+Para cambiarlo:
+
+powershell
+$env:FRONTEND_ORIGIN="http://localhost:5173"
+
+
+El origen debe ser exacto, sin una ruta adicional ni una barra final. Se permiten los métodos GET, POST, PUT, DELETE y OPTIONS, además de los encabezados Authorization y Content-Type.
+
+Prueba preflight:
+
+powershell
+$headers = @{ Origin="http://localhost:5173"; "Access-Control-Request-Method"="GET"; "Access-Control-Request-Headers"="authorization,content-type" }
+$response = Invoke-WebRequest -UseBasicParsing -Method Options -Uri "http://127.0.0.1:8000/health" -Headers $headers
+$response.StatusCode
+$response.Headers["Access-Control-Allow-Origin"]
+
+
+Se espera 200 y http://localhost:5173.
+
+## Contratos gRPC y stubs
+
+Los contratos fuente están en proto/:
+
+- vehicle.proto: operaciones de consulta y ABM de vehículos.
+- customer.proto: login, consulta, ABM y validación de clientes.
+- rental.proto: creación, consulta, cancelación e historial de reservas.
+
+Los archivos *_pb2.py y *_pb2_grpc.py son generados a partir de esos contratos y utilizados por los clientes Python. Los servicios Java generan sus propias clases durante la compilación Maven.
+
+Para regenerar los stubs Python:
+
+powershell
+.\scripts\generate_stubs.ps1
+
+
+Los .proto deben mantenerse coordinados entre Gateway Python y los servicios Java. Un cambio en un mensaje o nombre de RPC requiere regenerar los stubs y recompilar los servicios.
+
+## Pruebas
+
+Pruebas automáticas del Gateway:
+
+powershell
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
+
+
+Estas pruebas cubren autenticación, tokens válidos e inválidos, roles, expiración, firma incorrecta y acceso público a /health.
+
+Pruebas de integración manuales recomendadas:
+
+1. Login desde Swagger.
+2. Consulta de vehículos.
+3. Consulta de clientes.
+4. Alta de una reserva con fechas ISO.
+5. Consulta y filtrado de reservas desde GraphQL.
+6. Cancelación de una reserva.
+7. Consulta de historial.
+8. Consulta de disponibilidad.
+9. Detener Customer Service y comprobar que una reserva devuelve error de disponibilidad.
+10. Detener Vehicle Service y comprobar el error correspondiente.
+
+## Manejo de errores
+
+Los clientes gRPC convierten errores de transporte en GrpcServiceError. Las rutas del Gateway los traducen a respuestas HTTP comprensibles:
+
+- INVALID_ARGUMENT → 400.
+- UNAUTHENTICATED → 401.
+- PERMISSION_DENIED → 403.
+- NOT_FOUND → 404.
+- FAILED_PRECONDITION → 409.
+- UNAVAILABLE → 503.
+- DEADLINE_EXCEEDED → 504.
+
+## Hito 1 y compatibilidad
+
+El backend Java monolítico, sus controladores REST, resolvers GraphQL, servicios, repositorios y login no se eliminan. Permanecen disponibles para conservar el funcionamiento del Hito 1.
+
+En el Hito 2, el frontend utiliza VITE_API_URL para comunicarse con el Gateway:
+
+text
+VITE_API_URL=http://127.0.0.1:8000
+
+
+REST y GraphQL siguen siendo las interfaces externas. gRPC se utiliza únicamente entre el Gateway y los servicios internos.
+
+## Solución de problemas
+
+## Git
+
+No trabajar directamente sobre main. Los cambios del Gateway se desarrollan en la rama acordada por el grupo. Antes de guardar cambios:
+
+powershell
+git status
+git branch --show-current
+git diff --check
+
+
+Los commits, merges y pushes deben realizarse de acuerdo con la coordinación del grupo.

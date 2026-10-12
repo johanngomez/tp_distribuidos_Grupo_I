@@ -1,5 +1,7 @@
 package ar.unla.rentar.dto;
 
+import ar.unla.rentar.model.EstadoReserva;
+
 public record HistorialReservaDTO(          //record nos evita escribir los getters y setters a mano
     String vehiculo,
     String patente,
@@ -7,5 +9,5 @@ public record HistorialReservaDTO(          //record nos evita escribir los gett
     String fechaFin,
     Integer cantidadDias,
     Double importeTotal,
-    String estado
+    EstadoReserva estado
 ) {}

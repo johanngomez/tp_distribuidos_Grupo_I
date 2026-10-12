@@ -57,7 +57,7 @@ public class ReservaGraphQLController {
                     reserva.getFechaFin().toString(),
                     (int) dias,
                     reserva.getImporteTotal(),
-                    reserva.getEstado().toString()
+                    reserva.getEstado()
             );
         }).toList();
     }

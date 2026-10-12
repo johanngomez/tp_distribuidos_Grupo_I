@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rvehicle.proto\x12\x11rentar.vehicle.v1\"\x15\n\x13ListVehiclesRequest\"D\n\x14ListVehiclesResponse\x12,\n\x08vehicles\x18\x01 \x03(\x0b\x32\x1a.rentar.vehicle.v1.Vehicle\"\xf8\x01\n\x07Vehicle\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0f\n\x07patente\x18\x02 \x01(\t\x12\r\n\x05marca\x18\x03 \x01(\t\x12\x0e\n\x06modelo\x18\x04 \x01(\t\x12\x0c\n\x04\x61nio\x18\x05 \x01(\x05\x12\x12\n\x05\x63olor\x18\x06 \x01(\tH\x00\x88\x01\x01\x12,\n\x04tipo\x18\x07 \x01(\x0e\x32\x1e.rentar.vehicle.v1.VehicleType\x12\x15\n\rprecio_diario\x18\x08 \x01(\x01\x12\x30\n\x06\x65stado\x18\t \x01(\x0e\x32 .rentar.vehicle.v1.VehicleStatus\x12\x0e\n\x06\x61\x63tivo\x18\n \x01(\x08\x42\x08\n\x06_color*e\n\x0bVehicleType\x12\x1c\n\x18VEHICLE_TYPE_UNSPECIFIED\x10\x00\x12\t\n\x05SEDAN\x10\x01\x12\x07\n\x03SUV\x10\x02\x12\n\n\x06PICKUP\x10\x03\x12\t\n\x05\x43OUPE\x10\x04\x12\r\n\tHATCHBACK\x10\x05*_\n\rVehicleStatus\x12\x1e\n\x1aVEHICLE_STATUS_UNSPECIFIED\x10\x00\x12\x0e\n\nDISPONIBLE\x10\x01\x12\r\n\tRESERVADO\x10\x02\x12\x0f\n\x0b\x45N_ALQUILER\x10\x03\x32q\n\x0eVehicleService\x12_\n\x0cListVehicles\x12&.rentar.vehicle.v1.ListVehiclesRequest\x1a\'.rentar.vehicle.v1.ListVehiclesResponseB0\n\x1e\x61r.unla.rentar.grpc.vehicle.v1B\x0cVehicleProtoP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rvehicle.proto\x12\x11rentar.vehicle.v1\"\x15\n\x13ListVehiclesRequest\"D\n\x14ListVehiclesResponse\x12,\n\x08vehicles\x18\x01 \x03(\x0b\x32\x1a.rentar.vehicle.v1.Vehicle\"\xb7\x01\n\x14\x43reateVehicleRequest\x12\x0f\n\x07patente\x18\x01 \x01(\t\x12\r\n\x05marca\x18\x02 \x01(\t\x12\x0e\n\x06modelo\x18\x03 \x01(\t\x12\x0c\n\x04\x61nio\x18\x04 \x01(\x05\x12\x12\n\x05\x63olor\x18\x05 \x01(\tH\x00\x88\x01\x01\x12,\n\x04tipo\x18\x06 \x01(\x0e\x32\x1e.rentar.vehicle.v1.VehicleType\x12\x15\n\rprecio_diario\x18\x07 \x01(\x01\x42\x08\n\x06_color\"\x1f\n\x11GetVehicleRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"\xc3\x01\n\x14UpdateVehicleRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0f\n\x07patente\x18\x02 \x01(\t\x12\r\n\x05marca\x18\x03 \x01(\t\x12\x0e\n\x06modelo\x18\x04 \x01(\t\x12\x0c\n\x04\x61nio\x18\x05 \x01(\x05\x12\x12\n\x05\x63olor\x18\x06 \x01(\tH\x00\x88\x01\x01\x12,\n\x04tipo\x18\x07 \x01(\x0e\x32\x1e.rentar.vehicle.v1.VehicleType\x12\x15\n\rprecio_diario\x18\x08 \x01(\x01\x42\x08\n\x06_color\"\"\n\x14\x44\x65leteVehicleRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"(\n\x15\x44\x65leteVehicleResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"\xf8\x01\n\x07Vehicle\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0f\n\x07patente\x18\x02 \x01(\t\x12\r\n\x05marca\x18\x03 \x01(\t\x12\x0e\n\x06modelo\x18\x04 \x01(\t\x12\x0c\n\x04\x61nio\x18\x05 \x01(\x05\x12\x12\n\x05\x63olor\x18\x06 \x01(\tH\x00\x88\x01\x01\x12,\n\x04tipo\x18\x07 \x01(\x0e\x32\x1e.rentar.vehicle.v1.VehicleType\x12\x15\n\rprecio_diario\x18\x08 \x01(\x01\x12\x30\n\x06\x65stado\x18\t \x01(\x0e\x32 .rentar.vehicle.v1.VehicleStatus\x12\x0e\n\x06\x61\x63tivo\x18\n \x01(\x08\x42\x08\n\x06_color*e\n\x0bVehicleType\x12\x1c\n\x18VEHICLE_TYPE_UNSPECIFIED\x10\x00\x12\t\n\x05SEDAN\x10\x01\x12\x07\n\x03SUV\x10\x02\x12\n\n\x06PICKUP\x10\x03\x12\t\n\x05\x43OUPE\x10\x04\x12\r\n\tHATCHBACK\x10\x05*_\n\rVehicleStatus\x12\x1e\n\x1aVEHICLE_STATUS_UNSPECIFIED\x10\x00\x12\x0e\n\nDISPONIBLE\x10\x01\x12\r\n\tRESERVADO\x10\x02\x12\x0f\n\x0b\x45N_ALQUILER\x10\x03\x32\xd1\x03\n\x0eVehicleService\x12_\n\x0cListVehicles\x12&.rentar.vehicle.v1.ListVehiclesRequest\x1a\'.rentar.vehicle.v1.ListVehiclesResponse\x12T\n\rCreateVehicle\x12\'.rentar.vehicle.v1.CreateVehicleRequest\x1a\x1a.rentar.vehicle.v1.Vehicle\x12T\n\rUpdateVehicle\x12\'.rentar.vehicle.v1.UpdateVehicleRequest\x1a\x1a.rentar.vehicle.v1.Vehicle\x12N\n\nGetVehicle\x12$.rentar.vehicle.v1.GetVehicleRequest\x1a\x1a.rentar.vehicle.v1.Vehicle\x12\x62\n\rDeleteVehicle\x12\'.rentar.vehicle.v1.DeleteVehicleRequest\x1a(.rentar.vehicle.v1.DeleteVehicleResponseB0\n\x1e\x61r.unla.rentar.grpc.vehicle.v1B\x0cVehicleProtoP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,16 +32,26 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'vehicle_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\036ar.unla.rentar.grpc.vehicle.v1B\014VehicleProtoP\001'
-  _globals['_VEHICLETYPE']._serialized_start=380
-  _globals['_VEHICLETYPE']._serialized_end=481
-  _globals['_VEHICLESTATUS']._serialized_start=483
-  _globals['_VEHICLESTATUS']._serialized_end=578
+  _globals['_VEHICLETYPE']._serialized_start=875
+  _globals['_VEHICLETYPE']._serialized_end=976
+  _globals['_VEHICLESTATUS']._serialized_start=978
+  _globals['_VEHICLESTATUS']._serialized_end=1073
   _globals['_LISTVEHICLESREQUEST']._serialized_start=36
   _globals['_LISTVEHICLESREQUEST']._serialized_end=57
   _globals['_LISTVEHICLESRESPONSE']._serialized_start=59
   _globals['_LISTVEHICLESRESPONSE']._serialized_end=127
-  _globals['_VEHICLE']._serialized_start=130
-  _globals['_VEHICLE']._serialized_end=378
-  _globals['_VEHICLESERVICE']._serialized_start=580
-  _globals['_VEHICLESERVICE']._serialized_end=693
+  _globals['_CREATEVEHICLEREQUEST']._serialized_start=130
+  _globals['_CREATEVEHICLEREQUEST']._serialized_end=313
+  _globals['_GETVEHICLEREQUEST']._serialized_start=315
+  _globals['_GETVEHICLEREQUEST']._serialized_end=346
+  _globals['_UPDATEVEHICLEREQUEST']._serialized_start=349
+  _globals['_UPDATEVEHICLEREQUEST']._serialized_end=544
+  _globals['_DELETEVEHICLEREQUEST']._serialized_start=546
+  _globals['_DELETEVEHICLEREQUEST']._serialized_end=580
+  _globals['_DELETEVEHICLERESPONSE']._serialized_start=582
+  _globals['_DELETEVEHICLERESPONSE']._serialized_end=622
+  _globals['_VEHICLE']._serialized_start=625
+  _globals['_VEHICLE']._serialized_end=873
+  _globals['_VEHICLESERVICE']._serialized_start=1076
+  _globals['_VEHICLESERVICE']._serialized_end=1541
 # @@protoc_insertion_point(module_scope)
