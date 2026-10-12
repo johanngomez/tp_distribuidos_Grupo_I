@@ -1,10 +1,23 @@
 package ar.unla.rentar.rental.repository;
+
 import ar.unla.rentar.rental.model.Reserva;
 import ar.unla.rentar.rental.model.EstadoReserva;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.time.LocalDateTime;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
 import java.util.List;
-public interface ReservaRepository extends JpaRepository<Reserva,Long> {
- List<Reserva> findByClienteId(Long id);
- boolean existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(Long id,List<EstadoReserva> estados,LocalDateTime fin,LocalDateTime inicio);
+
+@Repository
+public interface ReservaRepository extends JpaRepository<Reserva, Long>, JpaSpecificationExecutor<Reserva> {
+
+    List<Reserva> findByEstado(EstadoReserva estado);
+    
+    List<Reserva> findByClienteId(Long clienteId);
+    
+
+    boolean existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(
+        Long vehiculoId,
+        List<EstadoReserva> estados,
+        java.time.LocalDateTime fechaFin,
+        java.time.LocalDateTime fechaInicio);
 }
