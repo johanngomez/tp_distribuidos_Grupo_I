@@ -36,11 +36,11 @@ class CustomerGrpcClient:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = customer_pb2_grpc.CustomerServiceStub(channel)
                 response = await stub.GetCliente(
-                    customer_pb2.ClienteRequest(id_cliente=customer_id),
+                    customer_pb2.ClienteRequest(id=customer_id),
                     timeout=self.timeout_seconds,
                 )
                 return CustomerResponse(
-                    id_cliente=response.id_cliente,
+                    id=response.id,
                     documento=response.documento,
                     nombre=response.nombre,
                     apellido=response.apellido,
@@ -97,7 +97,7 @@ class CustomerGrpcClient:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = customer_pb2_grpc.CustomerServiceStub(channel)
                 response = await stub.ModificarCliente(
-                    customer_pb2.ModificarClienteRequest(id_cliente=customer_id, **data),
+                    customer_pb2.ModificarClienteRequest(id=customer_id, **data),
                     timeout=self.timeout_seconds,
                 )
                 return self._to_response(response)
@@ -109,7 +109,7 @@ class CustomerGrpcClient:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = customer_pb2_grpc.CustomerServiceStub(channel)
                 response = await stub.DarDeBajaCliente(
-                    customer_pb2.DarDeBajaClienteRequest(id_cliente=customer_id),
+                    customer_pb2.DarDeBajaClienteRequest(id=customer_id),
                     timeout=self.timeout_seconds,
                 )
                 return CustomerOperationResponse(
@@ -122,7 +122,7 @@ class CustomerGrpcClient:
     @staticmethod
     def _to_response(response) -> CustomerResponse:
         return CustomerResponse(
-            id_cliente=response.id_cliente,
+            id=response.id,
             documento=response.documento,
             nombre=response.nombre,
             apellido=response.apellido,
@@ -141,7 +141,7 @@ class CustomerGrpcClient:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = customer_pb2_grpc.CustomerServiceStub(channel)
                 response = await stub.ValidarCliente(
-                    customer_pb2.ClienteRequest(id_cliente=customer_id),
+                    customer_pb2.ClienteRequest(id=customer_id),
                     timeout=self.timeout_seconds,
                 )
                 return CustomerValidationResponse(

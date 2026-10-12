@@ -1,9 +1,9 @@
 package ar.unla.rentar.vehicle.service;
 
 import ar.unla.rentar.grpc.vehicle.v1.*;
+import ar.unla.rentar.vehicle.model.Vehiculo;
 import ar.unla.rentar.vehicle.model.EstadoVehiculo;
 import ar.unla.rentar.vehicle.model.TipoVehiculo;
-import ar.unla.rentar.vehicle.model.Vehiculo;
 import ar.unla.rentar.vehicle.repository.VehiculoRepository;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -19,12 +19,12 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     private VehiculoRepository vehiculoRepository;
 
     @Override
-    public void listVehicles(ListVehiclesRequest request, StreamObserver<ListVehiclesResponse> responseObserver) {
+    public void listarVehiculos(ListarVehiculosRequest request, StreamObserver<ListarVehiculosResponse> responseObserver) {
         List<Vehiculo> vehiculos = vehiculoRepository.findAll();
-        ListVehiclesResponse.Builder responseBuilder = ListVehiclesResponse.newBuilder();
+        ListarVehiculosResponse.Builder responseBuilder = ListarVehiculosResponse.newBuilder();
 
         for (Vehiculo v : vehiculos) {
-            responseBuilder.addVehicles(mapToProto(v));
+            responseBuilder.addVehiculos(mapToProto(v));
         }
 
         responseObserver.onNext(responseBuilder.build());
@@ -32,7 +32,7 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     }
 
     @Override
-    public void createVehicle(CreateVehicleRequest request, StreamObserver<Vehicle> responseObserver) {
+    public void crearVehiculo(CrearVehiculoRequest request, StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehiculo> responseObserver) {
         Vehiculo vehiculo = new Vehiculo();
         vehiculo.setPatente(request.getPatente());
         vehiculo.setMarca(request.getMarca());
@@ -51,7 +51,7 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     }
 
     @Override
-    public void getVehicle(GetVehicleRequest request, StreamObserver<Vehicle> responseObserver) {
+    public void obtenerVehiculo(ObtenerVehiculoRequest request, StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehiculo> responseObserver) {
         Vehiculo vehiculo = vehiculoRepository.findById(request.getId()).orElse(null);
 
         if (vehiculo == null) {
@@ -66,7 +66,7 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     }
 
     @Override
-    public void updateVehicle(UpdateVehicleRequest request, StreamObserver<Vehicle> responseObserver) {
+    public void actualizarVehiculo(ActualizarVehiculoRequest request, StreamObserver<ar.unla.rentar.grpc.vehicle.v1.Vehiculo> responseObserver) {
         Vehiculo vehiculo = vehiculoRepository.findById(request.getId()).orElse(null);
 
         if (vehiculo == null) {
@@ -89,7 +89,7 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     }
 
     @Override
-    public void deleteVehicle(DeleteVehicleRequest request, StreamObserver<DeleteVehicleResponse> responseObserver) {
+    public void eliminarVehiculo(EliminarVehiculoRequest request, StreamObserver<ar.unla.rentar.grpc.vehicle.v1.EliminarVehiculoResponse> responseObserver) {
         Vehiculo vehiculo = vehiculoRepository.findById(request.getId()).orElse(null);
 
         if (vehiculo == null) {
@@ -103,25 +103,25 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         vehiculo.setActivo(false);
         vehiculoRepository.save(vehiculo);
 
-        DeleteVehicleResponse response = DeleteVehicleResponse.newBuilder()
-                .setSuccess(true)
+        ar.unla.rentar.grpc.vehicle.v1.EliminarVehiculoResponse response = ar.unla.rentar.grpc.vehicle.v1.EliminarVehiculoResponse.newBuilder()
+                .setExito(true)
                 .build();
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
 
-    private Vehicle mapToProto(Vehiculo v) {
-        return Vehicle.newBuilder()
+    private ar.unla.rentar.grpc.vehicle.v1.Vehiculo mapToProto(Vehiculo v) {
+        return ar.unla.rentar.grpc.vehicle.v1.Vehiculo.newBuilder()
                 .setId(v.getId())
                 .setPatente(v.getPatente())
                 .setMarca(v.getMarca())
                 .setModelo(v.getModelo())
                 .setAnio(v.getAnio())
                 .setColor(v.getColor() != null ? v.getColor() : "")
-                .setTipo(VehicleType.valueOf(v.getTipo().name()))
+                .setTipo(ar.unla.rentar.grpc.vehicle.v1.TipoVehiculo.valueOf(v.getTipo().name()))
                 .setPrecioDiario(v.getPrecioDiario())
-                .setEstado(VehicleStatus.valueOf(v.getEstado().name()))
+                .setEstado(ar.unla.rentar.grpc.vehicle.v1.EstadoVehiculo.valueOf(v.getEstado().name()))
                 .setActivo(v.getActivo())
                 .build();
     }

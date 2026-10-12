@@ -7,10 +7,22 @@ from app.schemas.rentals import (
     RentalCancellationResponse,
     RentalHistoryResponse,
     RentalResponse,
+    EstadoReserva,
 )
+
+MAPEO_ESTADOS_GRPC = {
+    0: "SIN_ESPECIFICAR",
+    1: "EN_CURSO",
+    2: "CONFIRMADA",
+    3: "FINALIZADA",
+    4: "CANCELADA"
+}
 
 
 def _rental_response(response) -> RentalResponse:
+
+    texto_estado = MAPEO_ESTADOS_GRPC[response.estado]
+
     return RentalResponse(
         id=response.id,
         cliente_id=response.cliente_id,
@@ -19,7 +31,7 @@ def _rental_response(response) -> RentalResponse:
         fecha_fin=response.fecha_fin,
         precio_diario=response.precio_diario,
         importe_total=response.importe_total,
-        estado=rental_pb2.EstadoReserva.Name(response.estado),
+        estado=EstadoReserva(texto_estado),
     )
 
 
@@ -124,7 +136,7 @@ class RentalGrpcClient:
                         fecha_fin=item.fecha_fin,
                         cantidad_dias=item.cantidad_dias,
                         importe_total=item.importe_total,
-                        estado=item.estado,
+                        estado=EstadoReserva(MAPEO_ESTADOS_GRPC[item.estado]),
                     )
                     for item in response.reservas
                 ]

@@ -95,8 +95,8 @@ validaciones. Por eso el contrato completo deberá incluir, como mínimo, una
 propuesta equivalente a:
 
 ```text
-ListVehicles          → listar vehículos
-GetVehicle             → consultar por id
+ListarVehiculos          → listar vehículos
+ObtenerVehiculo             → consultar por id
 CheckAvailability      → consultar disponibilidad con fechas y filtros
 UpdateVehicleStatus    → cambiar DISPONIBLE/RESERVADO/EN_ALQUILER
 ```

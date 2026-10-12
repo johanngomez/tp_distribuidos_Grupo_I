@@ -66,7 +66,7 @@ async def create_rental(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cliente inexistente")
         if not customer.activo or not customer.puede_alquilar:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Cliente inactivo o no habilitado")
-        vehicle = await _vehicle_client(request).get_vehicle(data.vehiculoId)
+        vehicle = await _vehicle_client(request).get_vehiculo(data.vehiculoId)
         if not vehicle.activo:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Vehículo inactivo")
         if vehicle.estado != "DISPONIBLE":

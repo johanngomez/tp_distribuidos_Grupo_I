@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class CustomerResponse(BaseModel):
-    id_cliente: int
+    id: int
     documento: str
     nombre: str
     apellido: str

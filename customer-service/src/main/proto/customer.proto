@@ -35,7 +35,7 @@ message ListarClientesResponse {
 
 //"message" son las variables que viajan por la red
 message ClienteRequest {
-  int64 id_cliente = 1;
+  int64 id = 1;
 }
 
 message ClienteEmailRequest {
@@ -43,7 +43,7 @@ message ClienteEmailRequest {
 }
 
 message ClienteResponse {
-  int64 id_cliente = 1;
+  int64 id = 1;
   string documento = 2;
   string nombre = 3;
   string apellido = 4;
@@ -65,7 +65,7 @@ message CrearClienteRequest {
 }
 
 message ModificarClienteRequest {
-  int64 id_cliente = 1;
+  int64 id = 1;
   string nombre = 2;
   string apellido = 3;
   string telefono = 4;
@@ -73,7 +73,7 @@ message ModificarClienteRequest {
 }
 
 message DarDeBajaClienteRequest {
-  int64 id_cliente = 1;
+  int64 id = 1;
 }
 
 message OperacionClienteResponse {

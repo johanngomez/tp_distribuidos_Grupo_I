@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x63ustomer.proto\"/\n\x0cLoginRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\">\n\rLoginResponse\x12\r\n\x05token\x18\x01 \x01(\t\x12\x0c\n\x04tipo\x18\x02 \x01(\t\x12\x10\n\x08\x65s_admin\x18\x03 \x01(\x08\"\x17\n\x15ListarClientesRequest\"<\n\x16ListarClientesResponse\x12\"\n\x08\x63lientes\x18\x01 \x03(\x0b\x32\x10.ClienteResponse\"$\n\x0e\x43lienteRequest\x12\x12\n\nid_cliente\x18\x01 \x01(\x03\"$\n\x13\x43lienteEmailRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\"\xb7\x01\n\x0f\x43lienteResponse\x12\x12\n\nid_cliente\x18\x01 \x01(\x03\x12\x11\n\tdocumento\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x10\n\x08telefono\x18\x06 \x01(\t\x12\x18\n\x10\x66\x65\x63ha_nacimiento\x18\x07 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\x08 \x01(\x08\x12\x10\n\x08\x65s_admin\x18\t \x01(\x08\"\x97\x01\n\x13\x43rearClienteRequest\x12\x11\n\tdocumento\x18\x01 \x01(\t\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\x12\r\n\x05\x65mail\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\x18\n\x10\x66\x65\x63ha_nacimiento\x18\x06 \x01(\t\x12\x10\n\x08password\x18\x07 \x01(\t\"{\n\x17ModificarClienteRequest\x12\x12\n\nid_cliente\x18\x01 \x01(\x03\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\x12\x10\n\x08telefono\x18\x04 \x01(\t\x12\x18\n\x10\x66\x65\x63ha_nacimiento\x18\x05 \x01(\t\"-\n\x17\x44\x61rDeBajaClienteRequest\x12\x12\n\nid_cliente\x18\x01 \x01(\x03\":\n\x18OperacionClienteResponse\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"L\n\x12ValidacionResponse\x12\x0e\n\x06\x65xiste\x18\x01 \x01(\x08\x12\x0e\n\x06\x61\x63tivo\x18\x02 \x01(\x08\x12\x16\n\x0epuede_alquilar\x18\x03 \x01(\x08\x32\xe8\x03\n\x0f\x43ustomerService\x12&\n\x05Login\x12\r.LoginRequest\x1a\x0e.LoginResponse\x12\x41\n\x0eListarClientes\x12\x16.ListarClientesRequest\x1a\x17.ListarClientesResponse\x12/\n\nGetCliente\x12\x0f.ClienteRequest\x1a\x10.ClienteResponse\x12@\n\x16ObtenerClientePorEmail\x12\x14.ClienteEmailRequest\x1a\x10.ClienteResponse\x12\x36\n\x0c\x43rearCliente\x12\x14.CrearClienteRequest\x1a\x10.ClienteResponse\x12>\n\x10ModificarCliente\x12\x18.ModificarClienteRequest\x1a\x10.ClienteResponse\x12G\n\x10\x44\x61rDeBajaCliente\x12\x18.DarDeBajaClienteRequest\x1a\x19.OperacionClienteResponse\x12\x36\n\x0eValidarCliente\x12\x0f.ClienteRequest\x1a\x13.ValidacionResponseB$\n ar.edu.unla.rentar.customer.grpcP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x63ustomer.proto\"/\n\x0cLoginRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\x12\x10\n\x08password\x18\x02 \x01(\t\">\n\rLoginResponse\x12\r\n\x05token\x18\x01 \x01(\t\x12\x0c\n\x04tipo\x18\x02 \x01(\t\x12\x10\n\x08\x65s_admin\x18\x03 \x01(\x08\"\x17\n\x15ListarClientesRequest\"<\n\x16ListarClientesResponse\x12\"\n\x08\x63lientes\x18\x01 \x03(\x0b\x32\x10.ClienteResponse\"\x1c\n\x0e\x43lienteRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"$\n\x13\x43lienteEmailRequest\x12\r\n\x05\x65mail\x18\x01 \x01(\t\"\xaf\x01\n\x0f\x43lienteResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x11\n\tdocumento\x18\x02 \x01(\t\x12\x0e\n\x06nombre\x18\x03 \x01(\t\x12\x10\n\x08\x61pellido\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12\x10\n\x08telefono\x18\x06 \x01(\t\x12\x18\n\x10\x66\x65\x63ha_nacimiento\x18\x07 \x01(\t\x12\x0e\n\x06\x61\x63tivo\x18\x08 \x01(\x08\x12\x10\n\x08\x65s_admin\x18\t \x01(\x08\"\x97\x01\n\x13\x43rearClienteRequest\x12\x11\n\tdocumento\x18\x01 \x01(\t\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\x12\r\n\x05\x65mail\x18\x04 \x01(\t\x12\x10\n\x08telefono\x18\x05 \x01(\t\x12\x18\n\x10\x66\x65\x63ha_nacimiento\x18\x06 \x01(\t\x12\x10\n\x08password\x18\x07 \x01(\t\"s\n\x17ModificarClienteRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0e\n\x06nombre\x18\x02 \x01(\t\x12\x10\n\x08\x61pellido\x18\x03 \x01(\t\x12\x10\n\x08telefono\x18\x04 \x01(\t\x12\x18\n\x10\x66\x65\x63ha_nacimiento\x18\x05 \x01(\t\"%\n\x17\x44\x61rDeBajaClienteRequest\x12\n\n\x02id\x18\x01 \x01(\x03\":\n\x18OperacionClienteResponse\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x0f\n\x07mensaje\x18\x02 \x01(\t\"L\n\x12ValidacionResponse\x12\x0e\n\x06\x65xiste\x18\x01 \x01(\x08\x12\x0e\n\x06\x61\x63tivo\x18\x02 \x01(\x08\x12\x16\n\x0epuede_alquilar\x18\x03 \x01(\x08\x32\xe8\x03\n\x0f\x43ustomerService\x12&\n\x05Login\x12\r.LoginRequest\x1a\x0e.LoginResponse\x12\x41\n\x0eListarClientes\x12\x16.ListarClientesRequest\x1a\x17.ListarClientesResponse\x12/\n\nGetCliente\x12\x0f.ClienteRequest\x1a\x10.ClienteResponse\x12@\n\x16ObtenerClientePorEmail\x12\x14.ClienteEmailRequest\x1a\x10.ClienteResponse\x12\x36\n\x0c\x43rearCliente\x12\x14.CrearClienteRequest\x1a\x10.ClienteResponse\x12>\n\x10ModificarCliente\x12\x18.ModificarClienteRequest\x1a\x10.ClienteResponse\x12G\n\x10\x44\x61rDeBajaCliente\x12\x18.DarDeBajaClienteRequest\x1a\x19.OperacionClienteResponse\x12\x36\n\x0eValidarCliente\x12\x0f.ClienteRequest\x1a\x13.ValidacionResponseB$\n ar.edu.unla.rentar.customer.grpcP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,21 +41,21 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_LISTARCLIENTESRESPONSE']._serialized_start=156
   _globals['_LISTARCLIENTESRESPONSE']._serialized_end=216
   _globals['_CLIENTEREQUEST']._serialized_start=218
-  _globals['_CLIENTEREQUEST']._serialized_end=254
-  _globals['_CLIENTEEMAILREQUEST']._serialized_start=256
-  _globals['_CLIENTEEMAILREQUEST']._serialized_end=292
-  _globals['_CLIENTERESPONSE']._serialized_start=295
-  _globals['_CLIENTERESPONSE']._serialized_end=478
-  _globals['_CREARCLIENTEREQUEST']._serialized_start=481
-  _globals['_CREARCLIENTEREQUEST']._serialized_end=632
-  _globals['_MODIFICARCLIENTEREQUEST']._serialized_start=634
-  _globals['_MODIFICARCLIENTEREQUEST']._serialized_end=757
-  _globals['_DARDEBAJACLIENTEREQUEST']._serialized_start=759
-  _globals['_DARDEBAJACLIENTEREQUEST']._serialized_end=804
-  _globals['_OPERACIONCLIENTERESPONSE']._serialized_start=806
-  _globals['_OPERACIONCLIENTERESPONSE']._serialized_end=864
-  _globals['_VALIDACIONRESPONSE']._serialized_start=866
-  _globals['_VALIDACIONRESPONSE']._serialized_end=942
-  _globals['_CUSTOMERSERVICE']._serialized_start=945
-  _globals['_CUSTOMERSERVICE']._serialized_end=1433
+  _globals['_CLIENTEREQUEST']._serialized_end=246
+  _globals['_CLIENTEEMAILREQUEST']._serialized_start=248
+  _globals['_CLIENTEEMAILREQUEST']._serialized_end=284
+  _globals['_CLIENTERESPONSE']._serialized_start=287
+  _globals['_CLIENTERESPONSE']._serialized_end=462
+  _globals['_CREARCLIENTEREQUEST']._serialized_start=465
+  _globals['_CREARCLIENTEREQUEST']._serialized_end=616
+  _globals['_MODIFICARCLIENTEREQUEST']._serialized_start=618
+  _globals['_MODIFICARCLIENTEREQUEST']._serialized_end=733
+  _globals['_DARDEBAJACLIENTEREQUEST']._serialized_start=735
+  _globals['_DARDEBAJACLIENTEREQUEST']._serialized_end=772
+  _globals['_OPERACIONCLIENTERESPONSE']._serialized_start=774
+  _globals['_OPERACIONCLIENTERESPONSE']._serialized_end=832
+  _globals['_VALIDACIONRESPONSE']._serialized_start=834
+  _globals['_VALIDACIONRESPONSE']._serialized_end=910
+  _globals['_CUSTOMERSERVICE']._serialized_start=913
+  _globals['_CUSTOMERSERVICE']._serialized_end=1401
 # @@protoc_insertion_point(module_scope)

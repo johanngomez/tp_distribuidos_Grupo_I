@@ -43,6 +43,10 @@ public class ClienteService {
         
         if (clienteRepository.findByEmail(dto.getEmail()).isPresent()) {                        //validamos si ya existe el email
             throw new RuntimeException("Ya existe un cliente con ese email.");
+        }   
+
+        if (dto.getFechaNacimiento() == null || dto.getFechaNacimiento().toString().trim().isEmpty()) {                                              //validamos si la fecha de nacimiento es nula
+            throw new RuntimeException("La fecha de nacimiento no puede ser nula o vacia.");
         }
 
         Cliente cliente = new Cliente();                                                        //CreateDto a Cliente para guardar en la bd

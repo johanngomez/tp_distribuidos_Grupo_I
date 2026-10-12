@@ -25,16 +25,25 @@ export async function buscarCliente(id) {
 }
 
 export async function crearCliente(datos) {
+    try {
     const response = await fetchAutenticado("/api/clientes", {
         method: "POST",
         body: JSON.stringify(datos),
     });
 
     if (!response.ok) {
-        await manejarError(response, "No se pudo crear el cliente");
+        const errorDelBack = await response.json();
+
+        throw new Error(errorDelBack.detail || "Ocurrió un error al procesar la solicitud");
     }
 
     return await response.json();
+
+    } catch (error) {
+        console.log("Error atrapado en crearCliente:", error);
+        throw error;
+    }
+
 }
 
 export async function modificarCliente(id, datos) {

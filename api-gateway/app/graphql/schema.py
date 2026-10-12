@@ -14,14 +14,14 @@ from app.security.jwt import AuthenticatedUser, validate_token
 from jwt import InvalidTokenError
 
 
-class RentalState(Enum):
+class EstadoReserva(Enum):
     CONFIRMADA = "CONFIRMADA"
     EN_CURSO = "EN_CURSO"
     CANCELADA = "CANCELADA"
     FINALIZADA = "FINALIZADA"
 
 
-class VehicleKind(Enum):
+class TipoVehiculo(Enum):
     SEDAN = "SEDAN"
     SUV = "SUV"
     PICKUP = "PICKUP"
@@ -29,7 +29,7 @@ class VehicleKind(Enum):
     HATCHBACK = "HATCHBACK"
 
 
-class VehicleState(Enum):
+class EstadoVehiculo(Enum):
     DISPONIBLE = "DISPONIBLE"
     RESERVADO = "RESERVADO"
     EN_ALQUILER = "EN_ALQUILER"
@@ -56,9 +56,9 @@ class VehicleNode:
     modelo: str
     anio: int
     color: Optional[str]
-    tipo: Optional[VehicleKind]
+    tipo: Optional[TipoVehiculo]
     precioDiario: float
-    estado: VehicleState
+    estado: EstadoVehiculo
     activo: bool
 
 
@@ -71,7 +71,7 @@ class ReservationNode:
     fechaFin: str
     precioDiario: float
     importeTotal: float
-    estado: RentalState
+    estado: EstadoReserva
 
 
 @strawberry.type
@@ -89,8 +89,8 @@ class HistoryNode:
 class ReservationFilter:
     clienteId: Optional[strawberry.ID] = None
     vehiculoId: Optional[strawberry.ID] = None
-    tipo: Optional[VehicleKind] = None
-    estado: Optional[RentalState] = None
+    tipo: Optional[TipoVehiculo] = None
+    estado: Optional[EstadoReserva] = None
     fechaInicioDesde: Optional[str] = None
     fechaInicioHasta: Optional[str] = None
 
@@ -115,7 +115,7 @@ async def _reservation_node(info: Info, reservation) -> ReservationNode:
     customer_client, vehicle_client, _ = _clients(info)
     customer, vehicle = await _gather_details(
         customer_client.get_customer(reservation.cliente_id),
-        vehicle_client.get_vehicle(reservation.vehiculo_id),
+        vehicle_client.get_vehiculo(reservation.vehiculo_id),
     )
     return ReservationNode(
         id=strawberry.ID(str(reservation.id)),
@@ -137,7 +137,7 @@ async def _gather_details(customer_awaitable, vehicle_awaitable):
 
 def _customer_node(customer) -> CustomerNode:
     return CustomerNode(
-        id=strawberry.ID(str(customer.id_cliente)),
+        id=strawberry.ID(str(customer.id)),
         documento=customer.documento,
         nombre=customer.nombre,
         apellido=customer.apellido,
@@ -157,15 +157,15 @@ def _vehicle_node(vehicle) -> VehicleNode:
         modelo=vehicle.modelo,
         anio=vehicle.anio,
         color=vehicle.color,
-        tipo=VehicleKind(vehicle.tipo) if vehicle.tipo in VehicleKind._value2member_map_ else None,
+        tipo=TipoVehiculo(vehicle.tipo) if vehicle.tipo in TipoVehiculo._value2member_map_ else None,
         precioDiario=vehicle.precioDiario,
-        estado=VehicleState(vehicle.estado),
+        estado=EstadoVehiculo(vehicle.estado),
         activo=vehicle.activo,
     )
 
 
-def _rental_state(value: str) -> RentalState:
-    return RentalState(value) if value in RentalState._value2member_map_ else RentalState.CONFIRMADA
+def _rental_state(value: str) -> EstadoReserva:
+    return EstadoReserva(value) if value in EstadoReserva._value2member_map_ else EstadoReserva.DISPONIBLE
 
 
 @strawberry.type
@@ -201,7 +201,7 @@ class Query:
         info: Info,
         fechaInicio: str,
         fechaFin: str,
-        tipo: Optional[VehicleKind] = None,
+        tipo: Optional[TipoVehiculo] = None,
         marca: Optional[str] = None,
         modelo: Optional[str] = None,
         precioMin: Optional[float] = None,
@@ -240,7 +240,7 @@ class Query:
             and (modelo is None or vehicle.modelo.lower() == modelo.lower())
             and (precioMin is None or vehicle.precioDiario >= precioMin)
             and (precioMax is None or vehicle.precioDiario <= precioMax)
-            and vehicle.estado == VehicleState.DISPONIBLE.value
+            and vehicle.estado == EstadoVehiculo.DISPONIBLE.value
         ]
 
     @strawberry.field

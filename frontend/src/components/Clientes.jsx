@@ -75,7 +75,7 @@ function Clientes() {
     }
 
     function handleEditar(cliente) {
-        setEditandoId(cliente.id_cliente);
+        setEditandoId(cliente.id);
         setDocumento(cliente.documento);
         setNombre(cliente.nombre);
         setApellido(cliente.apellido);
@@ -193,7 +193,7 @@ function Clientes() {
                         </thead>
                         <tbody>
                             {clientesFiltrados.map((cliente) => (
-                                <tr key={cliente.id_cliente}>
+                                <tr key={cliente.id}>
                                     <td>{cliente.documento}</td>
                                     <td>{cliente.nombre}</td>
                                     <td>{cliente.apellido}</td>
@@ -205,7 +205,7 @@ function Clientes() {
                                             Editar
                                         </button>
                                         <button
-                                            onClick={() => handleBaja(cliente.id_cliente)}
+                                            onClick={() => handleBaja(cliente.id)}
                                             disabled={!cliente.activo}
                                         >
                                             Dar de baja
@@ -298,6 +298,7 @@ function Clientes() {
                             onChange={(e) => setFechaNacimiento(e.target.value)}
                             min="1900-01-01"
                             max="2024-12-31"
+                            required
                         />
 
                         {!editandoId && (

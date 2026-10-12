@@ -93,7 +93,7 @@ function Disponibilidad() {
 
             await crearReserva({
                 vehiculoId,
-                clienteId: cliente.id_cliente,
+                clienteId: cliente.id,
                 fechaInicio: aLocalDateTime(fechaInicio),
                 fechaFin: aLocalDateTime(fechaFin),
             });

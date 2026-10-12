@@ -48,10 +48,9 @@ export default function Historial() {
 
             const cliente = await resMe.json();
 
-                      console.log(cliente.id_cliente);
 
             // 2. Pedir su historial con ese id
-            const data = await obtenerHistorialAlquileres(cliente.id_cliente);
+            const data = await obtenerHistorialAlquileres(cliente.id);
   
             setHistorial(data);
         } catch (error) {

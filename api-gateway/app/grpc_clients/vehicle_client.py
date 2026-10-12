@@ -3,7 +3,23 @@ import grpc
 from app.generated import vehicle_pb2
 from app.generated import vehicle_pb2_grpc
 from app.grpc_clients.errors import GrpcServiceError
-from app.schemas.vehicles import VehicleResponse
+from app.schemas.vehicles import VehicleResponse, TipoVehiculo, EstadoVehiculo
+
+MAPEO_ESTADO_VEHICULO_GRPC = {
+    0: "VEHICULO_ESTADO_SIN_ESPECIFICAR",
+    1: "DISPONIBLE",
+    2: "RESERVADO",
+    3: "EN_ALQUILER"
+}
+
+MAPEO_TIPO_VEHICULO_GRPC = {
+    0: "VEHICULO_TIPO_SIN_ESPECIFICAR",
+    1: "SEDAN",
+    2: "SUV",
+    3: "PICKUP",
+    4: "COUPE",
+    5: "HATCHBACK"
+}
 
 
 class VehicleGrpcClient:
@@ -16,29 +32,29 @@ class VehicleGrpcClient:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = vehicle_pb2_grpc.VehicleServiceStub(channel)
 
-                response = await stub.ListVehicles(
-                    vehicle_pb2.ListVehiclesRequest(),
+                response = await stub.ListarVehiculos(
+                    vehicle_pb2.ListarVehiculosRequest(),
                     timeout=self.timeout_seconds,
                 )
 
                 return [
                     VehicleResponse(
-                        id=vehicle.id,
-                        patente=vehicle.patente,
-                        marca=vehicle.marca,
-                        modelo=vehicle.modelo,
-                        anio=vehicle.anio,
+                        id=vehiculo.id,
+                        patente=vehiculo.patente,
+                        marca=vehiculo.marca,
+                        modelo=vehiculo.modelo,
+                        anio=vehiculo.anio,
                         color=(
-                            vehicle.color
-                            if vehicle.HasField("color")
+                            vehiculo.color
+                            if vehiculo.HasField("color")
                             else None
                         ),
-                        tipo=vehicle_pb2.VehicleType.Name(vehicle.tipo),
-                        precioDiario=vehicle.precio_diario,
-                        estado=vehicle_pb2.VehicleStatus.Name(vehicle.estado),
-                        activo=vehicle.activo,
+                        tipo=TipoVehiculo(MAPEO_TIPO_VEHICULO_GRPC[vehiculo.tipo]),
+                        precioDiario=vehiculo.precio_diario,
+                        estado=EstadoVehiculo(MAPEO_ESTADO_VEHICULO_GRPC[vehiculo.estado]),
+                        activo=vehiculo.activo,
                     )
-                    for vehicle in response.vehicles
+                    for vehiculo in response.vehiculos
                 ]
 
         except grpc.aio.AioRpcError as error:
@@ -52,36 +68,36 @@ class VehicleGrpcClient:
         try:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = vehicle_pb2_grpc.VehicleServiceStub(channel)
-                vehicle = await stub.CreateVehicle(
-                    vehicle_pb2.CreateVehicleRequest(**data),
+                vehiculo = await stub.CrearVehiculo(
+                    vehicle_pb2.CrearVehiculoRequest(**data),
                     timeout=self.timeout_seconds,
                 )
-                return self._to_response(vehicle)
+                return self._to_response(vehiculo)
         except grpc.aio.AioRpcError as error:
             raise GrpcServiceError(
                 code=error.code(),
                 details=error.details() or "Error al comunicarse con Vehicle Service",
             ) from error
 
-    async def get_vehicle(self, vehicle_id: int) -> VehicleResponse:
+    async def get_vehiculo(self, vehiculo_id: int) -> VehicleResponse:
         try:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = vehicle_pb2_grpc.VehicleServiceStub(channel)
-                vehicle = await stub.GetVehicle(
-                    vehicle_pb2.GetVehicleRequest(id=vehicle_id),
+                vehiculo = await stub.ObtenerVehiculo(
+                    vehicle_pb2.ObtenerVehiculoRequest(id=vehiculo_id),
                     timeout=self.timeout_seconds,
                 )
                 return VehicleResponse(
-                    id=vehicle.id,
-                    patente=vehicle.patente,
-                    marca=vehicle.marca,
-                    modelo=vehicle.modelo,
-                    anio=vehicle.anio,
-                    color=vehicle.color if vehicle.HasField("color") else None,
-                    tipo=vehicle_pb2.VehicleType.Name(vehicle.tipo),
-                    precioDiario=vehicle.precio_diario,
-                    estado=vehicle_pb2.VehicleStatus.Name(vehicle.estado),
-                    activo=vehicle.activo,
+                    id=vehiculo.id,
+                    patente=vehiculo.patente,
+                    marca=vehiculo.marca,
+                    modelo=vehiculo.modelo,
+                    anio=vehiculo.anio,
+                    color=vehiculo.color if vehiculo.HasField("color") else None,
+                    tipo=TipoVehiculo(MAPEO_TIPO_VEHICULO_GRPC[vehiculo.tipo]),
+                    precioDiario=vehiculo.precio_diario,
+                    estado=EstadoVehiculo(MAPEO_ESTADO_VEHICULO_GRPC[vehiculo.estado]),
+                    activo=vehiculo.activo,
                 )
         except grpc.aio.AioRpcError as error:
             raise GrpcServiceError(
@@ -89,30 +105,30 @@ class VehicleGrpcClient:
                 details=error.details() or "Error al comunicarse con Vehicle Service",
             ) from error
 
-    async def update_vehicle(self, vehicle_id: int, data: dict) -> VehicleResponse:
+    async def update_vehiculo(self, vehiculo_id: int, data: dict) -> VehicleResponse:
         try:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = vehicle_pb2_grpc.VehicleServiceStub(channel)
-                vehicle = await stub.UpdateVehicle(
-                    vehicle_pb2.UpdateVehicleRequest(id=vehicle_id, **data),
+                vehiculo = await stub.ActualizarVehiculo(
+                    vehicle_pb2.ActualizarVehiculoRequest(id=vehiculo_id, **data),
                     timeout=self.timeout_seconds,
                 )
-                return self._to_response(vehicle)
+                return self._to_response(vehiculo)
         except grpc.aio.AioRpcError as error:
             raise GrpcServiceError(
                 code=error.code(),
                 details=error.details() or "Error al comunicarse con Vehicle Service",
             ) from error
 
-    async def delete_vehicle(self, vehicle_id: int) -> bool:
+    async def delete_vehiculo(self, vehiculo_id: int) -> bool:
         try:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = vehicle_pb2_grpc.VehicleServiceStub(channel)
-                response = await stub.DeleteVehicle(
-                    vehicle_pb2.DeleteVehicleRequest(id=vehicle_id),
+                vehiculo = await stub.EliminarVehiculo(
+                    vehicle_pb2.EliminarVehiculoRequest(id=vehiculo_id),
                     timeout=self.timeout_seconds,
                 )
-                return response.success
+                return vehiculo.exito
         except grpc.aio.AioRpcError as error:
             raise GrpcServiceError(
                 code=error.code(),
@@ -120,16 +136,16 @@ class VehicleGrpcClient:
             ) from error
 
     @staticmethod
-    def _to_response(vehicle) -> VehicleResponse:
+    def _to_response(vehiculo) -> VehicleResponse:
         return VehicleResponse(
-            id=vehicle.id,
-            patente=vehicle.patente,
-            marca=vehicle.marca,
-            modelo=vehicle.modelo,
-            anio=vehicle.anio,
-            color=vehicle.color if vehicle.HasField("color") else None,
-            tipo=vehicle_pb2.VehicleType.Name(vehicle.tipo),
-            precioDiario=vehicle.precio_diario,
-            estado=vehicle_pb2.VehicleStatus.Name(vehicle.estado),
-            activo=vehicle.activo,
+            id=vehiculo.id,
+            patente=vehiculo.patente,
+            marca=vehiculo.marca,
+            modelo=vehiculo.modelo,
+            anio=vehiculo.anio,
+            color=vehiculo.color if vehiculo.HasField("color") else None,
+            tipo=TipoVehiculo(MAPEO_TIPO_VEHICULO_GRPC[vehiculo.tipo]),
+            precioDiario=vehiculo.precio_diario,
+            estado=EstadoVehiculo(MAPEO_ESTADO_VEHICULO_GRPC[vehiculo.estado]),
+            activo=vehiculo.activo,
         )

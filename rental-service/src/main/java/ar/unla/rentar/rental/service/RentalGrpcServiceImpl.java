@@ -41,10 +41,11 @@ public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBa
       if (r.getClienteId() <= 0 || r.getVehiculoId() <= 0) throw invalid("Los IDs deben ser positivos");
       LocalDateTime inicio = parse(r.getFechaInicio()), fin = parse(r.getFechaFin());
       if (!fin.isAfter(inicio)) throw invalid("La fecha de fin debe ser posterior a la de inicio");
-      ValidacionResponse cliente = customers.validarCliente(ClienteRequest.newBuilder().setIdCliente(r.getClienteId()).build());
+      ValidacionResponse cliente = customers.validarCliente(ClienteRequest.newBuilder().setId(r.getClienteId()).build());
       if (!cliente.getExiste() || !cliente.getActivo() || !cliente.getPuedeAlquilar()) throw Status.FAILED_PRECONDITION.withDescription("Cliente inexistente o inactivo").asRuntimeException();
-      Vehicle v = vehicles.getVehicle(GetVehicleRequest.newBuilder().setId(r.getVehiculoId()).build());
-      if (!v.getActivo() || v.getEstado() != VehicleStatus.DISPONIBLE) throw Status.FAILED_PRECONDITION.withDescription("Vehículo no disponible").asRuntimeException();
+      Vehiculo v = vehicles.obtenerVehiculo(ObtenerVehiculoRequest.newBuilder().setId(r.getVehiculoId()).build());
+      vehicles.obtenerVehiculo(ObtenerVehiculoRequest.newBuilder().setId(r.getVehiculoId()).build());
+      if (!v.getActivo() || v.getEstado() != EstadoVehiculo.DISPONIBLE) throw Status.FAILED_PRECONDITION.withDescription("Vehículo no disponible").asRuntimeException();
       if (repository.existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(r.getVehiculoId(), List.of(ar.unla.rentar.rental.model.EstadoReserva.CONFIRMADA, ar.unla.rentar.rental.model.EstadoReserva.EN_CURSO), fin, inicio)) throw Status.ALREADY_EXISTS.withDescription("El vehículo ya está reservado").asRuntimeException();
       Reserva entity = new Reserva(); entity.setClienteId(r.getClienteId()); entity.setVehiculoId(r.getVehiculoId()); entity.setFechaInicio(inicio); entity.setFechaFin(fin); entity.setPrecioDiario(v.getPrecioDiario()); entity.setImporteTotal(v.getPrecioDiario() * Math.max(1, (long)Math.ceil(Duration.between(inicio, fin).toHours() / 24.0))); entity.setEstado(ar.unla.rentar.rental.model.EstadoReserva.CONFIRMADA);
       out.onNext(toProto(repository.save(entity))); out.onCompleted();
@@ -54,7 +55,7 @@ public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBa
   @Override public void consultarReservas(ConsultarReservasRequest r, StreamObserver<ConsultarReservasResponse> out) {
     try {
       Long customerId = r.getClienteId() > 0 ? r.getClienteId() : null;
-      if (customerId == null && !r.getEmailCliente().isBlank()) customerId = customers.obtenerClientePorEmail(ClienteEmailRequest.newBuilder().setEmail(r.getEmailCliente()).build()).getIdCliente();
+      if (customerId == null && !r.getEmailCliente().isBlank()) customerId = customers.obtenerClientePorEmail(ClienteEmailRequest.newBuilder().setEmail(r.getEmailCliente()).build()).getId();
       LocalDateTime from = r.getFechaInicio().isBlank() ? null : parse(r.getFechaInicio());
       LocalDateTime to = r.getFechaFin().isBlank() ? null : parse(r.getFechaFin());
       Long cid = customerId; final Long vid = r.getVehiculoId() > 0 ? r.getVehiculoId() : null;
@@ -66,7 +67,7 @@ public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBa
   @Override public void cancelarReserva(CancelarReservaRequest r, StreamObserver<CancelarReservaResponse> out) {
     try {
       Reserva x = repository.findById(r.getReservaId()).orElseThrow(() -> Status.NOT_FOUND.withDescription("Reserva inexistente").asRuntimeException());
-      if (!r.getClienteEmail().isBlank() && customers.obtenerClientePorEmail(ClienteEmailRequest.newBuilder().setEmail(r.getClienteEmail()).build()).getIdCliente() != x.getClienteId()) throw Status.PERMISSION_DENIED.withDescription("La reserva no pertenece al cliente").asRuntimeException();
+      if (!r.getClienteEmail().isBlank() && customers.obtenerClientePorEmail(ClienteEmailRequest.newBuilder().setEmail(r.getClienteEmail()).build()).getId() != x.getClienteId()) throw Status.PERMISSION_DENIED.withDescription("La reserva no pertenece al cliente").asRuntimeException();
       if (x.getEstado() == ar.unla.rentar.rental.model.EstadoReserva.CANCELADA) throw Status.FAILED_PRECONDITION.withDescription("La reserva ya está cancelada").asRuntimeException();
       if (LocalDateTime.now().isAfter(x.getFechaInicio())) throw Status.FAILED_PRECONDITION.withDescription("La reserva ya comenzó").asRuntimeException();
       x.setEstado(ar.unla.rentar.rental.model.EstadoReserva.CANCELADA); out.onNext(CancelarReservaResponse.newBuilder().setExito(true).setReserva(toProto(repository.save(x))).build()); out.onCompleted();
@@ -75,7 +76,7 @@ public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBa
 
   @Override public void consultarHistorialCliente(ConsultarHistorialClienteRequest r, StreamObserver<ConsultarHistorialClienteResponse> out) {
     try { if (r.getClienteId() <= 0) throw invalid("ID de cliente inválido");
-      List<HistorialResponse> list = new ArrayList<>(); for (Reserva x : repository.findByClienteId(r.getClienteId())) { Vehicle v = vehicles.getVehicle(GetVehicleRequest.newBuilder().setId(x.getVehiculoId()).build()); list.add(HistorialResponse.newBuilder().setVehiculo(v.getMarca()+" "+v.getModelo()).setPatente(v.getPatente()).setFechaInicio(x.getFechaInicio().toString()).setFechaFin(x.getFechaFin().toString()).setCantidadDias(Math.max(1, ChronoUnit.DAYS.between(x.getFechaInicio(),x.getFechaFin()))).setImporteTotal(x.getImporteTotal()).setEstado(x.getEstado().name()).build()); }
+      List<HistorialResponse> list = new ArrayList<>(); for (Reserva x : repository.findByClienteId(r.getClienteId())) { Vehiculo v = vehicles.obtenerVehiculo(ObtenerVehiculoRequest.newBuilder().setId(x.getVehiculoId()).build()); list.add(HistorialResponse.newBuilder().setVehiculo(v.getMarca()+" "+v.getModelo()).setPatente(v.getPatente()).setFechaInicio(x.getFechaInicio().toString()).setFechaFin(x.getFechaFin().toString()).setCantidadDias(Math.max(1, ChronoUnit.DAYS.between(x.getFechaInicio(),x.getFechaFin()))).setImporteTotal(x.getImporteTotal()).setEstado(ar.unla.rentar.grpc.rental.v1.EstadoReserva.valueOf(x.getEstado().name())).build()); }
       out.onNext(ConsultarHistorialClienteResponse.newBuilder().addAllReservas(list).build()); out.onCompleted();
     } catch (RuntimeException e) { out.onError(e); }
   }

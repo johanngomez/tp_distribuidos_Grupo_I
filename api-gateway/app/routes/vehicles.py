@@ -69,14 +69,14 @@ async def create_vehicle(
 
 
 @router.put("/{vehicle_id}", response_model=VehicleResponse)
-async def update_vehicle(
+async def update_vehiculo(
     vehicle_id: int,
     data: VehicleWriteRequest,
     request: Request,
     _user: Annotated[AuthenticatedUser, Depends(require_admin)],
 ) -> VehicleResponse:
     try:
-        return await _vehicle_client(request).update_vehicle(
+        return await _vehicle_client(request).update_vehiculo(
             vehicle_id,
             _vehicle_payload(data),
         )
@@ -85,20 +85,20 @@ async def update_vehicle(
 
 
 @router.delete("/{vehicle_id}")
-async def delete_vehicle(
+async def delete_vehiculo(
     vehicle_id: int,
     request: Request,
     _user: Annotated[AuthenticatedUser, Depends(require_admin)],
 ) -> dict[str, bool]:
     try:
-        return {"success": await _vehicle_client(request).delete_vehicle(vehicle_id)}
+        return {"success": await _vehicle_client(request).delete_vehiculo(vehicle_id)}
     except GrpcServiceError as error:
         raise _map_grpc_error(error) from error
 
 
 def _vehicle_payload(data: VehicleWriteRequest) -> dict:
     try:
-        vehicle_type = vehicle_pb2.VehicleType.Value(data.tipo.upper())
+        vehicle_type = vehicle_pb2.TipoVehiculo.Value(data.tipo.upper())
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -110,6 +110,6 @@ def _vehicle_payload(data: VehicleWriteRequest) -> dict:
         "modelo": data.modelo,
         "anio": data.anio,
         "color": data.color or "",
-        "tipo": vehicle_type,
+        "tipo": data.tipo,
         "precio_diario": data.precioDiario,
     }

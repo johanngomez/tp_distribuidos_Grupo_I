@@ -10,14 +10,13 @@ import ar.unla.rentar.grpc.rental.v1.ConsultarReservasResponse;
 import ar.unla.rentar.grpc.rental.v1.CrearReservaRequest;
 import ar.unla.rentar.grpc.rental.v1.RentalServiceGrpc;
 import ar.unla.rentar.grpc.rental.v1.ReservaResponse;
-import ar.unla.rentar.grpc.vehicle.v1.VehicleStatus;
+import ar.unla.rentar.grpc.vehicle.v1.EstadoVehiculo;
 import ar.unla.rentar.grpc.rental.v1.EstadoReserva;
 import ar.unla.rentar.grpc.rental.v1.HistorialResponse;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import io.grpc.Status;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -151,7 +150,7 @@ public void consultarReservas(ConsultarReservasRequest request, StreamObserver<C
 
         filtro.setClienteId(request.getClienteId());
         filtro.setVehiculoId(request.getVehiculoId());
-        filtro.setTipoVehiculo(request.getTipoVehiculoValue() != 0 && !request.getTipoVehiculo().name().isBlank() && !(request.getTipoVehiculoValue() == VehicleStatus.VEHICLE_STATUS_UNSPECIFIED_VALUE) ? TipoVehiculo.valueOf(request.getTipoVehiculo().name()) : null);
+        filtro.setTipoVehiculo(request.getTipoVehiculoValue() != 0 && !request.getTipoVehiculo().name().isBlank() && !(request.getTipoVehiculoValue() == EstadoVehiculo.VEHICULO_ESTADO_SIN_ESPECIFICAR_VALUE) ? TipoVehiculo.valueOf(request.getTipoVehiculo().name()) : null);
         filtro.setEstado(request.getEstado() != null && !request.getEstado().name().isBlank() && !(request.getEstadoValue() == EstadoReserva.SIN_ESPECIFICAR_VALUE) ? ar.unla.rentar.model.EstadoReserva.valueOf(request.getEstado().name()) : null);
         filtro.setFechaInicioDesde(request.getFechaInicio() != null && !request.getFechaInicio().isBlank() ? LocalDateTime.parse(request.getFechaInicio()) : null);
         filtro.setFechaInicioHasta(request.getFechaFin() != null && !request.getFechaFin().isBlank() ? LocalDateTime.parse(request.getFechaFin()) : null);
@@ -230,7 +229,7 @@ public void consultarHistorialCliente(ConsultarHistorialClienteRequest request, 
                     .setFechaFin(reserva.getFechaFin().toString())
                     .setCantidadDias(ChronoUnit.DAYS.between(reserva.getFechaInicio(), reserva.getFechaFin()))
                     .setImporteTotal(reserva.getImporteTotal())
-                    .setEstado(reserva.getEstado().name())
+                    .setEstado(reserva.getEstado() != null ? EstadoReserva.forNumber(reserva.getEstado().ordinal()) : EstadoReserva.SIN_ESPECIFICAR)
                     .build();
 
                     responseBuilder.addReservas(item);

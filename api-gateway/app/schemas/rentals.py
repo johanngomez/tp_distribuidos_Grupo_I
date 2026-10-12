@@ -1,4 +1,13 @@
 from pydantic import BaseModel
+from enum import Enum
+
+class EstadoReserva(str, Enum):
+    SIN_ESPECIFICAR = "SIN_ESPECIFICAR"
+    EN_CURSO = "EN_CURSO"
+    CONFIRMADA = "CONFIRMADA"
+    FINALIZADA = "FINALIZADA"
+    CANCELADA = "CANCELADA"
+
 
 
 class RentalResponse(BaseModel):
@@ -9,7 +18,7 @@ class RentalResponse(BaseModel):
     fecha_fin: str
     precio_diario: float
     importe_total: float
-    estado: str
+    estado: EstadoReserva
 
 
 class RentalCreateRequest(BaseModel):
@@ -30,7 +39,7 @@ class RentalHistoryResponse(BaseModel):
     fecha_fin: str
     cantidad_dias: int
     importe_total: float
-    estado: str
+    estado: EstadoReserva
 
 
 class RentalCancellationResponse(BaseModel):

@@ -22,10 +22,10 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
-from app.generated import vehicle_pb2 as vehicle__pb2
+from . import vehicle_pb2 as vehicle__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0crental.proto\x12\x10rentar.rental.v1\x1a\rvehicle.proto\"g\n\x13\x43rearReservaRequest\x12\x12\n\ncliente_id\x18\x01 \x01(\x03\x12\x13\n\x0bvehiculo_id\x18\x02 \x01(\x03\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x03 \x01(\t\x12\x11\n\tfecha_fin\x18\x04 \x01(\t\"\xeb\x01\n\x18\x43onsultarReservasRequest\x12\x15\n\remail_cliente\x18\x01 \x01(\t\x12\x12\n\ncliente_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehiculo_id\x18\x03 \x01(\x03\x12\x35\n\rtipo_vehiculo\x18\x04 \x01(\x0e\x32\x1e.rentar.vehicle.v1.VehicleType\x12/\n\x06\x65stado\x18\x05 \x01(\x0e\x32\x1f.rentar.rental.v1.EstadoReserva\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x06 \x01(\t\x12\x11\n\tfecha_fin\x18\x07 \x01(\t\"C\n\x16\x43\x61ncelarReservaRequest\x12\x12\n\nreserva_id\x18\x01 \x01(\x03\x12\x15\n\rcliente_email\x18\x02 \x01(\t\"6\n ConsultarHistorialClienteRequest\x12\x12\n\ncliente_id\x18\x01 \x01(\x03\"\xce\x01\n\x0fReservaResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x12\n\ncliente_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehiculo_id\x18\x03 \x01(\x03\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x04 \x01(\t\x12\x11\n\tfecha_fin\x18\x05 \x01(\t\x12\x15\n\rprecio_diario\x18\x06 \x01(\x01\x12\x15\n\rimporte_total\x18\x07 \x01(\x01\x12/\n\x06\x65stado\x18\x08 \x01(\x0e\x32\x1f.rentar.rental.v1.EstadoReserva\"P\n\x19\x43onsultarReservasResponse\x12\x33\n\x08reservas\x18\x01 \x03(\x0b\x32!.rentar.rental.v1.ReservaResponse\"\\\n\x17\x43\x61ncelarReservaResponse\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x32\n\x07reserva\x18\x02 \x01(\x0b\x32!.rentar.rental.v1.ReservaResponse\"\x9d\x01\n\x11HistorialResponse\x12\x10\n\x08vehiculo\x18\x01 \x01(\t\x12\x0f\n\x07patente\x18\x02 \x01(\t\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x03 \x01(\t\x12\x11\n\tfecha_fin\x18\x04 \x01(\t\x12\x15\n\rcantidad_dias\x18\x05 \x01(\x03\x12\x15\n\rimporte_total\x18\x06 \x01(\x01\x12\x0e\n\x06\x65stado\x18\x07 \x01(\t\"Z\n!ConsultarHistorialClienteResponse\x12\x35\n\x08reservas\x18\x01 \x03(\x0b\x32#.rentar.rental.v1.HistorialResponse*a\n\rEstadoReserva\x12\x13\n\x0fSIN_ESPECIFICAR\x10\x00\x12\x0c\n\x08\x45N_CURSO\x10\x01\x12\x0e\n\nCONFIRMADA\x10\x02\x12\x0e\n\nFINALIZADA\x10\x03\x12\r\n\tCANCELADA\x10\x04\x32\xc6\x03\n\rRentalService\x12X\n\x0c\x43rearReserva\x12%.rentar.rental.v1.CrearReservaRequest\x1a!.rentar.rental.v1.ReservaResponse\x12l\n\x11\x43onsultarReservas\x12*.rentar.rental.v1.ConsultarReservasRequest\x1a+.rentar.rental.v1.ConsultarReservasResponse\x12\x66\n\x0f\x43\x61ncelarReserva\x12(.rentar.rental.v1.CancelarReservaRequest\x1a).rentar.rental.v1.CancelarReservaResponse\x12\x84\x01\n\x19\x43onsultarHistorialCliente\x12\x32.rentar.rental.v1.ConsultarHistorialClienteRequest\x1a\x33.rentar.rental.v1.ConsultarHistorialClienteResponseB!\n\x1d\x61r.unla.rentar.grpc.rental.v1P\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0crental.proto\x12\x10rentar.rental.v1\x1a\rvehicle.proto\"g\n\x13\x43rearReservaRequest\x12\x12\n\ncliente_id\x18\x01 \x01(\x03\x12\x13\n\x0bvehiculo_id\x18\x02 \x01(\x03\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x03 \x01(\t\x12\x11\n\tfecha_fin\x18\x04 \x01(\t\"\xec\x01\n\x18\x43onsultarReservasRequest\x12\x15\n\remail_cliente\x18\x01 \x01(\t\x12\x12\n\ncliente_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehiculo_id\x18\x03 \x01(\x03\x12\x36\n\rtipo_vehiculo\x18\x04 \x01(\x0e\x32\x1f.rentar.vehicle.v1.TipoVehiculo\x12/\n\x06\x65stado\x18\x05 \x01(\x0e\x32\x1f.rentar.rental.v1.EstadoReserva\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x06 \x01(\t\x12\x11\n\tfecha_fin\x18\x07 \x01(\t\"C\n\x16\x43\x61ncelarReservaRequest\x12\x12\n\nreserva_id\x18\x01 \x01(\x03\x12\x15\n\rcliente_email\x18\x02 \x01(\t\"6\n ConsultarHistorialClienteRequest\x12\x12\n\ncliente_id\x18\x01 \x01(\x03\"\xce\x01\n\x0fReservaResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x12\n\ncliente_id\x18\x02 \x01(\x03\x12\x13\n\x0bvehiculo_id\x18\x03 \x01(\x03\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x04 \x01(\t\x12\x11\n\tfecha_fin\x18\x05 \x01(\t\x12\x15\n\rprecio_diario\x18\x06 \x01(\x01\x12\x15\n\rimporte_total\x18\x07 \x01(\x01\x12/\n\x06\x65stado\x18\x08 \x01(\x0e\x32\x1f.rentar.rental.v1.EstadoReserva\"P\n\x19\x43onsultarReservasResponse\x12\x33\n\x08reservas\x18\x01 \x03(\x0b\x32!.rentar.rental.v1.ReservaResponse\"\\\n\x17\x43\x61ncelarReservaResponse\x12\r\n\x05\x65xito\x18\x01 \x01(\x08\x12\x32\n\x07reserva\x18\x02 \x01(\x0b\x32!.rentar.rental.v1.ReservaResponse\"\xbe\x01\n\x11HistorialResponse\x12\x10\n\x08vehiculo\x18\x01 \x01(\t\x12\x0f\n\x07patente\x18\x02 \x01(\t\x12\x14\n\x0c\x66\x65\x63ha_inicio\x18\x03 \x01(\t\x12\x11\n\tfecha_fin\x18\x04 \x01(\t\x12\x15\n\rcantidad_dias\x18\x05 \x01(\x03\x12\x15\n\rimporte_total\x18\x06 \x01(\x01\x12/\n\x06\x65stado\x18\x07 \x01(\x0e\x32\x1f.rentar.rental.v1.EstadoReserva\"Z\n!ConsultarHistorialClienteResponse\x12\x35\n\x08reservas\x18\x01 \x03(\x0b\x32#.rentar.rental.v1.HistorialResponse*a\n\rEstadoReserva\x12\x13\n\x0fSIN_ESPECIFICAR\x10\x00\x12\x0c\n\x08\x45N_CURSO\x10\x01\x12\x0e\n\nCONFIRMADA\x10\x02\x12\x0e\n\nFINALIZADA\x10\x03\x12\r\n\tCANCELADA\x10\x04\x32\xc6\x03\n\rRentalService\x12X\n\x0c\x43rearReserva\x12%.rentar.rental.v1.CrearReservaRequest\x1a!.rentar.rental.v1.ReservaResponse\x12l\n\x11\x43onsultarReservas\x12*.rentar.rental.v1.ConsultarReservasRequest\x1a+.rentar.rental.v1.ConsultarReservasResponse\x12\x66\n\x0f\x43\x61ncelarReserva\x12(.rentar.rental.v1.CancelarReservaRequest\x1a).rentar.rental.v1.CancelarReservaResponse\x12\x84\x01\n\x19\x43onsultarHistorialCliente\x12\x32.rentar.rental.v1.ConsultarHistorialClienteRequest\x1a\x33.rentar.rental.v1.ConsultarHistorialClienteResponseB!\n\x1d\x61r.unla.rentar.grpc.rental.v1P\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,26 +33,26 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'rental_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n\035ar.unla.rentar.grpc.rental.v1P\001'
-  _globals['_ESTADORESERVA']._serialized_start=1154
-  _globals['_ESTADORESERVA']._serialized_end=1251
+  _globals['_ESTADORESERVA']._serialized_start=1188
+  _globals['_ESTADORESERVA']._serialized_end=1285
   _globals['_CREARRESERVAREQUEST']._serialized_start=49
   _globals['_CREARRESERVAREQUEST']._serialized_end=152
   _globals['_CONSULTARRESERVASREQUEST']._serialized_start=155
-  _globals['_CONSULTARRESERVASREQUEST']._serialized_end=390
-  _globals['_CANCELARRESERVAREQUEST']._serialized_start=392
-  _globals['_CANCELARRESERVAREQUEST']._serialized_end=459
-  _globals['_CONSULTARHISTORIALCLIENTEREQUEST']._serialized_start=461
-  _globals['_CONSULTARHISTORIALCLIENTEREQUEST']._serialized_end=515
-  _globals['_RESERVARESPONSE']._serialized_start=518
-  _globals['_RESERVARESPONSE']._serialized_end=724
-  _globals['_CONSULTARRESERVASRESPONSE']._serialized_start=726
-  _globals['_CONSULTARRESERVASRESPONSE']._serialized_end=806
-  _globals['_CANCELARRESERVARESPONSE']._serialized_start=808
-  _globals['_CANCELARRESERVARESPONSE']._serialized_end=900
-  _globals['_HISTORIALRESPONSE']._serialized_start=903
-  _globals['_HISTORIALRESPONSE']._serialized_end=1060
-  _globals['_CONSULTARHISTORIALCLIENTERESPONSE']._serialized_start=1062
-  _globals['_CONSULTARHISTORIALCLIENTERESPONSE']._serialized_end=1152
-  _globals['_RENTALSERVICE']._serialized_start=1254
-  _globals['_RENTALSERVICE']._serialized_end=1708
+  _globals['_CONSULTARRESERVASREQUEST']._serialized_end=391
+  _globals['_CANCELARRESERVAREQUEST']._serialized_start=393
+  _globals['_CANCELARRESERVAREQUEST']._serialized_end=460
+  _globals['_CONSULTARHISTORIALCLIENTEREQUEST']._serialized_start=462
+  _globals['_CONSULTARHISTORIALCLIENTEREQUEST']._serialized_end=516
+  _globals['_RESERVARESPONSE']._serialized_start=519
+  _globals['_RESERVARESPONSE']._serialized_end=725
+  _globals['_CONSULTARRESERVASRESPONSE']._serialized_start=727
+  _globals['_CONSULTARRESERVASRESPONSE']._serialized_end=807
+  _globals['_CANCELARRESERVARESPONSE']._serialized_start=809
+  _globals['_CANCELARRESERVARESPONSE']._serialized_end=901
+  _globals['_HISTORIALRESPONSE']._serialized_start=904
+  _globals['_HISTORIALRESPONSE']._serialized_end=1094
+  _globals['_CONSULTARHISTORIALCLIENTERESPONSE']._serialized_start=1096
+  _globals['_CONSULTARHISTORIALCLIENTERESPONSE']._serialized_end=1186
+  _globals['_RENTALSERVICE']._serialized_start=1288
+  _globals['_RENTALSERVICE']._serialized_end=1742
 # @@protoc_insertion_point(module_scope)

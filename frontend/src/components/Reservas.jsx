@@ -42,7 +42,6 @@ function Reservas() {
             const data = await listarReservas(filtro);
             setReservas(data);
         } catch (error) {
-            console.log("Filtro enviado a listarReservas:", filtro);
             setError(error.message);
         } finally {
             setLoading(false);
@@ -77,7 +76,8 @@ const filtro = {
         return <p>Cargando reservas...</p>;
     }
 
-    const handleCancelarReserva = async (reservaId) => {
+    const handleCancelarReserva = async (reservaId, reservaEstado) => {
+                                console.log("Estado de la reserva:", reservaEstado); // Log del estado de la reserva
     const confirmar = window.confirm("¿Estás seguro de que querés cancelar esta reserva?");
     if (!confirmar) return;
 
@@ -97,8 +97,14 @@ const filtro = {
     cargarReservas(); //recargar reservas
 
     } catch (error) {
+
+        if (error.status === 409) {
+        alert("Esta reserva ya se encuentra cancelada.");
+        cargarReservas();
+    } else {
         const mensaje = error.response?.data?.message || error.message || "Error al cancelar la reserva.";
         alert(mensaje);
+    }
     }
 };
 
@@ -312,7 +318,7 @@ const filtro = {
                     <td>
                         {reserva.estado !== "CANCELADA" && reserva.estado !== "FINALIZADA" ? (
                             <button
-                                onClick={() => handleCancelarReserva(reserva.id)}
+                                onClick={() => handleCancelarReserva(reserva.id, reserva.estado)}
                                 style={{
                                     backgroundColor: '#e53e3e',
                                     color: '#ffffff',

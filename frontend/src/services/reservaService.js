@@ -29,5 +29,12 @@ export const cancelarReserva = async (reservaId) => {
          method: "PUT",
     });
 
+    if (!response.ok) {
+        const errorData = await response.json();
+        const error = new Error(errorData.message || "Error en la operación");
+        error.status = response.status; // Guardamos el status para usarlo en el catch
+        throw error;
+    }
+
 return response.data;
 };

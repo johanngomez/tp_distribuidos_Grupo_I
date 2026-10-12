@@ -65,7 +65,7 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
 
     @Override
     public void getCliente(ClienteRequest request, StreamObserver<ClienteResponse> responseObserver) {
-        clienteService.buscarPorId(request.getIdCliente()).ifPresentOrElse(
+        clienteService.buscarPorId(request.getId()).ifPresentOrElse(
                 cliente -> complete(responseObserver, toProto(cliente)),
                 () -> error(responseObserver, Status.NOT_FOUND, "Cliente no encontrado")
         );
@@ -84,6 +84,8 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
     @Override
     public void crearCliente(CrearClienteRequest request,
                              StreamObserver<ClienteResponse> responseObserver) {
+
+
         try {
             ClienteCreateDto dto = new ClienteCreateDto();
             dto.setDocumento(request.getDocumento());
@@ -108,7 +110,7 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
             dto.setApellido(request.getApellido());
             dto.setTelefono(request.getTelefono());
             dto.setFechaNacimiento(parseDate(request.getFechaNacimiento()));
-            complete(responseObserver, toProto(clienteService.modificar(request.getIdCliente(), dto)));
+            complete(responseObserver, toProto(clienteService.modificar(request.getId(), dto)));
         } catch (RuntimeException exception) {
             error(responseObserver, Status.NOT_FOUND, exception.getMessage());
         }
@@ -118,7 +120,7 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
     public void darDeBajaCliente(DarDeBajaClienteRequest request,
                                  StreamObserver<OperacionClienteResponse> responseObserver) {
         try {
-            clienteService.bajaLogica(request.getIdCliente());
+            clienteService.bajaLogica(request.getId());
             responseObserver.onNext(OperacionClienteResponse.newBuilder()
                     .setExito(true)
                     .setMensaje("Cliente dado de baja lógicamente")
@@ -132,8 +134,8 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
     @Override
     public void validarCliente(ClienteRequest request,
                                StreamObserver<ValidacionResponse> responseObserver) {
-        boolean existe = clienteService.buscarPorId(request.getIdCliente()).isPresent();
-        boolean activo = existe && clienteService.buscarPorId(request.getIdCliente()).orElseThrow().isActivo();
+        boolean existe = clienteService.buscarPorId(request.getId()).isPresent();
+        boolean activo = existe && clienteService.buscarPorId(request.getId()).orElseThrow().isActivo();
         responseObserver.onNext(ValidacionResponse.newBuilder()
                 .setExiste(existe)
                 .setActivo(activo)
@@ -144,7 +146,7 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
 
     private ClienteResponse toProto(ClienteResponseDto cliente) {
         ClienteResponse.Builder builder = ClienteResponse.newBuilder()
-                .setIdCliente(cliente.getId())
+                .setId(cliente.getId())
                 .setDocumento(value(cliente.getDocumento()))
                 .setNombre(value(cliente.getNombre()))
                 .setApellido(value(cliente.getApellido()))

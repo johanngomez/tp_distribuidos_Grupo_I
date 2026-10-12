@@ -113,6 +113,7 @@ function Vehiculos() {
         }
         try {
             await eliminarVehiculo(id);
+            mostrarMensajeExito("Vehículo dado de baja con éxito");
             await cargarVehiculos();
         } catch (error) {
             setError(error.message);
@@ -128,6 +129,7 @@ function Vehiculos() {
         try {
             if (editandoId) {
                 await modificarVehiculo(editandoId, {
+                    patente,
                     marca,
                     modelo,
                     anio: Number(anio),
