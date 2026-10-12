@@ -73,7 +73,7 @@ public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBa
                 .setFechaFin(reserva.getFechaFin().toString())
                 .setPrecioDiario(reserva.getPrecioDiario())
                 .setImporteTotal(reserva.getImporteTotal())
-                .setEstado(EstadoReserva.forNumber(reserva.getEstado().ordinal()))
+                .setEstado(EstadoReserva.valueOf(reserva.getEstado().name()))
                 .build();
 
         responseObserver.onNext(response);
@@ -110,7 +110,7 @@ public void cancelarReserva(CancelarReservaRequest request, StreamObserver<Cance
                 .setFechaFin(reserva.getFechaFin().toString())
                 .setPrecioDiario(reserva.getPrecioDiario())
                 .setImporteTotal(reserva.getImporteTotal())
-                .setEstado(EstadoReserva.forNumber(reserva.getEstado().ordinal()))
+                .setEstado(EstadoReserva.valueOf(reserva.getEstado().name()))
                 .build();
 
 
@@ -164,11 +164,13 @@ public void consultarReservas(ConsultarReservasRequest request, StreamObserver<C
 
         List<ReservaResponse> reservasGrpc = reservas.stream().map(reserva -> ReservaResponse.newBuilder()
                 .setId(reserva.getId())
+                .setClienteId(reserva.getCliente().getId())
+                .setVehiculoId(reserva.getVehiculo().getId())
                 .setFechaInicio(reserva.getFechaInicio().toString())
                 .setFechaFin(reserva.getFechaFin().toString())
                 .setPrecioDiario(reserva.getPrecioDiario())
                 .setImporteTotal(reserva.getImporteTotal())
-                .setEstado(EstadoReserva.forNumber(reserva.getEstado().ordinal()))
+                .setEstado(EstadoReserva.valueOf(reserva.getEstado().name()))
                 .build()).toList();
 
                ConsultarReservasResponse response = ConsultarReservasResponse.newBuilder()
@@ -229,7 +231,7 @@ public void consultarHistorialCliente(ConsultarHistorialClienteRequest request, 
                     .setFechaFin(reserva.getFechaFin().toString())
                     .setCantidadDias(ChronoUnit.DAYS.between(reserva.getFechaInicio(), reserva.getFechaFin()))
                     .setImporteTotal(reserva.getImporteTotal())
-                    .setEstado(reserva.getEstado() != null ? EstadoReserva.forNumber(reserva.getEstado().ordinal()) : EstadoReserva.SIN_ESPECIFICAR)
+                    .setEstado(reserva.getEstado() != null ? EstadoReserva.valueOf(reserva.getEstado().name()) : EstadoReserva.SIN_ESPECIFICAR)
                     .build();
 
                     responseBuilder.addReservas(item);

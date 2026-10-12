@@ -81,6 +81,10 @@ class VehicleGrpcClient:
 
     async def get_vehiculo(self, vehiculo_id: int) -> VehicleResponse:
         try:
+            if not vehiculo_id or vehiculo_id <= 0:
+                raise ValueError(
+                    f"ID de vehículo inválido recibido: {vehiculo_id}"
+                )
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = vehicle_pb2_grpc.VehicleServiceStub(channel)
                 vehiculo = await stub.ObtenerVehiculo(

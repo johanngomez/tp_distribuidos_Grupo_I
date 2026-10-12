@@ -1,6 +1,7 @@
 from typing import Annotated
 
 import grpc
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from app.grpc_clients.errors import GrpcServiceError
@@ -18,6 +19,8 @@ from app.security.jwt import AuthenticatedUser
 
 router = APIRouter(prefix="/api/reservas", tags=["Reservas"])
 CurrentUser = Annotated[AuthenticatedUser, Depends(get_current_user)]
+
+logger = logging.getLogger(__name__)
 
 
 def _rental_client(request: Request) -> RentalGrpcClient:
@@ -91,6 +94,10 @@ async def list_rentals(
     fecha_fin: str = Query(default=""),
 ) -> list[RentalResponse]:
     try:
+        print("--------------------------------------------------", flush=True)
+        print(f"DEBUG VALORES - Email: '{email}', Es Admin?: {user.es_admin if 'user' in locals() else 'N/A'}", flush=True)
+        print("--------------------------------------------------", flush=True)
+        logger.info(f"DEBUG - es_admin: {user.es_admin}, email_usuario: {user.email}")
         return await _rental_client(request).list_rentals(
             email="" if user.es_admin else user.email,
             customer_id=cliente_id or 0,

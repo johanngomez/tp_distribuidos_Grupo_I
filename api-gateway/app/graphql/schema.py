@@ -177,14 +177,19 @@ class Query:
         filtro: Optional[ReservationFilter] = None,
     ) -> list[ReservationNode]:
         user: AuthenticatedUser = info.context["user"]
+        print(f"DEBUG USUARIO - es_admin: {user.es_admin}, email: '{user.email}'", flush=True)
         _, _, rental_client = _clients(info)
+
         reservations = await rental_client.list_rentals(
-            email="" if user.es_admin else user.email,
+            email=user.email,
             customer_id=int(filtro.clienteId) if filtro and filtro.clienteId else 0,
             vehicle_id=int(filtro.vehiculoId) if filtro and filtro.vehiculoId else 0,
             start_date=_grpc_date(filtro.fechaInicioDesde if filtro else None),
             end_date=_grpc_date(filtro.fechaInicioHasta if filtro else None),
         )
+
+        print(f"DEBUG gRPC - Reservas encontradas: {len(reservations)}", flush=True)
+
         if filtro and filtro.estado:
             reservations = [item for item in reservations if item.estado == filtro.estado.value]
         nodes = []
@@ -210,9 +215,15 @@ class Query:
         _, vehicle_client, rental_client = _clients(info)
         import asyncio
 
+        user = info.context.get("user") or getattr(info.context, "user", None)
+        print(info.context);
+        email_usuario = getattr(user, "email", "") if user else ""
+        es_admin_usuario = getattr(user, "es_admin", False) if user else False
+
         vehicles, reservations = await asyncio.gather(
-            vehicle_client.list_vehicles(),
+            vehicle_client.list_vehicles(),g
             rental_client.list_rentals(
+                email= email_usuario,
                 start_date=fechaInicio,
                 end_date=fechaFin,
             ),
