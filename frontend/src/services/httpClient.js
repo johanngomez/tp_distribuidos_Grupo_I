@@ -38,7 +38,7 @@ async function manejarError(response, mensajePorDefecto) {
     try {
         if (contentType.includes("application/json")) {
             const data = await response.json();
-            throw new Error(data.message || data.error || mensajePorDefecto);
+            throw new Error(data.detail || data.message || data.error || mensajePorDefecto);
         } else {
             const texto = await response.text();
             throw new Error(texto || mensajePorDefecto);

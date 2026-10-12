@@ -29,5 +29,9 @@ export const cancelarReserva = async (reservaId) => {
          method: "PUT",
     });
 
-return response.data;
+    if (!response.ok) {
+        await manejarError(response, "No se pudo cancelar la reserva");
+    }
+
+    return response.json();
 };
