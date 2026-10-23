@@ -678,8 +678,10 @@ Las rutas protegidas utilizan Authorization: Bearer <JWT>.
 
 ## Hito 3 — Mensajería
 
-El Hito 3 todavía no fue iniciado. La incorporación de Apache Kafka o RabbitMQ
-queda pendiente para una etapa posterior.
+El Hito 3 incorpora RabbitMQ como broker de mensajes para comunicación
+asíncrona. La infraestructura inicial, los contratos de eventos y los archivos
+esqueleto están preparados. Los próximos pasos de implementación, ejecución y
+pruebas se encuentran en [PROXIMOS_PASOS_HITO3.md](PROXIMOS_PASOS_HITO3.md).
 
 ---
 

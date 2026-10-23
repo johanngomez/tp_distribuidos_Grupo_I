@@ -15,6 +15,14 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+-- Bases utilizadas por el Hito 1 y el Hito 2/3.
+-- Este dump contiene las tablas y datos del backend monolítico en `rentar`.
+-- Vehicle Service utiliza `rentar_vehiculos`; Hibernate crea sus tablas al
+-- iniciar el microservicio mediante spring.jpa.hibernate.ddl-auto=update.
+CREATE DATABASE IF NOT EXISTS `rentar`;
+USE `rentar`;
+CREATE DATABASE IF NOT EXISTS `rentar_vehiculos`;
+
 --
 -- Table structure for table `reserva`
 --
