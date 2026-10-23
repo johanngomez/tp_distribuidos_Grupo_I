@@ -682,6 +682,8 @@ El Hito 3 incorpora RabbitMQ como broker de mensajes para comunicación
 asíncrona. La infraestructura inicial, los contratos de eventos y los archivos
 esqueleto están preparados. Los próximos pasos de implementación, ejecución y
 pruebas se encuentran en [PROXIMOS_PASOS_HITO3.md](PROXIMOS_PASOS_HITO3.md).
+Para ejecutar RabbitMQ se necesita Docker Desktop, que ya incluye Docker
+Compose v2.
 
 ---
 

@@ -123,6 +123,42 @@ LOCK TABLES `vehiculo` WRITE;
 INSERT INTO `vehiculo` VALUES (1,'AAA111','Toyota','Corolla',2022,'Gris','SEDAN',45000.00,'DISPONIBLE',1),(2,'AAA112','Chevrolet','Cruze',2021,'Blanco','SEDAN',42000.00,'DISPONIBLE',1),(3,'AAA113','Nissan','Sentra',2023,'Negro','SEDAN',48000.00,'RESERVADO',1),(4,'AAA114','Fiat','Cronos',2020,'Rojo','SEDAN',35000.00,'EN_ALQUILER',1),(5,'BBB221','Volkswagen','Taos',2024,'Blanco','SUV',60000.00,'DISPONIBLE',1),(6,'BBB222','Jeep','Renegade',2022,'Verde','SUV',58000.00,'RESERVADO',1),(7,'BBB223','Honda','HR-V',2023,'Gris','SUV',62000.00,'DISPONIBLE',1),(8,'BBB224','Ford','Territory',2023,'Azul','SUV',65000.00,'EN_ALQUILER',1),(9,'CCC331','Ford','Ranger',2023,'Negro','PICKUP',75000.00,'DISPONIBLE',1),(10,'CCC332','Toyota','Hilux',2024,'Rojo','PICKUP',80000.00,'RESERVADO',1),(11,'CCC333','Volkswagen','Amarok',2022,'Plata','PICKUP',78000.00,'DISPONIBLE',1),(12,'DDD441','Peugeot','208',2021,'Azul','HATCHBACK',38000.00,'DISPONIBLE',1),(13,'DDD442','Renault','Sandero',2020,'Gris','HATCHBACK',32000.00,'DISPONIBLE',1),(14,'DDD443','Volkswagen','Polo',2023,'Negro','HATCHBACK',40000.00,'EN_ALQUILER',1),(15,'EEE551','Ford','Mustang',2020,'Rojo','COUPE',120000.00,'DISPONIBLE',1),(16,'EEE552','BMW','Serie 4',2022,'Negro','COUPE',140000.00,'RESERVADO',1),(17,'ZZZ991','Renault','Clio',2015,'Blanco','HATCHBACK',25000.00,'DISPONIBLE',0),(18,'ZZZ992','Fiat','Siena',2016,'Gris','SEDAN',28000.00,'DISPONIBLE',0);
 /*!40000 ALTER TABLE `vehiculo` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Inicialización de Vehicle Service en la base separada `rentar_vehiculos`.
+--
+
+CREATE TABLE IF NOT EXISTS `rentar_vehiculos`.`vehiculo` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `activo` bit(1) DEFAULT NULL,
+  `anio` int DEFAULT NULL,
+  `color` varchar(255) DEFAULT NULL,
+  `estado` enum('DISPONIBLE','EN_ALQUILER','RESERVADO','VEHICLE_STATUS_UNSPECIFIED') DEFAULT NULL,
+  `marca` varchar(255) NOT NULL,
+  `modelo` varchar(255) NOT NULL,
+  `patente` varchar(255) NOT NULL,
+  `precio_diario` double NOT NULL,
+  `tipo` enum('COUPE','HATCHBACK','PICKUP','SEDAN','SUV','VEHICLE_TYPE_UNSPECIFIED') DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_vehiculo_patente_hito3` (`patente`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO `rentar_vehiculos`.`vehiculo`
+  (`id`, `patente`, `marca`, `modelo`, `anio`, `color`, `tipo`, `precio_diario`, `estado`, `activo`)
+SELECT
+  v.`id`, v.`patente`, v.`marca`, v.`modelo`, v.`anio`, v.`color`,
+  v.`tipo_vehiculo`, v.`precio_diario`, v.`estado`, v.`activo`
+FROM `rentar`.`vehiculo` v
+LEFT JOIN `rentar_vehiculos`.`vehiculo` existente
+  ON existente.`id` = v.`id` OR existente.`patente` = v.`patente`
+WHERE existente.`id` IS NULL AND existente.`patente` IS NULL;
+
+SET @next_vehicle_id = (SELECT COALESCE(MAX(`id`), 0) + 1 FROM `rentar_vehiculos`.`vehiculo`);
+SET @sql = CONCAT('ALTER TABLE `rentar_vehiculos`.`vehiculo` AUTO_INCREMENT = ', @next_vehicle_id);
+PREPARE set_auto_increment FROM @sql;
+EXECUTE set_auto_increment;
+DEALLOCATE PREPARE set_auto_increment;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
