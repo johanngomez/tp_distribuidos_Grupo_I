@@ -18,6 +18,9 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     @Autowired
     private VehiculoRepository vehiculoRepository;
 
+    @Autowired
+    private VehicleEventPublisher vehicleEventPublisher;
+
     @Override
     public void listVehicles(ListVehiclesRequest request, StreamObserver<ListVehiclesResponse> responseObserver) {
         List<Vehiculo> vehiculos = vehiculoRepository.findAll();
@@ -45,6 +48,8 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         vehiculo.setActivo(true);
 
         Vehiculo guardado = vehiculoRepository.save(vehiculo);
+
+        vehicleEventPublisher.publicarSolicitudVerificacion(guardado.getId(), guardado.getPatente());
 
         responseObserver.onNext(mapToProto(guardado));
         responseObserver.onCompleted();
