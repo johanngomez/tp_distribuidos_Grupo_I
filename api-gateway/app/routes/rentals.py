@@ -53,7 +53,12 @@ def _map_error(error: GrpcServiceError) -> HTTPException:
     )
 
 
-@router.post("", response_model=RentalResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=RentalResponse, status_code=status.HTTP_201_CREATED,
+    summary="Crear reserva",
+    description="Valida cliente y disponibilidad del vehículo y crea una reserva confirmada.",
+    responses={201: {"description": "Reserva creada."}, 404: {"description": "Cliente o vehículo inexistente."}, 409: {"description": "Cliente inactivo o vehículo no disponible."}, 503: {"description": "Algún servicio interno no está disponible."}},
+)
 async def create_rental(
     data: RentalCreateRequest,
     request: Request,
@@ -81,14 +86,18 @@ async def create_rental(
         raise _map_error(error) from error
 
 
-@router.get("", response_model=list[RentalResponse])
+@router.get(
+    "", response_model=list[RentalResponse], summary="Consultar reservas",
+    description="Lista reservas. Los administradores pueden consultar todas; los clientes solo las propias. Permite filtrar por cliente, vehículo y fechas.",
+    responses={401: {"description": "Token ausente o inválido."}, 503: {"description": "Rental Service no disponible."}},
+)
 async def list_rentals(
     request: Request,
     user: CurrentUser,
-    cliente_id: int | None = Query(default=None),
-    vehiculo_id: int | None = Query(default=None),
-    fecha_inicio: str = Query(default=""),
-    fecha_fin: str = Query(default=""),
+    cliente_id: int | None = Query(default=None, description="Filtra por ID de cliente."),
+    vehiculo_id: int | None = Query(default=None, description="Filtra por ID de vehículo."),
+    fecha_inicio: str = Query(default="", description="Fecha/hora inicial ISO-8601."),
+    fecha_fin: str = Query(default="", description="Fecha/hora final ISO-8601."),
 ) -> list[RentalResponse]:
     try:
         return await _rental_client(request).list_rentals(
@@ -102,7 +111,11 @@ async def list_rentals(
         raise _map_error(error) from error
 
 
-@router.put("/{rental_id}/cancelar", response_model=RentalCancellationResponse)
+@router.put(
+    "/{rental_id}/cancelar", response_model=RentalCancellationResponse,
+    summary="Cancelar reserva", description="Cancela una reserva si todavía no comenzó.",
+    responses={200: {"description": "Reserva cancelada."}, 404: {"description": "Reserva inexistente."}, 409: {"description": "La reserva ya comenzó o ya estaba cancelada."}},
+)
 async def cancel_rental(
     rental_id: int,
     request: Request,

@@ -18,7 +18,13 @@ class LoginRequest(BaseModel):
     password: str
 
 
-@router.post("/login")
+@router.post(
+    "/login",
+    summary="Iniciar sesión",
+    description="Autentica un cliente o administrador mediante Customer Service y devuelve un JWT Bearer.",
+    response_description="Token JWT y rol del usuario autenticado.",
+    responses={401: {"description": "Credenciales inválidas."}, 503: {"description": "Customer Service o JWT no disponible."}},
+)
 async def login(data: LoginRequest, request: Request) -> dict[str, str | bool]:
     settings = request.app.state.settings
     if settings.jwt_secret is None:
@@ -48,7 +54,12 @@ async def login(data: LoginRequest, request: Request) -> dict[str, str | bool]:
         ) from error
 
 
-@router.get("/me", summary="Consultar la identidad del token")
+@router.get(
+    "/me",
+    summary="Consultar la identidad del token",
+    description="Valida el JWT enviado en Authorization y devuelve el email y rol del usuario.",
+    responses={401: {"description": "Token ausente o inválido."}},
+)
 def current_identity(
     user: Annotated[AuthenticatedUser, Depends(get_current_user)],
 ) -> dict[str, str | bool]:

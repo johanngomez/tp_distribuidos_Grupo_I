@@ -4,7 +4,18 @@ from app.routes import auth, customers, health, rentals, vehicles
 from app.graphql.schema import router as graphql_router
 from app.config.settings import load_settings
 
-app = FastAPI(title="Rentar API Gateway")
+app = FastAPI(
+    title="Rentar API Gateway",
+    description=(
+        "Punto de entrada HTTP del sistema Rentar. Expone REST y GraphQL, "
+        "valida JWT y orquesta llamadas gRPC hacia los servicios de clientes, "
+        "vehículos y reservas."
+    ),
+    version="1.0.0",
+    contact={"name": "Grupo I - UNLa"},
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
 
 settings = load_settings()
 app.state.settings = settings

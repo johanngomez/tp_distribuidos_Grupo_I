@@ -44,7 +44,11 @@ def _map_grpc_error(error: GrpcServiceError) -> HTTPException:
     )
 
 
-@router.get("", response_model=list[VehicleResponse])
+@router.get(
+    "", response_model=list[VehicleResponse], summary="Listar vehículos",
+    description="Obtiene los vehículos administrados por Vehicle Service. Requiere un JWT válido.",
+    responses={401: {"description": "Token ausente o inválido."}, 503: {"description": "Vehicle Service no disponible."}},
+)
 async def list_vehicles(
     request: Request,
     _user: Annotated[AuthenticatedUser, Depends(get_current_user)],
@@ -56,7 +60,11 @@ async def list_vehicles(
         raise _map_grpc_error(error) from error
 
 
-@router.post("", response_model=VehicleResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=VehicleResponse, status_code=status.HTTP_201_CREATED,
+    summary="Registrar vehículo", description="Crea un vehículo. Solo disponible para administradores.",
+    responses={201: {"description": "Vehículo creado."}, 400: {"description": "Datos o tipo inválido."}, 401: {"description": "Token inválido."}, 403: {"description": "Se requiere rol administrador."}, 503: {"description": "Vehicle Service no disponible."}},
+)
 async def create_vehicle(
     data: VehicleWriteRequest,
     request: Request,
@@ -68,7 +76,11 @@ async def create_vehicle(
         raise _map_grpc_error(error) from error
 
 
-@router.put("/{vehicle_id}", response_model=VehicleResponse)
+@router.put(
+    "/{vehicle_id}", response_model=VehicleResponse, summary="Actualizar vehículo",
+    description="Actualiza todos los datos de un vehículo existente. Solo administradores.",
+    responses={404: {"description": "Vehículo inexistente."}, 401: {"description": "Token inválido."}, 403: {"description": "Se requiere rol administrador."}},
+)
 async def update_vehicle(
     vehicle_id: int,
     data: VehicleWriteRequest,
@@ -84,7 +96,11 @@ async def update_vehicle(
         raise _map_grpc_error(error) from error
 
 
-@router.delete("/{vehicle_id}")
+@router.delete(
+    "/{vehicle_id}", summary="Dar de baja un vehículo",
+    description="Realiza la baja lógica del vehículo. Solo administradores.",
+    responses={200: {"description": "Baja realizada."}, 404: {"description": "Vehículo inexistente."}, 403: {"description": "Se requiere rol administrador."}},
+)
 async def delete_vehicle(
     vehicle_id: int,
     request: Request,

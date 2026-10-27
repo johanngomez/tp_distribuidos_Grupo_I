@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class RentalResponse(BaseModel):
@@ -13,10 +13,15 @@ class RentalResponse(BaseModel):
 
 
 class RentalCreateRequest(BaseModel):
-    clienteId: int
-    vehiculoId: int
-    fechaInicio: str
-    fechaFin: str
+    """Datos para crear una reserva; las fechas usan ISO-8601."""
+    model_config = ConfigDict(json_schema_extra={"example": {
+        "clienteId": 1, "vehiculoId": 1,
+        "fechaInicio": "2026-11-10T10:00:00", "fechaFin": "2026-11-15T10:00:00",
+    }})
+    clienteId: int = Field(..., gt=0, description="Identificador del cliente.")
+    vehiculoId: int = Field(..., gt=0, description="Identificador del vehículo.")
+    fechaInicio: str = Field(..., description="Inicio en formato YYYY-MM-DDTHH:MM:SS.")
+    fechaFin: str = Field(..., description="Fin en formato YYYY-MM-DDTHH:MM:SS.")
 
 
 class RentalCancelRequest(BaseModel):

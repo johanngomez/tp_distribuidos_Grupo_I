@@ -14,6 +14,7 @@ from app.security.jwt import AuthenticatedUser, validate_token
 from jwt import InvalidTokenError
 
 
+@strawberry.enum(description="Estados posibles de una reserva.")
 class RentalState(Enum):
     CONFIRMADA = "CONFIRMADA"
     EN_CURSO = "EN_CURSO"
@@ -21,8 +22,9 @@ class RentalState(Enum):
     FINALIZADA = "FINALIZADA"
 
 
-@strawberry.enum(name="TipoVehiculo")
+@strawberry.enum(name="TipoVehiculo", description="Tipos de vehículos disponibles para alquilar.")
 class VehicleKind(Enum):
+    """Tipos de vehículos que Rentar permite publicar y alquilar."""
     SEDAN = "SEDAN"
     SUV = "SUV"
     PICKUP = "PICKUP"
@@ -30,13 +32,15 @@ class VehicleKind(Enum):
     HATCHBACK = "HATCHBACK"
 
 
+@strawberry.enum(description="Estados operativos del vehículo.")
 class VehicleState(Enum):
+    """Estados operativos de un vehículo."""
     DISPONIBLE = "DISPONIBLE"
     RESERVADO = "RESERVADO"
     EN_ALQUILER = "EN_ALQUILER"
 
 
-@strawberry.type
+@strawberry.type(description="Datos públicos de un cliente relacionado con una reserva.")
 class CustomerNode:
     id: strawberry.ID
     documento: str
@@ -49,7 +53,7 @@ class CustomerNode:
     esAdmin: bool
 
 
-@strawberry.type
+@strawberry.type(description="Datos públicos de un vehículo y su estado operativo.")
 class VehicleNode:
     id: strawberry.ID
     patente: str
@@ -63,7 +67,7 @@ class VehicleNode:
     activo: bool
 
 
-@strawberry.type
+@strawberry.type(description="Reserva con cliente, vehículo, fechas, importe y estado.")
 class ReservationNode:
     id: strawberry.ID
     cliente: CustomerNode
@@ -75,7 +79,7 @@ class ReservationNode:
     estado: RentalState
 
 
-@strawberry.type
+@strawberry.type(description="Elemento resumido del historial de alquileres de un cliente.")
 class HistoryNode:
     vehiculo: str
     patente: str
@@ -88,12 +92,13 @@ class HistoryNode:
 
 @strawberry.input(name="FiltroReservaInput")
 class ReservationFilter:
-    clienteId: Optional[strawberry.ID] = None
-    vehiculoId: Optional[strawberry.ID] = None
-    tipo: Optional[VehicleKind] = None
-    estado: Optional[RentalState] = None
-    fechaInicioDesde: Optional[str] = None
-    fechaInicioHasta: Optional[str] = None
+    """Filtros opcionales para consultar reservas por dominio y fechas."""
+    clienteId: Optional[strawberry.ID] = strawberry.field(default=None, description="Filtra por identificador de cliente.")
+    vehiculoId: Optional[strawberry.ID] = strawberry.field(default=None, description="Filtra por identificador de vehículo.")
+    tipo: Optional[VehicleKind] = strawberry.field(default=None, description="Filtra por tipo de vehículo.")
+    estado: Optional[RentalState] = strawberry.field(default=None, description="Filtra por estado de la reserva.")
+    fechaInicioDesde: Optional[str] = strawberry.field(default=None, description="Inicio del rango, formato YYYY-MM-DD.")
+    fechaInicioHasta: Optional[str] = strawberry.field(default=None, description="Fin del rango, formato YYYY-MM-DD.")
 
 
 def _grpc_date(value: Optional[str]) -> str:
@@ -171,12 +176,13 @@ def _rental_state(value: str) -> RentalState:
 
 @strawberry.type
 class Query:
-    @strawberry.field
+    @strawberry.field(description="Consulta reservas visibles para el usuario autenticado y aplica filtros opcionales.")
     async def reservas(
         self,
         info: Info,
         filtro: Optional[ReservationFilter] = None,
     ) -> list[ReservationNode]:
+        """Consulta reservas visibles para el usuario autenticado y aplica filtros opcionales."""
         user: AuthenticatedUser = info.context["user"]
         _, _, rental_client = _clients(info)
         reservations = await rental_client.list_rentals(
@@ -196,7 +202,7 @@ class Query:
             nodes.append(node)
         return nodes
 
-    @strawberry.field
+    @strawberry.field(description="Devuelve vehículos disponibles para alquilar en un intervalo de fechas.")
     async def consultarDisponibilidad(
         self,
         info: Info,
@@ -208,6 +214,7 @@ class Query:
         precioMin: Optional[float] = None,
         precioMax: Optional[float] = None,
     ) -> list[VehicleNode]:
+        """Devuelve vehículos disponibles para alquilar en un intervalo de fechas."""
         _, vehicle_client, rental_client = _clients(info)
         import asyncio
 
@@ -244,8 +251,9 @@ class Query:
             and vehicle.estado == VehicleState.DISPONIBLE.value
         ]
 
-    @strawberry.field
+    @strawberry.field(description="Obtiene el historial de alquileres de un cliente.")
     async def historialAlquileres(self, info: Info, clienteId: strawberry.ID) -> list[HistoryNode]:
+        """Obtiene el historial de alquileres de un cliente."""
         _, _, rental_client = _clients(info)
         history = await rental_client.customer_history(int(clienteId))
         return [

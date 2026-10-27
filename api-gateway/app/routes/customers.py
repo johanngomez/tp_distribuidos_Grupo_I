@@ -42,7 +42,11 @@ def _map_error(error: GrpcServiceError) -> HTTPException:
     )
 
 
-@router.get("", response_model=list[CustomerResponse])
+@router.get(
+    "", response_model=list[CustomerResponse], summary="Listar clientes",
+    description="Obtiene los clientes registrados. Requiere autenticación.",
+    responses={401: {"description": "Token ausente o inválido."}, 503: {"description": "Customer Service no disponible."}},
+)
 async def list_customers(request: Request, _user: CurrentUser) -> list[CustomerResponse]:
     try:
         return await _customer_client(request).list_customers()
@@ -50,7 +54,7 @@ async def list_customers(request: Request, _user: CurrentUser) -> list[CustomerR
         raise _map_error(error) from error
 
 
-@router.get("/me", response_model=CustomerResponse)
+@router.get("/me", response_model=CustomerResponse, summary="Obtener cliente autenticado", description="Obtiene el perfil asociado al JWT actual.")
 async def current_customer(request: Request, user: CurrentUser) -> CustomerResponse:
     try:
         return await _customer_client(request).get_customer_by_email(user.email)
@@ -58,7 +62,7 @@ async def current_customer(request: Request, user: CurrentUser) -> CustomerRespo
         raise _map_error(error) from error
 
 
-@router.get("/{customer_id}", response_model=CustomerResponse)
+@router.get("/{customer_id}", response_model=CustomerResponse, summary="Obtener cliente por ID", description="Busca un cliente por su identificador.", responses={404: {"description": "Cliente inexistente."}})
 async def get_customer(
     customer_id: int,
     request: Request,
@@ -70,7 +74,11 @@ async def get_customer(
         raise _map_error(error) from error
 
 
-@router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED,
+    summary="Registrar cliente", description="Crea un nuevo cliente.",
+    responses={201: {"description": "Cliente creado."}, 400: {"description": "Datos inválidos."}, 503: {"description": "Customer Service no disponible."}},
+)
 async def create_customer(data: CustomerCreateRequest, request: Request) -> CustomerResponse:
     try:
         return await _customer_client(request).create_customer(
@@ -88,7 +96,7 @@ async def create_customer(data: CustomerCreateRequest, request: Request) -> Cust
         raise _map_error(error) from error
 
 
-@router.put("/{customer_id}", response_model=CustomerResponse)
+@router.put("/{customer_id}", response_model=CustomerResponse, summary="Actualizar cliente", description="Actualiza los datos editables de un cliente.", responses={404: {"description": "Cliente inexistente."}})
 async def update_customer(
     customer_id: int,
     data: CustomerUpdateRequest,
@@ -109,7 +117,7 @@ async def update_customer(
         raise _map_error(error) from error
 
 
-@router.delete("/{customer_id}", response_model=CustomerOperationResponse)
+@router.delete("/{customer_id}", response_model=CustomerOperationResponse, summary="Dar de baja cliente", description="Realiza la baja lógica de un cliente sin eliminar su historial.", responses={404: {"description": "Cliente inexistente."}, 200: {"description": "Baja realizada."}})
 async def deactivate_customer(
     customer_id: int,
     request: Request,
