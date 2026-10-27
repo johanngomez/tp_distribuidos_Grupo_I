@@ -1,6 +1,6 @@
 from enum import Enum
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
 import strawberry
 from fastapi import HTTPException, Request, status
@@ -206,13 +206,13 @@ class Query:
     async def consultarDisponibilidad(
         self,
         info: Info,
-        fechaInicio: str,
-        fechaFin: str,
-        tipo: Optional[VehicleKind] = None,
-        marca: Optional[str] = None,
-        modelo: Optional[str] = None,
-        precioMin: Optional[float] = None,
-        precioMax: Optional[float] = None,
+        fechaInicio: Annotated[str, strawberry.argument(description="Inicio del período en formato ISO-8601. Ejemplo: 2026-11-10T00:00:00.")],
+        fechaFin: Annotated[str, strawberry.argument(description="Fin del período en formato ISO-8601. Ejemplo: 2026-11-15T00:00:00.")],
+        tipo: Annotated[Optional[VehicleKind], strawberry.argument(description="Tipo de vehículo opcional.")] = None,
+        marca: Annotated[Optional[str], strawberry.argument(description="Marca opcional.")] = None,
+        modelo: Annotated[Optional[str], strawberry.argument(description="Modelo opcional.")] = None,
+        precioMin: Annotated[Optional[float], strawberry.argument(description="Precio diario mínimo opcional.")] = None,
+        precioMax: Annotated[Optional[float], strawberry.argument(description="Precio diario máximo opcional.")] = None,
     ) -> list[VehicleNode]:
         """Devuelve vehículos disponibles para alquilar en un intervalo de fechas."""
         _, vehicle_client, rental_client = _clients(info)

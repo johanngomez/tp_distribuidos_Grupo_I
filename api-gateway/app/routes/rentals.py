@@ -96,8 +96,8 @@ async def list_rentals(
     user: CurrentUser,
     cliente_id: int | None = Query(default=None, description="Filtra por ID de cliente."),
     vehiculo_id: int | None = Query(default=None, description="Filtra por ID de vehículo."),
-    fecha_inicio: str = Query(default="", description="Fecha/hora inicial ISO-8601."),
-    fecha_fin: str = Query(default="", description="Fecha/hora final ISO-8601."),
+    fecha_inicio: str = Query(default="", description="Fecha/hora inicial ISO-8601. Ejemplo: 2026-11-10T00:00:00.", examples=["2026-11-10T00:00:00"]),
+    fecha_fin: str = Query(default="", description="Fecha/hora final ISO-8601. Ejemplo: 2026-11-15T00:00:00.", examples=["2026-11-15T00:00:00"]),
 ) -> list[RentalResponse]:
     try:
         return await _rental_client(request).list_rentals(
