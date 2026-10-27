@@ -31,11 +31,11 @@ SELECT
   v.`modelo`,
   v.`anio`,
   v.`color`,
-  v.`tipo_vehiculo`,
+  v.`tipo`,
   v.`precio_diario`,
   v.`estado`,
   v.`activo`
-FROM `rentar`.`vehiculo` v
+FROM `grupoi_db`.`vehiculo` v
 LEFT JOIN `rentar_vehiculos`.`vehiculo` existente
   ON existente.`id` = v.`id` OR existente.`patente` = v.`patente`
 WHERE existente.`id` IS NULL AND existente.`patente` IS NULL;
