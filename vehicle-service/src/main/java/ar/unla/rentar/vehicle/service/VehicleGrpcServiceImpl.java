@@ -18,6 +18,9 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
     @Autowired
     private VehiculoRepository vehiculoRepository;
 
+    @Autowired
+    private VehicleEventPublisher eventPublisher;
+
     @Override
     public void listVehicles(ListVehiclesRequest request, StreamObserver<ListVehiclesResponse> responseObserver) {
         List<Vehiculo> vehiculos = vehiculoRepository.findAll();
@@ -99,7 +102,7 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
             return;
         }
 
-        // Borrado lógico
+        //borrado lógico
         vehiculo.setActivo(false);
         vehiculoRepository.save(vehiculo);
 
@@ -110,6 +113,39 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void registerExternalVehicle(RegisterExternalVehicleRequest request, StreamObserver<Vehicle> responseObserver) {
+        
+        Vehiculo vehiculo = new Vehiculo();
+        vehiculo.setPatente(request.getPatente());
+        vehiculo.setMarca(request.getMarca());
+        vehiculo.setModelo(request.getModelo());
+        vehiculo.setAnio(request.getAnio());
+        vehiculo.setColor(request.getColor());
+        vehiculo.setTipo(TipoVehiculo.valueOf(request.getTipo().name()));
+        vehiculo.setPrecioDiario(request.getPrecioDiario());
+        
+        //estado inicial para vehículos externos
+        vehiculo.setEstado(EstadoVehiculo.PENDIENTE); 
+        vehiculo.setActivo(true);
+
+        Vehiculo guardado = vehiculoRepository.save(vehiculo);
+
+        //crear y publicar el evento en RabbitMQ
+        ar.unla.rentar.vehicle.events.VehiculoExternoRegistrado evento = 
+            new ar.unla.rentar.vehicle.events.VehiculoExternoRegistrado(
+                guardado.getId(),
+                request.getClienteId(), 
+                guardado.getPatente()
+        );
+        
+        eventPublisher.publishVehiculoExternoRegistrado(evento); 
+
+        responseObserver.onNext(mapToProto(guardado));
+        responseObserver.onCompleted();
+    }
+
 
     private Vehicle mapToProto(Vehiculo v) {
         return Vehicle.newBuilder()
