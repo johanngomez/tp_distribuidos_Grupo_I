@@ -49,6 +49,7 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
 
         Vehiculo guardado = vehiculoRepository.save(vehiculo);
 
+        eventPublisher.publicarSolicitudVerificacion(guardado.getId(), guardado.getPatente());
         responseObserver.onNext(mapToProto(guardado));
         responseObserver.onCompleted();
     }
