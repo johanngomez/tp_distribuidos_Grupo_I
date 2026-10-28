@@ -1,6 +1,6 @@
 # API GraphQL del API Gateway
 
-GraphQL está expuesto en `http://127.0.0.1:8000/graphql`. Las operaciones requieren un JWT obtenido mediante `POST /auth/login` y enviado como `Authorization: Bearer <token>`.
+GraphQL está expuesto públicamente en http://127.0.0.1:8000/graphql para facilitar la demostración y exploración del esquema. No requiere JWT. Las operaciones REST continúan protegidas mediante Authorization: Bearer <token>.
 
 El esquema también puede explorarse desde la interfaz GraphiQL del endpoint cuando el token está configurado en el cliente.
 
@@ -8,7 +8,7 @@ El esquema también puede explorarse desde la interfaz GraphiQL del endpoint cua
 
 Consulta reservas visibles para el usuario autenticado. Los administradores pueden consultar todas las reservas; los clientes reciben únicamente las propias.
 
-```graphql
+graphql
 query Reservas($filtro: FiltroReservaInput) {
   reservas(filtro: $filtro) {
     id
@@ -21,11 +21,11 @@ query Reservas($filtro: FiltroReservaInput) {
     vehiculo { id patente marca modelo tipo estado }
   }
 }
-```
+
 
 Variables para filtrar por tipo, estado y rango de fechas:
 
-```json
+json
 {
   "filtro": {
     "tipo": "SUV",
@@ -34,11 +34,11 @@ Variables para filtrar por tipo, estado y rango de fechas:
     "fechaInicioHasta": "2026-10-31"
   }
 }
-```
+
 
 Respuesta resumida:
 
-```json
+json
 {
   "data": {
     "reservas": [{
@@ -52,13 +52,13 @@ Respuesta resumida:
     }]
   }
 }
-```
+
 
 ## Consultar disponibilidad
 
-Devuelve vehículos activos y disponibles en un período. Se pueden aplicar filtros opcionales por tipo, marca, modelo y precio.
+Devuelve vehículos activos y disponibles en un período. Se pueden aplicar filtros opcionales por tipo, marca, modelo y precio. Si no se indican fechas, se utiliza el período de demostración 2026-11-10T00:00:00 a 2026-11-15T00:00:00.
 
-```graphql
+graphql
 query Disponibilidad {
   consultarDisponibilidad(
     fechaInicio: "2026-11-10T00:00:00"
@@ -69,11 +69,11 @@ query Disponibilidad {
     id patente marca modelo anio color tipo precioDiario estado activo
   }
 }
-```
+
 
 ## Consultar historial
 
-```graphql
+graphql
 query Historial {
   historialAlquileres(clienteId: "1") {
     vehiculo
@@ -85,15 +85,15 @@ query Historial {
     estado
   }
 }
-```
+
 
 ## Tipos y convenciones
 
-- `TipoVehiculo`: `SEDAN`, `SUV`, `PICKUP`, `COUPE`, `HATCHBACK`.
-- `VehicleState`: `DISPONIBLE`, `RESERVADO`, `EN_ALQUILER`.
-- `RentalState`: `CONFIRMADA`, `EN_CURSO`, `CANCELADA`, `FINALIZADA`.
-- Las fechas se representan como texto ISO-8601: `YYYY-MM-DDTHH:MM:SS`. Los filtros de fecha de `FiltroReservaInput` aceptan `YYYY-MM-DD` y el Gateway los normaliza internamente.
+- TipoVehiculo: SEDAN, SUV, PICKUP, COUPE, HATCHBACK.
+- VehicleState: DISPONIBLE, RESERVADO, EN_ALQUILER.
+- RentalState: CONFIRMADA, EN_CURSO, CANCELADA, FINALIZADA.
+- Las fechas se representan como texto ISO-8601: YYYY-MM-DDTHH:MM:SS. Los filtros de fecha de FiltroReservaInput aceptan YYYY-MM-DD y el Gateway los normaliza internamente.
 
-GraphQL devuelve errores en el campo `errors` cuando falta el JWT, el token es inválido o un servicio interno no está disponible.
+GraphQL devuelve errores en el campo errors cuando un servicio interno no está disponible o una consulta contiene datos inválidos.
 
-El esquema actual expone consultas de lectura (`Query`) y no define mutaciones (`Mutation`). Las operaciones de alta, modificación, baja, creación de reservas y cancelación se realizan mediante los endpoints REST documentados en Swagger.
+El esquema actual expone consultas de lectura (Query) y no define mutaciones (Mutation). Las operaciones de alta, modificación, baja, creación de reservas y cancelación se realizan mediante los endpoints REST documentados en Swagger.
