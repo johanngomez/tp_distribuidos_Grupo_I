@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-CustomerServiceApplication<customer-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ar.unla.rentar.customer.CustomerServiceApplication",
+            "projectName": "customer-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-RentalServiceApplication<rental-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ar.unla.rentar.rental.RentalServiceApplication",
+            "projectName": "rental-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-RentarApplication<rentar>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ar.unla.rentar.RentarApplication",
+            "projectName": "rentar",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-VehicleServiceApplication<vehicle-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ar.unla.rentar.vehicle.VehicleServiceApplication",
+            "projectName": "vehicle-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

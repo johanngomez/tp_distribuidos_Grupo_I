@@ -12,6 +12,10 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /** Declaraciones compartidas del transporte de eventos del Hito 3. */
@@ -65,6 +69,8 @@ public class RabbitMqConfig {
 
     @Bean
     public MessageConverter messageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
 }

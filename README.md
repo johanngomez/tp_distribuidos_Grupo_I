@@ -126,6 +126,11 @@ exit;
 
 > **Importante:** cada integrante debe tener MySQL instalado y configurado en su propia computadora.
 
+!!Importante! Si tienen una base de datos antigua de rentar, es necesario para el hito 3 correr el siguiente script de SQL
+USE rentar;
+ALTER TABLE reserva
+DROP FOREIGN KEY fk_reserva_vehiculo;
+
 ---
 
 # 4. Configurar variables de enterno

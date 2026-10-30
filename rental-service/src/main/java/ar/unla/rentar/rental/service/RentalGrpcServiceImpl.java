@@ -3,6 +3,7 @@ package ar.unla.rentar.rental.service;
 import ar.edu.unla.rentar.customer.grpc.*;
 import ar.unla.rentar.grpc.rental.v1.*;
 import ar.unla.rentar.grpc.vehicle.v1.*;
+import ar.unla.rentar.rental.dto.ReservaConfirmadaEvent;
 import ar.unla.rentar.rental.model.*;
 import ar.unla.rentar.rental.repository.ReservaRepository;
 import io.grpc.ManagedChannel;
@@ -11,6 +12,8 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.annotation.PreDestroy;
 import net.devh.boot.grpc.server.service.GrpcService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.time.*;
@@ -25,6 +28,8 @@ public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBa
   private final ManagedChannel vehicleChannel;
   private final CustomerServiceGrpc.CustomerServiceBlockingStub customers;
   private final VehicleServiceGrpc.VehicleServiceBlockingStub vehicles;
+  @Autowired
+  private RentalEventPublisher eventPublisher;
 
   public RentalGrpcServiceImpl(ReservaRepository repository,
       @Value("${CUSTOMER_GRPC_TARGET:localhost:50052}") String customerTarget,
@@ -47,8 +52,26 @@ public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBa
       if (!v.getActivo() || v.getEstado() != VehicleStatus.DISPONIBLE) throw Status.FAILED_PRECONDITION.withDescription("Vehículo no disponible").asRuntimeException();
       if (repository.existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(r.getVehiculoId(), List.of(ar.unla.rentar.rental.model.EstadoReserva.CONFIRMADA, ar.unla.rentar.rental.model.EstadoReserva.EN_CURSO), fin, inicio)) throw Status.ALREADY_EXISTS.withDescription("El vehículo ya está reservado").asRuntimeException();
       Reserva entity = new Reserva(); entity.setClienteId(r.getClienteId()); entity.setVehiculoId(r.getVehiculoId()); entity.setFechaInicio(inicio); entity.setFechaFin(fin); entity.setPrecioDiario(v.getPrecioDiario()); entity.setImporteTotal(v.getPrecioDiario() * Math.max(1, (long)Math.ceil(Duration.between(inicio, fin).toHours() / 24.0))); entity.setEstado(ar.unla.rentar.rental.model.EstadoReserva.CONFIRMADA);
-      out.onNext(toProto(repository.save(entity))); out.onCompleted();
-    } catch (RuntimeException e) { out.onError(e); }
+
+      entity = repository.save(entity);
+
+      ReservaConfirmadaEvent evento = new ReservaConfirmadaEvent(
+            entity.getId(),
+            entity.getVehiculoId(),
+            entity.getFechaInicio(),
+            entity.getFechaFin()
+          );
+
+          eventPublisher.publicarReservaConfirmada(evento);
+
+      out.onNext(toProto(entity));
+      out.onCompleted();
+    } catch (RuntimeException e) {
+       e.printStackTrace();
+        out.onError(io.grpc.Status.INTERNAL
+            .withDescription("Error interno: " + e.getMessage())
+            .asRuntimeException());
+    }
   }
 
   @Override public void consultarReservas(ConsultarReservasRequest r, StreamObserver<ConsultarReservasResponse> out) {
