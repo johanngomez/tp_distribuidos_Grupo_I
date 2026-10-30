@@ -56,11 +56,11 @@ public class VehicleVerificationListener {
             );
 
             if (solicitud.getVehiculoId() == null || solicitud.getPatente() == null) {
-                logger.error("Datos incompletos en la solicitud de verificación: {}", solicitud);
+                logger.error("Datos incompletos en la solicitud de verificacion: {}", solicitud);
                 throw new AmqpRejectAndDontRequeueException("Datos de vehículo incompletos");
             }
 
-            logger.info("Procesando verificación para vehículo ID: {} con patente: {}", 
+            logger.info("Procesando verificacion para vehiculo ID: {} con patente: {}", 
                     solicitud.getVehiculoId(), solicitud.getPatente());
 
             //Consultamos el registro policial simulado
@@ -84,15 +84,15 @@ public class VehicleVerificationListener {
 
             //Publicamos el resultado al exchange
             rabbitTemplate.convertAndSend(EXCHANGE_NAME, "vehiculos.verificacion.resultado", resultadoEnvelope);
-            logger.info("Resultado '{}' publicado con éxito para el vehículo ID: {}", 
+            logger.info("Resultado '{}' publicado con exito para el vehiculo ID: {}", 
                     resultadoVerificacion, solicitud.getVehiculoId());
 
         } catch (AmqpRejectAndDontRequeueException e) {
-            logger.error("Error definitivo procesando el mensaje de verificación: {}", e.getMessage());
+            logger.error("Error definitivo procesando el mensaje de verificacion: {}", e.getMessage());
             throw e; 
         } catch (Exception e) {
-            logger.error("Error temporal/inesperado al procesar la verificación del vehículo.", e);
-            throw new RuntimeException("Error en procesamiento asíncrono", e);
+            logger.error("Error temporal/inesperado al procesar la verificacion del vehiculo.", e);
+            throw new RuntimeException("Error en procesamiento asincrono", e);
         }
     }
 }

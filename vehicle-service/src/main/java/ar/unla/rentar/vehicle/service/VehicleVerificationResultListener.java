@@ -42,20 +42,20 @@ public class VehicleVerificationResultListener {
             );
 
             if (resultado.getVehiculoId() == null || resultado.getResultado() == null) {
-                logger.error("Datos incompletos en el resultado de verificación: {}", resultado);
+                logger.error("Datos incompletos en el resultado de verificacion: {}", resultado);
                 throw new AmqpRejectAndDontRequeueException("Datos de resultado incompletos");
             }
             // Logueamos el resultado recibido para trazabilidad
-            logger.info("Recibiendo resultado de verificación '{}' para vehículo ID: {}", 
+            logger.info("Recibiendo resultado de verificacion '{}' para vehiculo ID: {}", 
                     resultado.getResultado(), resultado.getVehiculoId());
 
             // 3. Buscamos el vehículo en la base de datos de vehículos (rentar_vehiculos)
             Optional<Vehiculo> optionalVehiculo = vehiculoRepository.findById(resultado.getVehiculoId());
 
             if (optionalVehiculo.isEmpty()) {
-                logger.error("Vehículo con ID {} no encontrado en la base de datos local.", resultado.getVehiculoId());
+                logger.error("Vehhculo con ID {} no encontrado en la base de datos local.", resultado.getVehiculoId());
                 // Si el vehículo no existe, no se reintenta.
-                throw new AmqpRejectAndDontRequeueException("Vehículo no encontrado en la base de datos " + resultado.getVehiculoId());
+                throw new AmqpRejectAndDontRequeueException("Vehiculo no encontrado en la base de datos " + resultado.getVehiculoId());
             }
 
             Vehiculo vehiculo = optionalVehiculo.get(); // obtenemos el vehículo para actualizar segun resultado de verificación
@@ -65,25 +65,25 @@ public class VehicleVerificationResultListener {
                 // Si es robado, lo inhabilitamos / damos de baja lógica para nuevas operaciones
                 vehiculo.setActivo(false); 
                 
-                logger.warn("¡ATENCIÓN! El vehículo ID {} ({}) fue marcado como ROBADO y dado de baja lógica (activo: 0).", 
+                logger.warn("¡ATENCION! El vehículo ID {} ({}) fue marcado como ROBADO y dado de baja logica (activo: 0).", 
                         vehiculo.getId(), vehiculo.getPatente());
             } else {
                 // Si es VALIDADO, nos aseguramos que esté activo normalmente
                 vehiculo.setActivo(true);
-                logger.info("Vehículo ID {} validado correctamente y activo.", vehiculo.getId());
+                logger.info("Vehiculo ID {} validado correctamente y activo.", vehiculo.getId());
             }
 
             // 5. Guardamos los cambios en la base de datos
             vehiculoRepository.save(vehiculo);
-            logger.info("Estado del vehículo ID {} actualizado con éxito en la base de datos.", vehiculo.getId());
+            logger.info("Estado del vehiculo ID {} actualizado con exito en la base de datos.", vehiculo.getId());
 
             //si hay algún error crítico, lo registramos y lanzamos la excepción para que el mensaje no se reencole
         } catch (AmqpRejectAndDontRequeueException e) {
-            logger.error("Error crítico procesando el resultado de verificación: {}", e.getMessage());
+            logger.error("Error critico procesando el resultado de verificacion: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("Error inesperado al procesar el resultado de verificación. Se reintentará.", e);
-            throw new RuntimeException("Error en procesamiento asíncrono de resultado", e);
+            logger.error("Error inesperado al procesar el resultado de verificacion. Se reintentara.", e);
+            throw new RuntimeException("Error en procesamiento asincrono de resultado", e);
         }
     }
 }
