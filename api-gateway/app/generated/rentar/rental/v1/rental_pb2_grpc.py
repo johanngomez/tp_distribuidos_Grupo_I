@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from app.generated import rental_pb2 as rental__pb2
+from . import rental_pb2 as rentar_dot_rental_dot_v1_dot_rental__pb2
 
 GRPC_GENERATED_VERSION = '1.84.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in rental_pb2_grpc.py depends on'
+        + ' but the generated code in rentar/rental/v1/rental_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,23 +36,23 @@ class RentalServiceStub:
         """
         self.CrearReserva = channel.unary_unary(
                 '/rentar.rental.v1.RentalService/CrearReserva',
-                request_serializer=rental__pb2.CrearReservaRequest.SerializeToString,
-                response_deserializer=rental__pb2.ReservaResponse.FromString,
+                request_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.CrearReservaRequest.SerializeToString,
+                response_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ReservaResponse.FromString,
                 _registered_method=True)
         self.ConsultarReservas = channel.unary_unary(
                 '/rentar.rental.v1.RentalService/ConsultarReservas',
-                request_serializer=rental__pb2.ConsultarReservasRequest.SerializeToString,
-                response_deserializer=rental__pb2.ConsultarReservasResponse.FromString,
+                request_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarReservasRequest.SerializeToString,
+                response_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarReservasResponse.FromString,
                 _registered_method=True)
         self.CancelarReserva = channel.unary_unary(
                 '/rentar.rental.v1.RentalService/CancelarReserva',
-                request_serializer=rental__pb2.CancelarReservaRequest.SerializeToString,
-                response_deserializer=rental__pb2.CancelarReservaResponse.FromString,
+                request_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.CancelarReservaRequest.SerializeToString,
+                response_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.CancelarReservaResponse.FromString,
                 _registered_method=True)
         self.ConsultarHistorialCliente = channel.unary_unary(
                 '/rentar.rental.v1.RentalService/ConsultarHistorialCliente',
-                request_serializer=rental__pb2.ConsultarHistorialClienteRequest.SerializeToString,
-                response_deserializer=rental__pb2.ConsultarHistorialClienteResponse.FromString,
+                request_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarHistorialClienteRequest.SerializeToString,
+                response_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarHistorialClienteResponse.FromString,
                 _registered_method=True)
 
 
@@ -60,25 +60,29 @@ class RentalServiceServicer:
     """Missing associated documentation comment in .proto file."""
 
     def CrearReserva(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Crea una reserva con el precio ya resuelto por el Gateway.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ConsultarReservas(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Consulta reservas aplicando los filtros recibidos.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def CancelarReserva(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Cancela una reserva perteneciente al cliente indicado.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ConsultarHistorialCliente(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Devuelve el historial resumido del cliente, sin consultar otros servicios.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -88,23 +92,23 @@ def add_RentalServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'CrearReserva': grpc.unary_unary_rpc_method_handler(
                     servicer.CrearReserva,
-                    request_deserializer=rental__pb2.CrearReservaRequest.FromString,
-                    response_serializer=rental__pb2.ReservaResponse.SerializeToString,
+                    request_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.CrearReservaRequest.FromString,
+                    response_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ReservaResponse.SerializeToString,
             ),
             'ConsultarReservas': grpc.unary_unary_rpc_method_handler(
                     servicer.ConsultarReservas,
-                    request_deserializer=rental__pb2.ConsultarReservasRequest.FromString,
-                    response_serializer=rental__pb2.ConsultarReservasResponse.SerializeToString,
+                    request_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarReservasRequest.FromString,
+                    response_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarReservasResponse.SerializeToString,
             ),
             'CancelarReserva': grpc.unary_unary_rpc_method_handler(
                     servicer.CancelarReserva,
-                    request_deserializer=rental__pb2.CancelarReservaRequest.FromString,
-                    response_serializer=rental__pb2.CancelarReservaResponse.SerializeToString,
+                    request_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.CancelarReservaRequest.FromString,
+                    response_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.CancelarReservaResponse.SerializeToString,
             ),
             'ConsultarHistorialCliente': grpc.unary_unary_rpc_method_handler(
                     servicer.ConsultarHistorialCliente,
-                    request_deserializer=rental__pb2.ConsultarHistorialClienteRequest.FromString,
-                    response_serializer=rental__pb2.ConsultarHistorialClienteResponse.SerializeToString,
+                    request_deserializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarHistorialClienteRequest.FromString,
+                    response_serializer=rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarHistorialClienteResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -132,8 +136,8 @@ class RentalService:
             request,
             target,
             '/rentar.rental.v1.RentalService/CrearReserva',
-            rental__pb2.CrearReservaRequest.SerializeToString,
-            rental__pb2.ReservaResponse.FromString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.CrearReservaRequest.SerializeToString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.ReservaResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -159,8 +163,8 @@ class RentalService:
             request,
             target,
             '/rentar.rental.v1.RentalService/ConsultarReservas',
-            rental__pb2.ConsultarReservasRequest.SerializeToString,
-            rental__pb2.ConsultarReservasResponse.FromString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarReservasRequest.SerializeToString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarReservasResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -186,8 +190,8 @@ class RentalService:
             request,
             target,
             '/rentar.rental.v1.RentalService/CancelarReserva',
-            rental__pb2.CancelarReservaRequest.SerializeToString,
-            rental__pb2.CancelarReservaResponse.FromString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.CancelarReservaRequest.SerializeToString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.CancelarReservaResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -213,8 +217,8 @@ class RentalService:
             request,
             target,
             '/rentar.rental.v1.RentalService/ConsultarHistorialCliente',
-            rental__pb2.ConsultarHistorialClienteRequest.SerializeToString,
-            rental__pb2.ConsultarHistorialClienteResponse.FromString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarHistorialClienteRequest.SerializeToString,
+            rentar_dot_rental_dot_v1_dot_rental__pb2.ConsultarHistorialClienteResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -164,7 +164,8 @@ incorporación.
 
 json
 {
-  "vehiculoExternoId": 50
+  "vehiculoExternoId": 50,
+  "resultadoFinal": "VALIDADO"
 }
 
 

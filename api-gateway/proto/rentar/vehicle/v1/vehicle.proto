@@ -7,11 +7,17 @@ option java_outer_classname = "VehicleProto";
 option java_package = "ar.unla.rentar.grpc.vehicle.v1";
 
 service VehicleService {
+  // Lista vehiculos y sus estados operativos.
   rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);
+  // Registra un vehiculo y dispara la verificacion de patente.
   rpc CreateVehicle(CreateVehicleRequest) returns (Vehicle);
+  // Actualiza los datos editables de un vehiculo.
   rpc UpdateVehicle(UpdateVehicleRequest) returns (Vehicle);
+  // Busca un vehiculo por ID para que el Gateway valide disponibilidad.
   rpc GetVehicle(GetVehicleRequest) returns (Vehicle);
+  // Ejecuta una baja logica sin eliminar el registro.
   rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
+  // Registra un vehiculo de un cliente para validacion asincrona.
   rpc RegisterExternalVehicle(RegisterExternalVehicleRequest) returns (Vehicle);
 }
 
@@ -54,21 +60,32 @@ message DeleteVehicleResponse {
   bool success = 1;
 }
 
+message RegisterExternalVehicleRequest {
+  string patente = 1;
+  string marca = 2;
+  string modelo = 3;
+  int32 anio = 4;
+  string color = 5;
+  VehicleType tipo = 6;
+  double precio_diario = 7;
+  int64 cliente_id = 8;
+}
+
 enum VehicleType {
   VEHICLE_TYPE_UNSPECIFIED = 0;
-  SEDAN = 1;
-  SUV = 2;
-  PICKUP = 3;
-  COUPE = 4;
-  HATCHBACK = 5;
+  VEHICLE_TYPE_SEDAN = 1;
+  VEHICLE_TYPE_SUV = 2;
+  VEHICLE_TYPE_PICKUP = 3;
+  VEHICLE_TYPE_COUPE = 4;
+  VEHICLE_TYPE_HATCHBACK = 5;
 }
 
 enum VehicleStatus {
   VEHICLE_STATUS_UNSPECIFIED = 0;
-  DISPONIBLE = 1;
-  RESERVADO = 2;
-  EN_ALQUILER = 3;
-  PENDIENTE = 4;
+  VEHICLE_STATUS_DISPONIBLE = 1;
+  VEHICLE_STATUS_RESERVADO = 2;
+  VEHICLE_STATUS_EN_ALQUILER = 3;
+  VEHICLE_STATUS_PENDIENTE = 4;
 }
 
 message Vehicle {
@@ -82,15 +99,4 @@ message Vehicle {
   double precio_diario = 8;
   VehicleStatus estado = 9;
   bool activo = 10;
-}
-
-message RegisterExternalVehicleRequest {
-    string patente = 1;
-    string marca = 2;
-    string modelo = 3;
-    int32 anio = 4;
-    string color = 5;
-    VehicleType tipo = 6;
-    double precio_diario = 7;
-    int64 cliente_id = 8; // 
 }

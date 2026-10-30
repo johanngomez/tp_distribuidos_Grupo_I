@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `rentar_vehiculos`.`vehiculo` (
   `activo` bit(1) DEFAULT NULL,
   `anio` int DEFAULT NULL,
   `color` varchar(255) DEFAULT NULL,
-  `estado` enum('DISPONIBLE','EN_ALQUILER','RESERVADO','VEHICLE_STATUS_UNSPECIFIED') DEFAULT NULL,
+  `estado` varchar(32) DEFAULT NULL,
   `marca` varchar(255) NOT NULL,
   `modelo` varchar(255) NOT NULL,
   `patente` varchar(255) NOT NULL,
@@ -31,11 +31,11 @@ SELECT
   v.`modelo`,
   v.`anio`,
   v.`color`,
-  v.`tipo`,
+  v.`tipo_vehiculo`,
   v.`precio_diario`,
   v.`estado`,
   v.`activo`
-FROM `grupoi_db`.`vehiculo` v
+FROM `rentar`.`vehiculo` v
 LEFT JOIN `rentar_vehiculos`.`vehiculo` existente
   ON existente.`id` = v.`id` OR existente.`patente` = v.`patente`
 WHERE existente.`id` IS NULL AND existente.`patente` IS NULL;

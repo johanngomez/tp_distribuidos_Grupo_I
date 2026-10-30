@@ -29,6 +29,9 @@ function Layout() {
                         </>
                     ) : (
                         <>
+                            <NavLink to="/vehiculos" className={({ isActive }) => isActive ? "active" : ""}>
+                                Registrar vehiculo
+                            </NavLink>
                             <NavLink to="/disponibilidad" className={({ isActive }) => isActive ? "active" : ""}>
                                 Buscar vehículos
                             </NavLink>

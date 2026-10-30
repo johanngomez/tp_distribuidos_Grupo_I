@@ -11,7 +11,7 @@ from strawberry.types import Info
 from app.grpc_clients.customer_client import CustomerGrpcClient
 from app.grpc_clients.rental_client import RentalGrpcClient
 from app.grpc_clients.vehicle_client import VehicleGrpcClient
-from app.security.jwt import AuthenticatedUser
+from app.security.jwt import AuthenticatedUser, validate_token
 
 
 @strawberry.enum(description="Estados posibles de una reserva.")
@@ -188,10 +188,16 @@ class Query:
     ) -> list[ReservationNode]:
         """Consulta reservas visibles para el usuario autenticado y aplica filtros opcionales."""
         user: AuthenticatedUser = info.context["user"]
-        _, _, rental_client = _clients(info)
+        customer_client, _, rental_client = _clients(info)
+        customer_id = 0
+        if not user.es_admin:
+            customer_id = (await customer_client.get_customer_by_email(user.email)).id
         reservations = await rental_client.list_rentals(
-            email="" if user.es_admin else user.email,
-            customer_id=int(filtro.clienteId) if filtro and filtro.clienteId else 0,
+            customer_id=(
+                int(filtro.clienteId)
+                if user.es_admin and filtro and filtro.clienteId
+                else customer_id
+            ),
             vehicle_id=int(filtro.vehiculoId) if filtro and filtro.vehiculoId else 0,
             start_date=_grpc_date(filtro.fechaInicioDesde if filtro else None),
             end_date=_grpc_date(filtro.fechaInicioHasta if filtro else None),
@@ -270,26 +276,37 @@ class Query:
     @strawberry.field(description="Obtiene el historial de alquileres de un cliente.")
     async def historialAlquileres(self, info: Info, clienteId: strawberry.ID) -> list[HistoryNode]:
         """Obtiene el historial de alquileres de un cliente."""
-        _, _, rental_client = _clients(info)
+        _, vehicle_client, rental_client = _clients(info)
         history = await rental_client.customer_history(int(clienteId))
-        return [
-            HistoryNode(
-                vehiculo=item.vehiculo,
-                patente=item.patente,
+        nodes = []
+        for item in history:
+            vehicle = await vehicle_client.get_vehicle(item.vehiculo_id)
+            nodes.append(HistoryNode(
+                vehiculo=f"{vehicle.marca} {vehicle.modelo}",
+                patente=vehicle.patente,
                 fechaInicio=item.fecha_inicio,
                 fechaFin=item.fecha_fin,
                 cantidadDias=item.cantidad_dias,
                 importeTotal=item.importe_total,
                 estado=item.estado,
-            )
-            for item in history
-        ]
+            ))
+        return nodes
 
 
 async def graphql_context(request: Request) -> dict:
+    user = AuthenticatedUser(email="public@rentar.local", es_admin=True)
+    authorization = request.headers.get("authorization", "")
+    if authorization.lower().startswith("bearer "):
+        try:
+            token = authorization[7:].strip()
+            user = validate_token(token, request.app.state.settings.jwt_secret)
+        except Exception:
+            # Se mantiene GraphQL accesible para documentación e introspección;
+            # las consultas autenticadas usan el usuario del JWT recibido.
+            pass
     return {
         "request": request,
-        "user": AuthenticatedUser(email="public@rentar.local", es_admin=True),
+        "user": user,
     }
 
 

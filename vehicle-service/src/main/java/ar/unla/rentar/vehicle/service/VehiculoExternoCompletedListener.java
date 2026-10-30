@@ -52,7 +52,14 @@ public class VehiculoExternoCompletedListener {
                 }
             } else {
                 System.out.println("-> [CompletedListener] El vehículo fue RECHAZADO. No se incorpora a la flota.");
-                //"Si una falla, no se incorpora", lo dejamos en PENDIENTE o se puede eliminar.
+                Optional<Vehiculo> vehiculoOpt = vehiculoRepository.findById(vehiculoId);
+                if (vehiculoOpt.isPresent()) {
+                    Vehiculo vehiculo = vehiculoOpt.get();
+                    vehiculo.setActivo(false);
+                    vehiculoRepository.save(vehiculo);
+                    System.out.println("-> [CompletedListener] Vehiculo " + vehiculoId
+                            + " dado de baja logica por validacion rechazada.");
+                }
             }
 
         } catch (Exception e) {

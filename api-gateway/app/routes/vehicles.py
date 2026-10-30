@@ -3,10 +3,11 @@ from typing import Annotated
 import grpc
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from app.generated import vehicle_pb2
+from app.generated.rentar.vehicle.v1 import vehicle_pb2
 from app.grpc_clients.errors import GrpcServiceError
 from app.grpc_clients.vehicle_client import VehicleGrpcClient
-from app.schemas.vehicles import VehicleResponse, VehicleWriteRequest
+from app.schemas.vehicles import ExternalVehicleWriteRequest, VehicleResponse, VehicleWriteRequest
+from app.grpc_clients.customer_client import CustomerGrpcClient
 from app.security.dependencies import get_current_user, require_admin
 from app.security.jwt import AuthenticatedUser
 
@@ -20,6 +21,11 @@ def _vehicle_client(request: Request) -> VehicleGrpcClient:
         target=settings.vehicle_grpc_target,
         timeout_seconds=settings.grpc_timeout_seconds,
     )
+
+
+def _customer_client(request: Request) -> CustomerGrpcClient:
+    settings = request.app.state.settings
+    return CustomerGrpcClient(settings.customer_grpc_target, settings.grpc_timeout_seconds)
 
 
 def _map_grpc_error(error: GrpcServiceError) -> HTTPException:
@@ -37,6 +43,11 @@ def _map_grpc_error(error: GrpcServiceError) -> HTTPException:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Vehículo no encontrado",
+        )
+    if error.code == grpc.StatusCode.ALREADY_EXISTS:
+        return HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="La patente ya esta registrada",
         )
     return HTTPException(
         status_code=status.HTTP_502_BAD_GATEWAY,
@@ -72,6 +83,38 @@ async def create_vehicle(
 ) -> VehicleResponse:
     try:
         return await _vehicle_client(request).create_vehicle(_vehicle_payload(data))
+    except GrpcServiceError as error:
+        raise _map_grpc_error(error) from error
+
+
+@router.post(
+    "/externos", response_model=VehicleResponse, status_code=status.HTTP_201_CREATED,
+    summary="Registrar vehiculo externo",
+    description=(
+        "Registra un vehiculo de un cliente en estado PENDIENTE y dispara "
+        "las validaciones asincronas de patente y titularidad mediante RabbitMQ."
+    ),
+    responses={
+        201: {"description": "Vehiculo registrado y enviado a validacion."},
+        400: {"description": "Datos invalidos."},
+        403: {"description": "El cliente no puede registrar otro titular."},
+        503: {"description": "Vehicle Service no disponible."},
+    },
+)
+async def create_external_vehicle(
+    data: ExternalVehicleWriteRequest,
+    request: Request,
+    user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+) -> VehicleResponse:
+    try:
+        cliente_id = data.clienteId
+        if not user.es_admin:
+            cliente_id = (await _customer_client(request).get_customer_by_email(user.email)).id
+        elif cliente_id is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="clienteId es obligatorio para administradores")
+        payload = _vehicle_payload(data)
+        payload["cliente_id"] = cliente_id
+        return await _vehicle_client(request).register_external_vehicle(payload)
     except GrpcServiceError as error:
         raise _map_grpc_error(error) from error
 
@@ -114,7 +157,7 @@ async def delete_vehicle(
 
 def _vehicle_payload(data: VehicleWriteRequest) -> dict:
     try:
-        vehicle_type = vehicle_pb2.VehicleType.Value(data.tipo.upper())
+        vehicle_type = vehicle_pb2.VehicleType.Value(f"VEHICLE_TYPE_{data.tipo.upper()}")
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

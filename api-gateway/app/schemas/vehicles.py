@@ -36,3 +36,9 @@ class VehicleWriteRequest(BaseModel):
     color: str | None = Field(default=None, description="Color del vehículo.")
     tipo: str = Field(..., description="Tipo: SEDAN, SUV, PICKUP, COUPE o HATCHBACK.")
     precioDiario: float = Field(..., gt=0, description="Precio diario de alquiler.")
+
+
+class ExternalVehicleWriteRequest(VehicleWriteRequest):
+    """Datos de un vehiculo propiedad de un cliente."""
+
+    clienteId: int | None = Field(default=None, gt=0, description="Cliente titular del vehiculo. Los clientes pueden omitirlo.")

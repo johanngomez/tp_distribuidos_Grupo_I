@@ -16,11 +16,14 @@ public class VehiculoExternoPatentListener {
 
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
+    private final RegistroPolicialService registroPolicialService;
 
     //se inyectan las herramientas que se necesitan para mandar mensajes y leer JSON
-    public VehiculoExternoPatentListener(RabbitTemplate rabbitTemplate, ObjectMapper objectMapper) {
+    public VehiculoExternoPatentListener(RabbitTemplate rabbitTemplate, ObjectMapper objectMapper,
+                                         RegistroPolicialService registroPolicialService) {
         this.rabbitTemplate = rabbitTemplate;
         this.objectMapper = objectMapper;
+        this.registroPolicialService = registroPolicialService;
     }
 
     @RabbitListener(queues = "rentar.external.vehicle.patent.request")    
@@ -33,7 +36,8 @@ public class VehiculoExternoPatentListener {
             String patente = (String) payloadMap.get("patente");
 
             //lógica de validación simulada: si la patente no está vacía, la damos por válida.
-            String resultado = (patente != null && !patente.trim().isEmpty()) ? "VALIDADO" : "RECHAZADO";
+            String verificacion = registroPolicialService.verificarVehiculo(patente);
+            String resultado = "ROBADO".equals(verificacion) ? "RECHAZADO" : "VALIDADO";
             System.out.println("-> [PatentListener] Resultado de patente " + patente + ": " + resultado);
 
             VehiculoExternoValidacionPatente resultadoPayload = new VehiculoExternoValidacionPatente(

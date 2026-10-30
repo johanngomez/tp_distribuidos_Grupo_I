@@ -1,7 +1,7 @@
 import grpc
 
-from app.generated import rental_pb2
-from app.generated import rental_pb2_grpc
+from app.generated.rentar.rental.v1 import rental_pb2
+from app.generated.rentar.rental.v1 import rental_pb2_grpc
 from app.grpc_clients.errors import GrpcServiceError
 from app.schemas.rentals import (
     RentalCancellationResponse,
@@ -34,6 +34,7 @@ class RentalGrpcClient:
         vehicle_id: int,
         start_date: str,
         end_date: str,
+        daily_price: float,
     ) -> RentalResponse:
         try:
             async with grpc.aio.insecure_channel(self.target) as channel:
@@ -44,6 +45,7 @@ class RentalGrpcClient:
                         vehiculo_id=vehicle_id,
                         fecha_inicio=start_date,
                         fecha_fin=end_date,
+                        precio_diario=daily_price,
                     ),
                     timeout=self.timeout_seconds,
                 )
@@ -54,7 +56,6 @@ class RentalGrpcClient:
     async def list_rentals(
         self,
         *,
-        email: str = "",
         customer_id: int = 0,
         vehicle_id: int = 0,
         start_date: str = "",
@@ -65,7 +66,6 @@ class RentalGrpcClient:
                 stub = rental_pb2_grpc.RentalServiceStub(channel)
                 response = await stub.ConsultarReservas(
                     rental_pb2.ConsultarReservasRequest(
-                        email_cliente=email,
                         cliente_id=customer_id,
                         vehiculo_id=vehicle_id,
                         fecha_inicio=start_date,
@@ -80,7 +80,7 @@ class RentalGrpcClient:
     async def cancel_rental(
         self,
         rental_id: int,
-        customer_email: str,
+        customer_id: int = 0,
     ) -> RentalCancellationResponse:
         try:
             async with grpc.aio.insecure_channel(self.target) as channel:
@@ -88,7 +88,7 @@ class RentalGrpcClient:
                 response = await stub.CancelarReserva(
                     rental_pb2.CancelarReservaRequest(
                         reserva_id=rental_id,
-                        cliente_email=customer_email,
+                        cliente_id=customer_id,
                     ),
                     timeout=self.timeout_seconds,
                 )
@@ -118,8 +118,9 @@ class RentalGrpcClient:
                 )
                 return [
                     RentalHistoryResponse(
-                        vehiculo=item.vehiculo,
-                        patente=item.patente,
+                        reserva_id=item.reserva_id,
+                        cliente_id=item.cliente_id,
+                        vehiculo_id=item.vehiculo_id,
                         fecha_inicio=item.fecha_inicio,
                         fecha_fin=item.fecha_fin,
                         cantidad_dias=item.cantidad_dias,

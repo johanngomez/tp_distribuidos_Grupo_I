@@ -34,6 +34,19 @@ export async function crearVehiculo(datos) {
 
     return await response.json();
 }
+
+export async function registrarVehiculoExterno(datos) {
+    const response = await fetchAutenticado("/vehiculos/externos", {
+        method: "POST",
+        body: JSON.stringify(datos),
+    });
+
+    if (!response.ok) {
+        await manejarError(response, "No se pudo registrar el vehiculo externo");
+    }
+
+    return await response.json();
+}
 // Función para modificar un vehículo existente
 export async function modificarVehiculo(id, datos) {
     const response = await fetchAutenticado(`/vehiculos/${id}`, {

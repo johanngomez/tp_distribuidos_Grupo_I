@@ -34,8 +34,9 @@ class RentalCancelRequest(BaseModel):
 
 
 class RentalHistoryResponse(BaseModel):
-    vehiculo: str
-    patente: str
+    reserva_id: int
+    cliente_id: int
+    vehiculo_id: int
     fecha_inicio: str
     fecha_fin: str
     cantidad_dias: int

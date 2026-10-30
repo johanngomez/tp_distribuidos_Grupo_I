@@ -22,6 +22,8 @@ public class RabbitMqConfig {
     public static final String VEHICLE_VERIFICATION_QUEUE = "rentar.vehicle.verification";
     public static final String VEHICLE_VERIFICATION_RESULT_QUEUE = "rentar.vehicle.verification.result";
     public static final String EXTERNAL_VEHICLE_PATENT_QUEUE = "rentar.external.vehicle.patent.request";
+    public static final String EXTERNAL_VEHICLE_PATENT_RESULT_QUEUE = "rentar.external.vehicle.patent";
+    public static final String EXTERNAL_VEHICLE_OWNERSHIP_RESULT_QUEUE = "rentar.external.vehicle.ownership";
     public static final String EXTERNAL_VEHICLE_COMPLETED_QUEUE = "rentar.external.vehicle.completed";
 
     @Bean
@@ -77,6 +79,34 @@ public class RabbitMqConfig {
         return BindingBuilder.bind(externalVehiclePatentQueue)
                 .to(eventsExchange)
                 .with("vehiculos.externos.registrados");
+    }
+
+    @Bean
+    public Queue externalVehiclePatentResultQueue() {
+        return new Queue(EXTERNAL_VEHICLE_PATENT_RESULT_QUEUE, true);
+    }
+
+    @Bean
+    public Binding externalVehiclePatentResultBinding(
+            @Qualifier("externalVehiclePatentResultQueue") Queue queue,
+            @Qualifier("eventsExchange") TopicExchange eventsExchange) {
+        return BindingBuilder.bind(queue)
+                .to(eventsExchange)
+                .with("vehiculos.externos.validacion.patente");
+    }
+
+    @Bean
+    public Queue externalVehicleOwnershipResultQueue() {
+        return new Queue(EXTERNAL_VEHICLE_OWNERSHIP_RESULT_QUEUE, true);
+    }
+
+    @Bean
+    public Binding externalVehicleOwnershipResultBinding(
+            @Qualifier("externalVehicleOwnershipResultQueue") Queue queue,
+            @Qualifier("eventsExchange") TopicExchange eventsExchange) {
+        return BindingBuilder.bind(queue)
+                .to(eventsExchange)
+                .with("vehiculos.externos.validacion.titularidad");
     }
 
     @Bean

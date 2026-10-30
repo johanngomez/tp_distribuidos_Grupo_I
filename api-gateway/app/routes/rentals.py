@@ -43,10 +43,13 @@ def _map_error(error: GrpcServiceError) -> HTTPException:
         grpc.StatusCode.NOT_FOUND: status.HTTP_404_NOT_FOUND,
         grpc.StatusCode.INVALID_ARGUMENT: status.HTTP_400_BAD_REQUEST,
         grpc.StatusCode.FAILED_PRECONDITION: status.HTTP_409_CONFLICT,
+        grpc.StatusCode.PERMISSION_DENIED: status.HTTP_403_FORBIDDEN,
         grpc.StatusCode.UNAVAILABLE: status.HTTP_503_SERVICE_UNAVAILABLE,
         grpc.StatusCode.DEADLINE_EXCEEDED: status.HTTP_504_GATEWAY_TIMEOUT,
     }
     detail = "Rental Service no disponible" if error.code == grpc.StatusCode.UNAVAILABLE else error.details
+    if error.code == grpc.StatusCode.PERMISSION_DENIED:
+        detail = "No podés operar sobre reservas de otro cliente"
     return HTTPException(
         status_code=code_to_http.get(error.code, status.HTTP_502_BAD_GATEWAY),
         detail=detail,
@@ -81,6 +84,7 @@ async def create_rental(
             vehicle_id=data.vehiculoId,
             start_date=data.fechaInicio,
             end_date=data.fechaFin,
+            daily_price=vehicle.precioDiario,
         )
     except GrpcServiceError as error:
         raise _map_error(error) from error
@@ -100,9 +104,14 @@ async def list_rentals(
     fecha_fin: str = Query(default="", description="Fecha/hora final ISO-8601. Ejemplo: 2026-11-15T00:00:00.", examples=["2026-11-15T00:00:00"]),
 ) -> list[RentalResponse]:
     try:
+        if user.es_admin:
+            customer_id = cliente_id or 0
+        else:
+            # Un cliente nunca puede consultar reservas ajenas, aunque envíe
+            # otro cliente_id como parámetro.
+            customer_id = (await _customer_client(request).get_customer_by_email(user.email)).id
         return await _rental_client(request).list_rentals(
-            email="" if user.es_admin else user.email,
-            customer_id=cliente_id or 0,
+            customer_id=customer_id,
             vehicle_id=vehiculo_id or 0,
             start_date=fecha_inicio,
             end_date=fecha_fin,
@@ -122,9 +131,12 @@ async def cancel_rental(
     user: CurrentUser,
 ) -> RentalCancellationResponse:
     try:
+        customer_id = 0
+        if not user.es_admin:
+            customer_id = (await _customer_client(request).get_customer_by_email(user.email)).id
         return await _rental_client(request).cancel_rental(
             rental_id=rental_id,
-            customer_email=user.email,
+            customer_id=customer_id,
         )
     except GrpcServiceError as error:
         raise _map_error(error) from error

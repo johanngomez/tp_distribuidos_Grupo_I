@@ -109,6 +109,9 @@ Cada cliente gRPC es independiente. Las rutas no acceden a repositorios Java ni 
 
 MySQL debe estar iniciado antes de ejecutar los servicios Java. Las bases utilizadas son:
 
+Las bases son `rentar_clientes` para Customer Service, `rentar_vehiculos` para
+Vehicle Service y `rentar_reservas` para Rental Service.
+
 text
 rentar              clientes y reservas
 rentar_vehiculos    vehículos
@@ -117,8 +120,12 @@ rentar_vehiculos    vehículos
 Si todavía no existen, crearlas desde MySQL:
 
 sql
-CREATE DATABASE rentar;
+CREATE DATABASE rentar_clientes;
 CREATE DATABASE rentar_vehiculos;
+CREATE DATABASE rentar_reservas;
+
+Desde la raíz también puede ejecutarse `scripts/initialize_microservices_databases.sql`
+para crear las tablas y copiar los datos iniciales a cada base.
 
 
 ## Instalación del Gateway
@@ -172,7 +179,7 @@ Escucha gRPC en localhost:50051.
 powershell
 cd customer-service
 $env:DB_PORT="3306"
-$env:DB_NAME="rentar"
+$env:DB_NAME="rentar_clientes"
 $env:DB_USER="root"
 $env:DB_PASSWORD="TU_CLAVE_MYSQL"
 $env:JWT_SECRET="RentarClaveSecreta2026ParaJWT123456789"
@@ -186,7 +193,7 @@ Escucha gRPC en localhost:50052.
 powershell
 cd rental-service
 $env:DB_PORT="3306"
-$env:DB_NAME="rentar"
+$env:DB_NAME="rentar_reservas"
 $env:DB_USER="root"
 $env:DB_PASSWORD="TU_CLAVE_MYSQL"
 $env:CUSTOMER_GRPC_TARGET="localhost:50052"
@@ -254,6 +261,7 @@ Rutas principales:
 | GET | /auth/me | Validación local del JWT |
 | GET | /api/vehiculos | Vehicle Service |
 | POST | /api/vehiculos | Vehicle Service |
+| POST | /vehiculos/externos | Vehicle Service + RabbitMQ |
 | PUT | /api/vehiculos/{id} | Vehicle Service |
 | DELETE | /api/vehiculos/{id} | Vehicle Service |
 | GET | /api/clientes | Customer Service |
@@ -419,6 +427,11 @@ Los clientes gRPC convierten errores de transporte en GrpcServiceError. Las ruta
 - FAILED_PRECONDITION → 409.
 - UNAVAILABLE → 503.
 - DEADLINE_EXCEEDED → 504.
+
+## Documentacion del Hito 3
+
+La documentacion de RabbitMQ, eventos, colas, productores, consumidores y
+pruebas esta en `api-gateway/docs/hito3-rabbitmq.md`.
 
 ## Hito 1 y compatibilidad
 

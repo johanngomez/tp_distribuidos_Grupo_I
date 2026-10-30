@@ -1,7 +1,7 @@
 import grpc
 
-from app.generated import vehicle_pb2
-from app.generated import vehicle_pb2_grpc
+from app.generated.rentar.vehicle.v1 import vehicle_pb2
+from app.generated.rentar.vehicle.v1 import vehicle_pb2_grpc
 from app.grpc_clients.errors import GrpcServiceError
 from app.schemas.vehicles import VehicleResponse
 
@@ -33,9 +33,9 @@ class VehicleGrpcClient:
                             if vehicle.HasField("color")
                             else None
                         ),
-                        tipo=vehicle_pb2.VehicleType.Name(vehicle.tipo),
+                        tipo=_enum_label(vehicle_pb2.VehicleType.Name(vehicle.tipo), "VEHICLE_TYPE_"),
                         precioDiario=vehicle.precio_diario,
-                        estado=vehicle_pb2.VehicleStatus.Name(vehicle.estado),
+                        estado=_enum_label(vehicle_pb2.VehicleStatus.Name(vehicle.estado), "VEHICLE_STATUS_"),
                         activo=vehicle.activo,
                     )
                     for vehicle in response.vehicles
@@ -78,9 +78,9 @@ class VehicleGrpcClient:
                     modelo=vehicle.modelo,
                     anio=vehicle.anio,
                     color=vehicle.color if vehicle.HasField("color") else None,
-                    tipo=vehicle_pb2.VehicleType.Name(vehicle.tipo),
+                    tipo=_enum_label(vehicle_pb2.VehicleType.Name(vehicle.tipo), "VEHICLE_TYPE_"),
                     precioDiario=vehicle.precio_diario,
-                    estado=vehicle_pb2.VehicleStatus.Name(vehicle.estado),
+                    estado=_enum_label(vehicle_pb2.VehicleStatus.Name(vehicle.estado), "VEHICLE_STATUS_"),
                     activo=vehicle.activo,
                 )
         except grpc.aio.AioRpcError as error:
@@ -119,6 +119,21 @@ class VehicleGrpcClient:
                 details=error.details() or "Error al comunicarse con Vehicle Service",
             ) from error
 
+    async def register_external_vehicle(self, data: dict) -> VehicleResponse:
+        try:
+            async with grpc.aio.insecure_channel(self.target) as channel:
+                stub = vehicle_pb2_grpc.VehicleServiceStub(channel)
+                vehicle = await stub.RegisterExternalVehicle(
+                    vehicle_pb2.RegisterExternalVehicleRequest(**data),
+                    timeout=self.timeout_seconds,
+                )
+                return self._to_response(vehicle)
+        except grpc.aio.AioRpcError as error:
+            raise GrpcServiceError(
+                code=error.code(),
+                details=error.details() or "Error al registrar vehiculo externo",
+            ) from error
+
     @staticmethod
     def _to_response(vehicle) -> VehicleResponse:
         return VehicleResponse(
@@ -128,8 +143,12 @@ class VehicleGrpcClient:
             modelo=vehicle.modelo,
             anio=vehicle.anio,
             color=vehicle.color if vehicle.HasField("color") else None,
-            tipo=vehicle_pb2.VehicleType.Name(vehicle.tipo),
+            tipo=_enum_label(vehicle_pb2.VehicleType.Name(vehicle.tipo), "VEHICLE_TYPE_"),
             precioDiario=vehicle.precio_diario,
-            estado=vehicle_pb2.VehicleStatus.Name(vehicle.estado),
+            estado=_enum_label(vehicle_pb2.VehicleStatus.Name(vehicle.estado), "VEHICLE_STATUS_"),
             activo=vehicle.activo,
         )
+
+
+def _enum_label(value: str, prefix: str) -> str:
+    return value.removeprefix(prefix)

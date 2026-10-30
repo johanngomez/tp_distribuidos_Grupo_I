@@ -1,7 +1,7 @@
 import grpc
 
-from app.generated import customer_pb2
-from app.generated import customer_pb2_grpc
+from app.generated.rentar.customer.v1 import customer_pb2
+from app.generated.rentar.customer.v1 import customer_pb2_grpc
 from app.grpc_clients.errors import GrpcServiceError
 from app.schemas.customers import (
     CustomerOperationResponse,
@@ -36,7 +36,7 @@ class CustomerGrpcClient:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = customer_pb2_grpc.CustomerServiceStub(channel)
                 response = await stub.GetCliente(
-                    customer_pb2.ClienteRequest(id_cliente=customer_id),
+                    customer_pb2.ObtenerClienteRequest(id_cliente=customer_id),
                     timeout=self.timeout_seconds,
                 )
                 return CustomerResponse(
@@ -141,7 +141,7 @@ class CustomerGrpcClient:
             async with grpc.aio.insecure_channel(self.target) as channel:
                 stub = customer_pb2_grpc.CustomerServiceStub(channel)
                 response = await stub.ValidarCliente(
-                    customer_pb2.ClienteRequest(id_cliente=customer_id),
+                    customer_pb2.ValidarClienteRequest(id_cliente=customer_id),
                     timeout=self.timeout_seconds,
                 )
                 return CustomerValidationResponse(

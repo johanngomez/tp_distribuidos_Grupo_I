@@ -1,110 +1,192 @@
 package ar.unla.rentar.rental.service;
 
-import ar.edu.unla.rentar.customer.grpc.*;
-import ar.unla.rentar.grpc.rental.v1.*;
-import ar.unla.rentar.grpc.vehicle.v1.*;
+import ar.unla.rentar.grpc.rental.v1.CancelarReservaRequest;
+import ar.unla.rentar.grpc.rental.v1.CancelarReservaResponse;
+import ar.unla.rentar.grpc.rental.v1.ConsultarHistorialClienteRequest;
+import ar.unla.rentar.grpc.rental.v1.ConsultarHistorialClienteResponse;
+import ar.unla.rentar.grpc.rental.v1.ConsultarReservasRequest;
+import ar.unla.rentar.grpc.rental.v1.ConsultarReservasResponse;
+import ar.unla.rentar.grpc.rental.v1.CrearReservaRequest;
+import ar.unla.rentar.grpc.rental.v1.HistorialResponse;
+import ar.unla.rentar.grpc.rental.v1.ReservaResponse;
+import ar.unla.rentar.grpc.rental.v1.RentalServiceGrpc;
 import ar.unla.rentar.rental.dto.ReservaConfirmadaEvent;
-import ar.unla.rentar.rental.model.*;
+import ar.unla.rentar.rental.model.EstadoReserva;
+import ar.unla.rentar.rental.model.Reserva;
 import ar.unla.rentar.rental.repository.ReservaRepository;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import jakarta.annotation.PreDestroy;
 import net.devh.boot.grpc.server.service.GrpcService;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import java.time.*;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
+/** Servicio RPC responsable exclusivamente de la persistencia y reglas de reservas. */
 @GrpcService
 public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBase {
-  private final ReservaRepository repository;
-  private final ManagedChannel customerChannel;
-  private final ManagedChannel vehicleChannel;
-  private final CustomerServiceGrpc.CustomerServiceBlockingStub customers;
-  private final VehicleServiceGrpc.VehicleServiceBlockingStub vehicles;
-  @Autowired
-  private RentalEventPublisher eventPublisher;
+    private final ReservaRepository repository;
+    private final ReservaEstadoService estadoService;
 
-  public RentalGrpcServiceImpl(ReservaRepository repository,
-      @Value("${CUSTOMER_GRPC_TARGET:localhost:50052}") String customerTarget,
-      @Value("${VEHICLE_GRPC_TARGET:localhost:50051}") String vehicleTarget) {
-    this.repository = repository;
-    this.customerChannel = ManagedChannelBuilder.forTarget(customerTarget).usePlaintext().build();
-    this.vehicleChannel = ManagedChannelBuilder.forTarget(vehicleTarget).usePlaintext().build();
-    this.customers = CustomerServiceGrpc.newBlockingStub(customerChannel);
-    this.vehicles = VehicleServiceGrpc.newBlockingStub(vehicleChannel);
-  }
+    @Autowired
+    private RentalEventPublisher eventPublisher;
 
-  @Override public void crearReserva(CrearReservaRequest r, StreamObserver<ReservaResponse> out) {
-    try {
-      if (r.getClienteId() <= 0 || r.getVehiculoId() <= 0) throw invalid("Los IDs deben ser positivos");
-      LocalDateTime inicio = parse(r.getFechaInicio()), fin = parse(r.getFechaFin());
-      if (!fin.isAfter(inicio)) throw invalid("La fecha de fin debe ser posterior a la de inicio");
-      ValidacionResponse cliente = customers.validarCliente(ClienteRequest.newBuilder().setIdCliente(r.getClienteId()).build());
-      if (!cliente.getExiste() || !cliente.getActivo() || !cliente.getPuedeAlquilar()) throw Status.FAILED_PRECONDITION.withDescription("Cliente inexistente o inactivo").asRuntimeException();
-      Vehicle v = vehicles.getVehicle(GetVehicleRequest.newBuilder().setId(r.getVehiculoId()).build());
-      if (!v.getActivo() || v.getEstado() != VehicleStatus.DISPONIBLE) throw Status.FAILED_PRECONDITION.withDescription("Vehículo no disponible").asRuntimeException();
-      if (repository.existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(r.getVehiculoId(), List.of(ar.unla.rentar.rental.model.EstadoReserva.CONFIRMADA, ar.unla.rentar.rental.model.EstadoReserva.EN_CURSO), fin, inicio)) throw Status.ALREADY_EXISTS.withDescription("El vehículo ya está reservado").asRuntimeException();
-      Reserva entity = new Reserva(); entity.setClienteId(r.getClienteId()); entity.setVehiculoId(r.getVehiculoId()); entity.setFechaInicio(inicio); entity.setFechaFin(fin); entity.setPrecioDiario(v.getPrecioDiario()); entity.setImporteTotal(v.getPrecioDiario() * Math.max(1, (long)Math.ceil(Duration.between(inicio, fin).toHours() / 24.0))); entity.setEstado(ar.unla.rentar.rental.model.EstadoReserva.CONFIRMADA);
-
-      entity = repository.save(entity);
-
-      ReservaConfirmadaEvent evento = new ReservaConfirmadaEvent(
-            entity.getId(),
-            entity.getVehiculoId(),
-            entity.getFechaInicio(),
-            entity.getFechaFin()
-          );
-
-          eventPublisher.publicarReservaConfirmada(evento);
-
-      out.onNext(toProto(entity));
-      out.onCompleted();
-    } catch (RuntimeException e) {
-       e.printStackTrace();
-        out.onError(io.grpc.Status.INTERNAL
-            .withDescription("Error interno: " + e.getMessage())
-            .asRuntimeException());
+    public RentalGrpcServiceImpl(ReservaRepository repository, ReservaEstadoService estadoService) {
+        this.repository = repository;
+        this.estadoService = estadoService;
     }
-  }
 
-  @Override public void consultarReservas(ConsultarReservasRequest r, StreamObserver<ConsultarReservasResponse> out) {
-    try {
-      Long customerId = r.getClienteId() > 0 ? r.getClienteId() : null;
-      if (customerId == null && !r.getEmailCliente().isBlank()) customerId = customers.obtenerClientePorEmail(ClienteEmailRequest.newBuilder().setEmail(r.getEmailCliente()).build()).getIdCliente();
-      LocalDateTime from = r.getFechaInicio().isBlank() ? null : parse(r.getFechaInicio());
-      LocalDateTime to = r.getFechaFin().isBlank() ? null : parse(r.getFechaFin());
-      Long cid = customerId; final Long vid = r.getVehiculoId() > 0 ? r.getVehiculoId() : null;
-      List<ReservaResponse> result = repository.findAll().stream().filter(x -> cid == null || x.getClienteId().equals(cid)).filter(x -> vid == null || x.getVehiculoId().equals(vid)).filter(x -> r.getEstadoValue() == 0 || x.getEstado().ordinal() == r.getEstadoValue()).filter(x -> from == null || !x.getFechaInicio().isBefore(from)).filter(x -> to == null || !x.getFechaFin().isAfter(to)).map(this::toProto).collect(Collectors.toList());
-      out.onNext(ConsultarReservasResponse.newBuilder().addAllReservas(result).build()); out.onCompleted();
-    } catch (RuntimeException e) { out.onError(e); }
-  }
+    @Override
+    public void crearReserva(CrearReservaRequest request, StreamObserver<ReservaResponse> responseObserver) {
+        try {
+            if (request.getClienteId() <= 0 || request.getVehiculoId() <= 0) {
+                throw invalid("Los IDs deben ser positivos");
+            }
+            LocalDateTime inicio = parse(request.getFechaInicio());
+            LocalDateTime fin = parse(request.getFechaFin());
+            if (!fin.isAfter(inicio)) {
+                throw invalid("La fecha de fin debe ser posterior a la de inicio");
+            }
+            if (request.getPrecioDiario() <= 0) {
+                throw invalid("El precio diario debe ser mayor que cero");
+            }
+            if (repository.existsByVehiculoIdAndEstadoInAndFechaInicioLessThanAndFechaFinGreaterThan(
+                    request.getVehiculoId(),
+                    List.of(EstadoReserva.CONFIRMADA, EstadoReserva.EN_CURSO),
+                    fin,
+                    inicio)) {
+                throw Status.ALREADY_EXISTS.withDescription("El vehículo ya está reservado").asRuntimeException();
+            }
 
-  @Override public void cancelarReserva(CancelarReservaRequest r, StreamObserver<CancelarReservaResponse> out) {
-    try {
-      Reserva x = repository.findById(r.getReservaId()).orElseThrow(() -> Status.NOT_FOUND.withDescription("Reserva inexistente").asRuntimeException());
-      if (!r.getClienteEmail().isBlank() && customers.obtenerClientePorEmail(ClienteEmailRequest.newBuilder().setEmail(r.getClienteEmail()).build()).getIdCliente() != x.getClienteId()) throw Status.PERMISSION_DENIED.withDescription("La reserva no pertenece al cliente").asRuntimeException();
-      if (x.getEstado() == ar.unla.rentar.rental.model.EstadoReserva.CANCELADA) throw Status.FAILED_PRECONDITION.withDescription("La reserva ya está cancelada").asRuntimeException();
-      if (LocalDateTime.now().isAfter(x.getFechaInicio())) throw Status.FAILED_PRECONDITION.withDescription("La reserva ya comenzó").asRuntimeException();
-      x.setEstado(ar.unla.rentar.rental.model.EstadoReserva.CANCELADA); out.onNext(CancelarReservaResponse.newBuilder().setExito(true).setReserva(toProto(repository.save(x))).build()); out.onCompleted();
-    } catch (RuntimeException e) { out.onError(e); }
-  }
+            Reserva entity = new Reserva();
+            entity.setClienteId(request.getClienteId());
+            entity.setVehiculoId(request.getVehiculoId());
+            entity.setFechaInicio(inicio);
+            entity.setFechaFin(fin);
+            entity.setPrecioDiario(request.getPrecioDiario());
+            entity.setImporteTotal(request.getPrecioDiario()
+                    * Math.max(1, (long) Math.ceil(Duration.between(inicio, fin).toHours() / 24.0)));
+            entity.setEstado(EstadoReserva.CONFIRMADA);
 
-  @Override public void consultarHistorialCliente(ConsultarHistorialClienteRequest r, StreamObserver<ConsultarHistorialClienteResponse> out) {
-    try { if (r.getClienteId() <= 0) throw invalid("ID de cliente inválido");
-      List<HistorialResponse> list = new ArrayList<>(); for (Reserva x : repository.findByClienteId(r.getClienteId())) { Vehicle v = vehicles.getVehicle(GetVehicleRequest.newBuilder().setId(x.getVehiculoId()).build()); list.add(HistorialResponse.newBuilder().setVehiculo(v.getMarca()+" "+v.getModelo()).setPatente(v.getPatente()).setFechaInicio(x.getFechaInicio().toString()).setFechaFin(x.getFechaFin().toString()).setCantidadDias(Math.max(1, ChronoUnit.DAYS.between(x.getFechaInicio(),x.getFechaFin()))).setImporteTotal(x.getImporteTotal()).setEstado(x.getEstado().name()).build()); }
-      out.onNext(ConsultarHistorialClienteResponse.newBuilder().addAllReservas(list).build()); out.onCompleted();
-    } catch (RuntimeException e) { out.onError(e); }
-  }
+            entity = repository.save(entity);
+            eventPublisher.publicarReservaConfirmada(new ReservaConfirmadaEvent(
+                    entity.getId(), entity.getVehiculoId(), entity.getFechaInicio(), entity.getFechaFin()));
 
-  private LocalDateTime parse(String s) { if (s == null || s.isBlank()) throw invalid("Las fechas son obligatorias"); try { return LocalDateTime.parse(s); } catch (Exception e) { throw invalid("Formato de fecha inválido"); } }
-  private IllegalArgumentException invalid(String m) { return new IllegalArgumentException(m); }
-  private ReservaResponse toProto(Reserva x) { return ReservaResponse.newBuilder().setId(x.getId()).setClienteId(x.getClienteId()).setVehiculoId(x.getVehiculoId()).setFechaInicio(x.getFechaInicio().toString()).setFechaFin(x.getFechaFin().toString()).setPrecioDiario(x.getPrecioDiario()).setImporteTotal(x.getImporteTotal()).setEstado(ar.unla.rentar.grpc.rental.v1.EstadoReserva.valueOf(x.getEstado().name())).build(); }
-  @PreDestroy public void close() { customerChannel.shutdown(); vehicleChannel.shutdown(); }
+            responseObserver.onNext(toProto(entity));
+            responseObserver.onCompleted();
+        } catch (IllegalArgumentException error) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(error.getMessage()).asRuntimeException());
+        } catch (RuntimeException error) {
+            responseObserver.onError(error);
+        }
+    }
+
+    @Override
+    public void consultarReservas(ConsultarReservasRequest request, StreamObserver<ConsultarReservasResponse> responseObserver) {
+        try {
+            estadoService.actualizarFinalizadas();
+            Long customerId = request.getClienteId() > 0 ? request.getClienteId() : null;
+            LocalDateTime from = request.getFechaInicio().isBlank() ? null : parse(request.getFechaInicio());
+            LocalDateTime to = request.getFechaFin().isBlank() ? null : parse(request.getFechaFin());
+            Long vehicleId = request.getVehiculoId() > 0 ? request.getVehiculoId() : null;
+
+            List<ReservaResponse> result = repository.findAll().stream()
+                    .filter(item -> customerId == null || item.getClienteId().equals(customerId))
+                    .filter(item -> vehicleId == null || item.getVehiculoId().equals(vehicleId))
+                    .filter(item -> request.getEstadoValue() == 0 || item.getEstado().ordinal() == request.getEstadoValue())
+                    .filter(item -> from == null || !item.getFechaInicio().isBefore(from))
+                    .filter(item -> to == null || !item.getFechaFin().isAfter(to))
+                    .map(this::toProto)
+                    .collect(Collectors.toList());
+            responseObserver.onNext(ConsultarReservasResponse.newBuilder().addAllReservas(result).build());
+            responseObserver.onCompleted();
+        } catch (RuntimeException error) {
+            responseObserver.onError(error);
+        }
+    }
+
+    @Override
+    public void cancelarReserva(CancelarReservaRequest request, StreamObserver<CancelarReservaResponse> responseObserver) {
+        try {
+            Reserva reservation = repository.findById(request.getReservaId())
+                    .orElseThrow(() -> Status.NOT_FOUND.withDescription("Reserva inexistente").asRuntimeException());
+            if (request.getClienteId() > 0 && request.getClienteId() != reservation.getClienteId()) {
+                throw Status.PERMISSION_DENIED.withDescription("La reserva no pertenece al cliente").asRuntimeException();
+            }
+            if (reservation.getEstado() == EstadoReserva.CANCELADA) {
+                throw Status.FAILED_PRECONDITION.withDescription("La reserva ya está cancelada").asRuntimeException();
+            }
+            if (LocalDateTime.now().isAfter(reservation.getFechaInicio())) {
+                throw Status.FAILED_PRECONDITION.withDescription("La reserva ya comenzó").asRuntimeException();
+            }
+            reservation.setEstado(EstadoReserva.CANCELADA);
+            responseObserver.onNext(CancelarReservaResponse.newBuilder()
+                    .setExito(true)
+                    .setReserva(toProto(repository.save(reservation)))
+                    .build());
+            responseObserver.onCompleted();
+        } catch (RuntimeException error) {
+            responseObserver.onError(error);
+        }
+    }
+
+    @Override
+    public void consultarHistorialCliente(ConsultarHistorialClienteRequest request,
+                                           StreamObserver<ConsultarHistorialClienteResponse> responseObserver) {
+        try {
+            estadoService.actualizarFinalizadas();
+            if (request.getClienteId() <= 0) {
+                throw Status.INVALID_ARGUMENT.withDescription("ID de cliente inválido").asRuntimeException();
+            }
+            List<HistorialResponse> history = new ArrayList<>();
+            for (Reserva item : repository.findByClienteId(request.getClienteId())) {
+                history.add(HistorialResponse.newBuilder()
+                        .setReservaId(item.getId())
+                        .setClienteId(item.getClienteId())
+                        .setVehiculoId(item.getVehiculoId())
+                        .setFechaInicio(item.getFechaInicio().toString())
+                        .setFechaFin(item.getFechaFin().toString())
+                        .setCantidadDias(Math.max(1, ChronoUnit.DAYS.between(item.getFechaInicio(), item.getFechaFin())))
+                        .setImporteTotal(item.getImporteTotal())
+                        .setEstado(item.getEstado().name())
+                        .build());
+            }
+            responseObserver.onNext(ConsultarHistorialClienteResponse.newBuilder().addAllReservas(history).build());
+            responseObserver.onCompleted();
+        } catch (RuntimeException error) {
+            responseObserver.onError(error);
+        }
+    }
+
+    private LocalDateTime parse(String value) {
+        if (value == null || value.isBlank()) {
+            throw invalid("Las fechas son obligatorias");
+        }
+        try {
+            return LocalDateTime.parse(value);
+        } catch (Exception error) {
+            throw invalid("Formato de fecha inválido");
+        }
+    }
+
+    private IllegalArgumentException invalid(String message) {
+        return new IllegalArgumentException(message);
+    }
+
+    private ReservaResponse toProto(Reserva item) {
+        return ReservaResponse.newBuilder()
+                .setId(item.getId())
+                .setClienteId(item.getClienteId())
+                .setVehiculoId(item.getVehiculoId())
+                .setFechaInicio(item.getFechaInicio().toString())
+                .setFechaFin(item.getFechaFin().toString())
+                .setPrecioDiario(item.getPrecioDiario())
+                .setImporteTotal(item.getImporteTotal())
+                .setEstado(ar.unla.rentar.grpc.rental.v1.EstadoReserva.valueOf(item.getEstado().name()))
+                .build();
+    }
 }

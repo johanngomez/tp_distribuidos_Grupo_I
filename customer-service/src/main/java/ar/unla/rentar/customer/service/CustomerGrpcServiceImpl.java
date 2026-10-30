@@ -1,7 +1,8 @@
 package ar.unla.rentar.customer.service;
 
 import ar.edu.unla.rentar.customer.grpc.ClienteEmailRequest;
-import ar.edu.unla.rentar.customer.grpc.ClienteRequest;
+import ar.edu.unla.rentar.customer.grpc.ValidarClienteRequest;
+import ar.edu.unla.rentar.customer.grpc.ObtenerClienteRequest;
 import ar.edu.unla.rentar.customer.grpc.ClienteResponse;
 import ar.edu.unla.rentar.customer.grpc.CrearClienteRequest;
 import ar.edu.unla.rentar.customer.grpc.CustomerServiceGrpc;
@@ -62,7 +63,7 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
     }
 
     @Override
-    public void getCliente(ClienteRequest request, StreamObserver<ClienteResponse> responseObserver) {
+    public void getCliente(ObtenerClienteRequest request, StreamObserver<ClienteResponse> responseObserver) {
         clienteService.buscarPorId(request.getIdCliente()).ifPresentOrElse(
                 cliente -> complete(responseObserver, toProto(cliente)),
                 () -> error(responseObserver, Status.NOT_FOUND, "Cliente no encontrado")
@@ -128,7 +129,7 @@ public class CustomerGrpcServiceImpl extends CustomerServiceGrpc.CustomerService
     }
 
     @Override
-    public void validarCliente(ClienteRequest request,
+    public void validarCliente(ValidarClienteRequest request,
                                StreamObserver<ValidacionResponse> responseObserver) {
         boolean existe = clienteService.buscarPorId(request.getIdCliente()).isPresent();
         boolean activo = existe && clienteService.buscarPorId(request.getIdCliente()).orElseThrow().isActivo();
