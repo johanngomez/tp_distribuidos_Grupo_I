@@ -492,6 +492,8 @@ CANCELADA
 
 El desarrollo será incremental.
 
+<a id="hito1"></a>
+
 ## Hito 1 — REST / GraphQL
 
 Se implementarán:
@@ -506,6 +508,8 @@ Se implementarán:
 - Interfaz web.
 - Documentación Swagger/OpenAPI.
 - Pruebas.
+
+<a id="hito2"></a>
 
 ## Hito 2 — RPC
 
@@ -565,19 +569,27 @@ generan desde esos archivos .proto.
 | Servicio | Puerto gRPC | Base de datos |
 |---|---:|---|
 | Vehicle Service | 50051 | rentar_vehiculos |
-| Customer Service | 50052 | rentar |
-| Rental Service | 50053 | rentar |
+| Customer Service | 50052 | rentar_clientes |
+| Rental Service | 50053 | rentar_reservas |
 
 El Gateway escucha HTTP en 8000 y el frontend Vite normalmente en 5173.
 
 ### Ejecución del Hito 2 en Windows
 
-MySQL debe estar iniciado y las bases rentar y rentar_vehiculos deben existir.
+MySQL debe estar iniciado y las bases rentar_clientes, rentar_vehiculos y
+rentar_reservas deben existir. Para inicializarlas junto con los datos de
+prueba, ejecutar scripts/initialize_microservices_databases.sql después de
+script_rentar_V2.sql.
+
+powershell
+Get-Content -Raw scripts\initialize_microservices_databases.sql | mysql -u root -p
+
 Reemplazar TU_CLAVE_MYSQL por la contraseña local de MySQL.
 
 sql
-CREATE DATABASE rentar;
+CREATE DATABASE rentar_clientes;
 CREATE DATABASE rentar_vehiculos;
+CREATE DATABASE rentar_reservas;
 
 
 Cada proceso se ejecuta en una terminal diferente.
@@ -598,7 +610,7 @@ powershell
 ## Terminal 2
 cd E:\TpDistribuidos\customer-service
 $env:DB_PORT="3306"
-$env:DB_NAME="rentar"
+$env:DB_NAME="rentar_clientes"
 $env:DB_USER="root"
 $env:DB_PASSWORD="TU_CLAVE_MYSQL"
 $env:JWT_SECRET="RentarClaveSecreta2026ParaJWT123456789"
@@ -613,11 +625,9 @@ powershell
 ## Terminal 3
 cd E:\TpDistribuidos\rental-service
 $env:DB_PORT="3306"
-$env:DB_NAME="rentar"
+$env:DB_NAME="rentar_reservas"
 $env:DB_USER="root"
 $env:DB_PASSWORD="TU_CLAVE_MYSQL"
-$env:CUSTOMER_GRPC_TARGET="localhost:50052"
-$env:VEHICLE_GRPC_TARGET="localhost:50051"
 mvn spring-boot:run
 
 Debe quedar escuchando gRPC en localhost:50053. No cerrar esta terminal.
@@ -659,6 +669,7 @@ El frontend debe utilizar VITE_API_URL=http://127.0.0.1:8000.
 | POST | /auth/login | Customer Service |
 | GET | /auth/me | Validación local del JWT |
 | GET/POST | /vehiculos | Vehicle Service |
+| POST | /vehiculos/externos | Vehicle Service + RabbitMQ |
 | PUT/DELETE | /vehiculos/{id} | Vehicle Service |
 | GET/POST | /api/clientes | Customer Service |
 | GET/PUT/DELETE | /api/clientes/{id} | Customer Service |
@@ -681,14 +692,144 @@ http://127.0.0.1:8000/docs y GraphQL en http://127.0.0.1:8000/graphql.
 
 Las rutas protegidas utilizan Authorization: Bearer <JWT>.
 
-## Hito 3 — Mensajería
+<a id="hito3"></a>
 
-El Hito 3 incorpora RabbitMQ como broker de mensajes para comunicación
-asíncrona. La infraestructura inicial, los contratos de eventos y los archivos
-esqueleto están preparados. Los próximos pasos de implementación, ejecución y
-pruebas se encuentran en [PROXIMOS_PASOS_HITO3.md](PROXIMOS_PASOS_HITO3.md).
-Para ejecutar RabbitMQ se necesita Docker Desktop, que ya incluye Docker
-Compose v2.
+## Hito 3 — Mensajería con RabbitMQ
+
+El Hito 3 incorpora RabbitMQ como broker para desacoplar procesos que no
+necesitan una respuesta inmediata. Se conserva la arquitectura del Hito 2:
+el frontend se comunica con el API Gateway mediante REST y GraphQL, el Gateway
+coordina las operaciones síncronas mediante gRPC y los eventos se publican y
+consumen mediante RabbitMQ.
+
+### Requisitos y puesta en marcha
+
+Se necesita Docker Desktop, que incluye Docker Compose v2. Desde la raíz del
+proyecto ejecutar:
+
+powershell
+cd E:\TpDistribuidos
+docker compose up -d rabbitmq
+docker compose ps
+
+
+RabbitMQ debe quedar disponible en localhost:5672. La interfaz de
+administración se encuentra en http://localhost:15672 con usuario rentar y
+contraseña rentar. El exchange utilizado por los servicios es
+rentar.events (tipo topic).
+
+Luego se levantan los tres servicios Java, el API Gateway y el frontend con los
+comandos indicados en [Ejecución del Hito 2 en Windows](#ejecución-del-hito-2-en-windows).
+Las bases utilizadas son rentar_clientes, rentar_vehiculos y
+rentar_reservas. Si todavía no existen, se pueden crear con
+scripts/initialize_microservices_databases.sql.
+
+### Flujos implementados
+
+#### Verificación asíncrona de vehículos
+
+Al registrar un vehículo se publica vehiculos.verificacion.solicitada con su
+identificador y patente. Un consumidor consulta el registro policial simulado
+y publica vehiculos.verificacion.resultado con resultado VALIDADO o
+ROBADO. El resultado ROBADO no se convierte en un estado operativo: el
+vehículo se desactiva lógicamente y no puede utilizarse en nuevas reservas.
+
+#### Incorporación de vehículos de clientes
+
+El cliente puede utilizar POST /vehiculos/externos desde el Gateway. El
+vehículo comienza en estado PENDIENTE y se publican validaciones
+independientes de patente y titularidad. Los resultados se correlacionan por
+vehiculoExternoId; si ambas validaciones son satisfactorias se publica la
+finalización y el vehículo queda DISPONIBLE. Si alguna falla, la solicitud
+queda rechazada y el vehículo no se incorpora.
+
+Ejemplo de solicitud:
+
+json
+{
+  "clienteId": 1,
+  "patente": "DEF456",
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anio": 2022,
+  "color": "Blanco",
+  "tipo": "SEDAN",
+  "precioDiario": 50000
+}
+
+
+#### Mantenimiento preventivo
+
+Cuando una reserva se confirma se publica reserva.confirmada. El componente
+de mantenimiento consume el evento, registra la solicitud y publica
+mantenimiento.resultado con REALIZADO o NO_REALIZADO. La confirmación de
+la reserva no queda bloqueada esperando este procesamiento; el resultado se
+asocia posteriormente a la reserva.
+
+### Colas y eventos
+
+Las colas declaradas por los servicios son:
+
+- rentar.vehicle.verification
+- rentar.vehicle.verification.result
+- rentar.external.vehicle.patent.request
+- rentar.external.vehicle.ownership.request
+- rentar.external.vehicle.completed
+- rentar.maintenance.request
+- rentar.maintenance.result
+
+Los nombres, payloads, productores, consumidores y ejemplos de verificación
+se encuentran en:
+
+- [Eventos RabbitMQ](docs/hito3-rabbitmq-eventos.md)
+- [Documentación RabbitMQ del Gateway](api-gateway/docs/hito3-rabbitmq.md)
+
+### Documentación de las APIs
+
+La documentación navegable queda disponible al levantar el Gateway:
+
+- Swagger/OpenAPI: http://127.0.0.1:8000/docs
+- ReDoc: http://127.0.0.1:8000/redoc
+- GraphQL: http://127.0.0.1:8000/graphql
+
+Además, el repositorio incluye ejemplos de parámetros, respuestas, filtros,
+fechas y errores:
+
+- [Ejemplos REST del API Gateway](api-gateway/docs/rest-examples.md)
+- [Ejemplos GraphQL](api-gateway/docs/graphql-examples.md)
+- [Contratos gRPC](api-gateway/docs/vehicle-grpc-contract-proposal.md)
+
+### Documentación por hito
+
+#### [Hito 1 — REST y GraphQL](#hito1)
+
+La documentación del Hito 1 está dentro de este README. Se puede navegar
+directamente a cada apartado:
+
+- [Requisitos previos](#1-requisitos-previos)
+- [Configuración de MySQL](#3-configurar-mysql)
+- [Ejecución del Hito 1](#11-ejecutar-el-hito-1-en-modo-compatibilidad)
+- [Estructura del backend](#12-estructura-del-backend)
+- [Estructura del frontend](#13-estructura-del-frontend)
+- [Modelo general](#14-modelo-general-del-sistema)
+- [Entidades principales](#15-entidades-principales)
+- [Swagger/OpenAPI](#7-swagger--openapi)
+- [GraphQL](#8-graphql)
+- [Flujo recomendado del Hito 1](#22-flujo-recomendado-para-comenzar-a-trabajar-con-el-hito-1)
+
+#### [Hito 2 — RPC](#hito2)
+
+- [Sección completa del Hito 2](#hito2)
+- [README del API Gateway](./api-gateway/README.md)
+- [`api-gateway/docs/rest-examples.md`](./api-gateway/docs/rest-examples.md)
+- [`api-gateway/docs/graphql-examples.md`](./api-gateway/docs/graphql-examples.md)
+- [`api-gateway/docs/vehicle-grpc-contract-proposal.md`](./api-gateway/docs/vehicle-grpc-contract-proposal.md)
+
+#### [Hito 3 — RabbitMQ y eventos](#hito3)
+
+- [Sección completa del Hito 3](#hito3)
+- [`docs/hito3-rabbitmq-eventos.md`](./docs/hito3-rabbitmq-eventos.md)
+- [`api-gateway/docs/hito3-rabbitmq.md`](./api-gateway/docs/hito3-rabbitmq.md)
 
 ---
 
@@ -950,7 +1091,7 @@ http://localhost:8080/graphql
 
 # 23. Estado actual del proyecto
 
-El Hito 1 se encuentra implementado y el Hito 2 esta integrado
+El Hito 1, el Hito 2 y el Hito 3 se encuentran implementados e integrados.
 
 Actualmente se encuentran disponibles:
 
@@ -962,6 +1103,11 @@ Actualmente se encuentran disponibles:
 - Comunicacion interna gRPC con Vehicle, Customer y Rental Service.
 - Autenticacion JWT, roles y CORS.
 - Orquestacion de creacion de reservas.
+- RabbitMQ para comunicación asíncrona basada en eventos.
+- Verificación de vehículos y baja lógica ante resultado ROBADO.
+- Incorporación asíncrona de vehículos de clientes con validación de patente y titularidad.
+- Solicitudes de mantenimiento preventivo asociadas a reservas.
+- Bases independientes por microservicio y documentación de REST, GraphQL, gRPC y RabbitMQ.
 
 
 ---

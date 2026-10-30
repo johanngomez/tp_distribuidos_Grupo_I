@@ -43,17 +43,25 @@ def _map_error(error: GrpcServiceError) -> HTTPException:
         grpc.StatusCode.NOT_FOUND: status.HTTP_404_NOT_FOUND,
         grpc.StatusCode.INVALID_ARGUMENT: status.HTTP_400_BAD_REQUEST,
         grpc.StatusCode.FAILED_PRECONDITION: status.HTTP_409_CONFLICT,
+        grpc.StatusCode.PERMISSION_DENIED: status.HTTP_403_FORBIDDEN,
         grpc.StatusCode.UNAVAILABLE: status.HTTP_503_SERVICE_UNAVAILABLE,
         grpc.StatusCode.DEADLINE_EXCEEDED: status.HTTP_504_GATEWAY_TIMEOUT,
     }
     detail = "Rental Service no disponible" if error.code == grpc.StatusCode.UNAVAILABLE else error.details
+    if error.code == grpc.StatusCode.PERMISSION_DENIED:
+        detail = "No podés operar sobre reservas de otro cliente"
     return HTTPException(
         status_code=code_to_http.get(error.code, status.HTTP_502_BAD_GATEWAY),
         detail=detail,
     )
 
 
-@router.post("", response_model=RentalResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=RentalResponse, status_code=status.HTTP_201_CREATED,
+    summary="Crear reserva",
+    description="Valida cliente y disponibilidad del vehículo y crea una reserva confirmada.",
+    responses={201: {"description": "Reserva creada."}, 404: {"description": "Cliente o vehículo inexistente."}, 409: {"description": "Cliente inactivo o vehículo no disponible."}, 503: {"description": "Algún servicio interno no está disponible."}},
+)
 async def create_rental(
     data: RentalCreateRequest,
     request: Request,
@@ -76,24 +84,34 @@ async def create_rental(
             vehicle_id=data.vehiculoId,
             start_date=data.fechaInicio,
             end_date=data.fechaFin,
+            daily_price=vehicle.precioDiario,
         )
     except GrpcServiceError as error:
         raise _map_error(error) from error
 
 
-@router.get("", response_model=list[RentalResponse])
+@router.get(
+    "", response_model=list[RentalResponse], summary="Consultar reservas",
+    description="Lista reservas. Los administradores pueden consultar todas; los clientes solo las propias. Permite filtrar por cliente, vehículo y fechas.",
+    responses={401: {"description": "Token ausente o inválido."}, 503: {"description": "Rental Service no disponible."}},
+)
 async def list_rentals(
     request: Request,
     user: CurrentUser,
-    cliente_id: int | None = Query(default=None),
-    vehiculo_id: int | None = Query(default=None),
-    fecha_inicio: str = Query(default=""),
-    fecha_fin: str = Query(default=""),
+    cliente_id: int | None = Query(default=None, description="Filtra por ID de cliente."),
+    vehiculo_id: int | None = Query(default=None, description="Filtra por ID de vehículo."),
+    fecha_inicio: str = Query(default="", description="Fecha/hora inicial ISO-8601. Ejemplo: 2026-11-10T00:00:00.", examples=["2026-11-10T00:00:00"]),
+    fecha_fin: str = Query(default="", description="Fecha/hora final ISO-8601. Ejemplo: 2026-11-15T00:00:00.", examples=["2026-11-15T00:00:00"]),
 ) -> list[RentalResponse]:
     try:
+        if user.es_admin:
+            customer_id = cliente_id or 0
+        else:
+            # Un cliente nunca puede consultar reservas ajenas, aunque envíe
+            # otro cliente_id como parámetro.
+            customer_id = (await _customer_client(request).get_customer_by_email(user.email)).id
         return await _rental_client(request).list_rentals(
-            email="" if user.es_admin else user.email,
-            customer_id=cliente_id or 0,
+            customer_id=customer_id,
             vehicle_id=vehiculo_id or 0,
             start_date=fecha_inicio,
             end_date=fecha_fin,
@@ -102,16 +120,23 @@ async def list_rentals(
         raise _map_error(error) from error
 
 
-@router.put("/{rental_id}/cancelar", response_model=RentalCancellationResponse)
+@router.put(
+    "/{rental_id}/cancelar", response_model=RentalCancellationResponse,
+    summary="Cancelar reserva", description="Cancela una reserva si todavía no comenzó.",
+    responses={200: {"description": "Reserva cancelada."}, 404: {"description": "Reserva inexistente."}, 409: {"description": "La reserva ya comenzó o ya estaba cancelada."}},
+)
 async def cancel_rental(
     rental_id: int,
     request: Request,
     user: CurrentUser,
 ) -> RentalCancellationResponse:
     try:
+        customer_id = 0
+        if not user.es_admin:
+            customer_id = (await _customer_client(request).get_customer_by_email(user.email)).id
         return await _rental_client(request).cancel_rental(
             rental_id=rental_id,
-            customer_email=user.email,
+            customer_id=customer_id,
         )
     except GrpcServiceError as error:
         raise _map_error(error) from error

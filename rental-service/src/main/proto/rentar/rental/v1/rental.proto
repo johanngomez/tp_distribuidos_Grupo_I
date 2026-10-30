@@ -5,13 +5,14 @@ option java_package = "ar.unla.rentar.grpc.rental.v1";
 
 package rentar.rental.v1;
 
-import "vehicle.proto";
-
 service RentalService {
-
+    // Crea una reserva con el precio ya resuelto por el Gateway.
     rpc CrearReserva (CrearReservaRequest) returns (ReservaResponse);
+    // Consulta reservas aplicando los filtros recibidos.
     rpc ConsultarReservas (ConsultarReservasRequest) returns (ConsultarReservasResponse);
+    // Cancela una reserva perteneciente al cliente indicado.
     rpc CancelarReserva (CancelarReservaRequest) returns (CancelarReservaResponse);
+    // Devuelve el historial resumido del cliente, sin consultar otros servicios.
     rpc ConsultarHistorialCliente (ConsultarHistorialClienteRequest) returns (ConsultarHistorialClienteResponse);
 
 }
@@ -27,27 +28,28 @@ enum EstadoReserva {
 //request
 
 message CrearReservaRequest {
-    int64 cliente_id = 1;
-    int64 vehiculo_id = 2;
-    string fecha_inicio = 3;
-    string fecha_fin = 4;
+    int64 cliente_id = 1; // Cliente previamente validado por el Gateway.
+    int64 vehiculo_id = 2; // Vehiculo previamente validado por el Gateway.
+    string fecha_inicio = 3; // Fecha/hora ISO-8601 de inicio.
+    string fecha_fin = 4; // Fecha/hora ISO-8601 de finalizacion.
+    double precio_diario = 5; // Precio resuelto por Vehicle Service.
 }
 
 //todos los campos son opcionales, si no se envía un campo, no se filtrará por ese campo
 message ConsultarReservasRequest {
-  string email_cliente = 1;
-  int64 cliente_id = 2;
-  int64 vehiculo_id = 3;
-  rentar.vehicle.v1.VehicleType tipo_vehiculo = 4;
-  EstadoReserva estado = 5;
-  string fecha_inicio = 6;
-  string fecha_fin = 7;
+  // El Gateway resuelve el email y envía el ID del cliente.
+  int64 cliente_id = 1;
+  int64 vehiculo_id = 2;
+  // El contrato de reservas no depende del contrato de vehículos.
+  EstadoReserva estado = 3;
+  string fecha_inicio = 4;
+  string fecha_fin = 5;
 
 }
 
 message CancelarReservaRequest {
-  int64 reserva_id = 1;
-  string cliente_email = 2;
+  int64 reserva_id = 1; // Reserva a cancelar.
+  int64 cliente_id = 2; // Cliente propietario; cero solo para administradores.
 }
 
 message ConsultarHistorialClienteRequest {
@@ -77,13 +79,14 @@ message CancelarReservaResponse {
 }
 
 message HistorialResponse {
-  string vehiculo = 1;
-  string patente = 2;
-  string fecha_inicio = 3;
-  string fecha_fin = 4;
-  int64 cantidad_dias = 5;
-  double importe_total = 6;
-  string estado = 7;
+  int64 reserva_id = 1;
+  int64 cliente_id = 2;
+  int64 vehiculo_id = 3;
+  string fecha_inicio = 4;
+  string fecha_fin = 5;
+  int64 cantidad_dias = 6;
+  double importe_total = 7;
+  string estado = 8;
 }
 
 message ConsultarHistorialClienteResponse {

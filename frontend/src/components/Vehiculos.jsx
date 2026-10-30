@@ -16,6 +16,7 @@ import {
 import {
     listarVehiculos,
     crearVehiculo,
+    registrarVehiculoExterno,
     modificarVehiculo,
     eliminarVehiculo,
 } from "../services/vehiculoService";
@@ -30,6 +31,7 @@ function Vehiculos() {
     const [vehiculos, setVehiculos] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [esAdmin, setEsAdmin] = useState(false);
     const [mostrarListado, setMostrarListado] = useState(false);
     const [busqueda, setBusqueda] = useState("");
 
@@ -58,12 +60,9 @@ function Vehiculos() {
             return;
         }
 
-        if (!esAdmin) {
-            navigate("/disponibilidad");
-            return;
-        }
-
-        cargarVehiculos();
+        setEsAdmin(esAdmin);
+        if (esAdmin) cargarVehiculos();
+        else setLoading(false);
     }, []);
     //barra de busqueda para filtrar por patente
     async function cargarVehiculos() {
@@ -130,6 +129,26 @@ function Vehiculos() {
         setGuardando(true);
 
         try {
+            if (!anio || Number(anio) < 1900) {
+                throw new Error("El año debe ser un número mayor o igual a 1900");
+            }
+            if (!precioDiario || Number(precioDiario) <= 0) {
+                throw new Error("El precio diario debe ser mayor que cero");
+            }
+            if (!esAdmin) {
+                await registrarVehiculoExterno({
+                    patente,
+                    marca,
+                    modelo,
+                    anio: Number(anio),
+                    color,
+                    tipo,
+                    precioDiario: Number(precioDiario),
+                });
+                mostrarMensajeExito("Vehiculo registrado. Queda pendiente de validacion.");
+                limpiarFormulario();
+                return;
+            }
             if (editandoId) {
                 await modificarVehiculo(editandoId, {
                     patente,
@@ -182,7 +201,7 @@ function Vehiculos() {
 
             {error && <p className="login-error">{error}</p>}
 
-            <button
+            {esAdmin && <button
                 type="button"
                 className="toggle-listado"
                 onClick={() => setMostrarListado(!mostrarListado)}
@@ -190,9 +209,9 @@ function Vehiculos() {
                 <Car size={16} />
                 Vehículos registrados
                 <span className="chevron">{mostrarListado ? "▲" : "▼"}</span>
-            </button>
+            </button>}
 
-            {mostrarListado && (
+            {esAdmin && mostrarListado && (
                 <>
                     <div className="form-group">
                         <label htmlFor="busqueda">Buscar por patente</label>
@@ -347,7 +366,7 @@ function Vehiculos() {
                         </div>
                     </div>
 
-                    {editandoId && (
+                    {esAdmin && editandoId && (
                         <div className="form-group">
                             <label htmlFor="estado">Estado</label>
                             <select

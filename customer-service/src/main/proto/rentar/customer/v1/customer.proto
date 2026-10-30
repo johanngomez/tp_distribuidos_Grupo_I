@@ -1,19 +1,29 @@
 syntax = "proto3";
 
+package rentar.customer.v1;
+
 //le dicen a Maven cómo generar el código en Java
 option java_package = "ar.edu.unla.rentar.customer.grpc";
 option java_multiple_files = true;
 
 //definimos los métodos que el Gateway de Python va a poder llamar
 service CustomerService {
+  // Autentica un usuario y devuelve un JWT.
   rpc Login (LoginRequest) returns (LoginResponse);
+  // Lista los clientes administrados por este servicio.
   rpc ListarClientes (ListarClientesRequest) returns (ListarClientesResponse);
-  rpc GetCliente (ClienteRequest) returns (ClienteResponse);
+  // Obtiene un cliente por identificador.
+  rpc GetCliente (ObtenerClienteRequest) returns (ClienteResponse);
+  // Busca un cliente por su email.
   rpc ObtenerClientePorEmail (ClienteEmailRequest) returns (ClienteResponse);
+  // Crea un cliente validando sus datos obligatorios.
   rpc CrearCliente (CrearClienteRequest) returns (ClienteResponse);
+  // Modifica los datos editables de un cliente.
   rpc ModificarCliente (ModificarClienteRequest) returns (ClienteResponse);
+  // Realiza la baja logica de un cliente.
   rpc DarDeBajaCliente (DarDeBajaClienteRequest) returns (OperacionClienteResponse);
-  rpc ValidarCliente (ClienteRequest) returns (ValidacionResponse);
+  // Verifica que un cliente exista, este activo y pueda alquilar.
+  rpc ValidarCliente (ValidarClienteRequest) returns (ValidacionResponse);
 }
 
 message LoginRequest {
@@ -34,7 +44,11 @@ message ListarClientesResponse {
 }
 
 //"message" son las variables que viajan por la red
-message ClienteRequest {
+message ObtenerClienteRequest {
+  int64 id_cliente = 1;
+}
+
+message ValidarClienteRequest {
   int64 id_cliente = 1;
 }
 

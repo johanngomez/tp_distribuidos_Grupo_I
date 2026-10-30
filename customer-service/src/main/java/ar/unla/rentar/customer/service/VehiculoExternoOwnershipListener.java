@@ -26,7 +26,7 @@ public class VehiculoExternoOwnershipListener {
         this.registroTitularidadService = registroTitularidadService;
     }
 
-    @RabbitListener(queues = "rentar.external.vehicle.patent.request") 
+    @RabbitListener(queues = "rentar.external.vehicle.ownership.request")
     public void procesarValidacionTitularidad(EventEnvelope eventoRecibido) {
         try {
             System.out.println("-> Recibido evento para validar titularidad. CorrelationId: " + eventoRecibido.getCorrelationId());

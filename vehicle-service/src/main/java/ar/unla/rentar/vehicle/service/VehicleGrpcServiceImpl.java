@@ -9,6 +9,7 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 
@@ -42,12 +43,20 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         vehiculo.setModelo(request.getModelo());
         vehiculo.setAnio(request.getAnio());
         vehiculo.setColor(request.getColor());
-        vehiculo.setTipo(TipoVehiculo.valueOf(request.getTipo().name()));
+        vehiculo.setTipo(toDomainType(request.getTipo()));
         vehiculo.setPrecioDiario(request.getPrecioDiario());
         vehiculo.setEstado(EstadoVehiculo.DISPONIBLE);
         vehiculo.setActivo(true);
 
-        Vehiculo guardado = vehiculoRepository.save(vehiculo);
+        Vehiculo guardado;
+        try {
+            guardado = vehiculoRepository.saveAndFlush(vehiculo);
+        } catch (DataIntegrityViolationException error) {
+            responseObserver.onError(Status.ALREADY_EXISTS
+                    .withDescription("La patente ya esta registrada")
+                    .asRuntimeException());
+            return;
+        }
 
         eventPublisher.publicarSolicitudVerificacion(guardado.getId(), guardado.getPatente());
         responseObserver.onNext(mapToProto(guardado));
@@ -85,11 +94,17 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         vehiculo.setModelo(request.getModelo());
         vehiculo.setAnio(request.getAnio());
         vehiculo.setColor(request.getColor());
-        vehiculo.setTipo(TipoVehiculo.valueOf(request.getTipo().name()));
+        vehiculo.setTipo(toDomainType(request.getTipo()));
         vehiculo.setPrecioDiario(request.getPrecioDiario());
 
-        responseObserver.onNext(mapToProto(vehiculoRepository.save(vehiculo)));
-        responseObserver.onCompleted();
+        try {
+            responseObserver.onNext(mapToProto(vehiculoRepository.saveAndFlush(vehiculo)));
+            responseObserver.onCompleted();
+        } catch (DataIntegrityViolationException error) {
+            responseObserver.onError(Status.ALREADY_EXISTS
+                    .withDescription("La patente ya esta registrada")
+                    .asRuntimeException());
+        }
     }
 
     @Override
@@ -124,7 +139,7 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         vehiculo.setModelo(request.getModelo());
         vehiculo.setAnio(request.getAnio());
         vehiculo.setColor(request.getColor());
-        vehiculo.setTipo(TipoVehiculo.valueOf(request.getTipo().name()));
+        vehiculo.setTipo(toDomainType(request.getTipo()));
         vehiculo.setPrecioDiario(request.getPrecioDiario());
         
         //estado inicial para vehículos externos
@@ -156,10 +171,22 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
                 .setModelo(v.getModelo())
                 .setAnio(v.getAnio())
                 .setColor(v.getColor() != null ? v.getColor() : "")
-                .setTipo(VehicleType.valueOf(v.getTipo().name()))
+                .setTipo(toProtoType(v.getTipo()))
                 .setPrecioDiario(v.getPrecioDiario())
-                .setEstado(VehicleStatus.valueOf(v.getEstado().name()))
+                .setEstado(toProtoStatus(v.getEstado()))
                 .setActivo(v.getActivo())
                 .build();
+    }
+
+    private TipoVehiculo toDomainType(VehicleType type) {
+        return TipoVehiculo.valueOf(type.name().replace("VEHICLE_TYPE_", ""));
+    }
+
+    private VehicleType toProtoType(TipoVehiculo type) {
+        return VehicleType.valueOf("VEHICLE_TYPE_" + type.name());
+    }
+
+    private VehicleStatus toProtoStatus(EstadoVehiculo status) {
+        return VehicleStatus.valueOf("VEHICLE_STATUS_" + status.name());
     }
 }

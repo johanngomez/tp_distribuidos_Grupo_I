@@ -38,7 +38,15 @@ async function manejarError(response, mensajePorDefecto) {
     try {
         if (contentType.includes("application/json")) {
             const data = await response.json();
-            throw new Error(data.detail || data.message || data.error || mensajePorDefecto);
+            const detalle = Array.isArray(data.detail)
+                ? data.detail.map((item) => {
+                    const ubicacion = Array.isArray(item.loc)
+                        ? item.loc.filter((parte) => parte !== "body").join(".")
+                        : "";
+                    return ubicacion ? `${ubicacion}: ${item.msg}` : item.msg;
+                }).join("; ")
+                : data.detail;
+            throw new Error(detalle || data.message || data.error || mensajePorDefecto);
         } else {
             const texto = await response.text();
             throw new Error(texto || mensajePorDefecto);
