@@ -12,6 +12,7 @@ service VehicleService {
   rpc UpdateVehicle(UpdateVehicleRequest) returns (Vehicle);
   rpc GetVehicle(GetVehicleRequest) returns (Vehicle);
   rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
+  rpc RegisterExternalVehicle(RegisterExternalVehicleRequest) returns (Vehicle);
 }
 
 message ListVehiclesRequest {}
@@ -67,6 +68,7 @@ enum VehicleStatus {
   DISPONIBLE = 1;
   RESERVADO = 2;
   EN_ALQUILER = 3;
+  PENDIENTE = 4;
 }
 
 message Vehicle {
@@ -80,4 +82,15 @@ message Vehicle {
   double precio_diario = 8;
   VehicleStatus estado = 9;
   bool activo = 10;
+}
+
+message RegisterExternalVehicleRequest {
+    string patente = 1;
+    string marca = 2;
+    string modelo = 3;
+    int32 anio = 4;
+    string color = 5;
+    VehicleType tipo = 6;
+    double precio_diario = 7;
+    int64 cliente_id = 8; // 
 }
