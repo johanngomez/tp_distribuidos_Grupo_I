@@ -1,5 +1,5 @@
 package ar.unla.rentar.vehicle.service;
-// consumidor de solicitudes de verificación de vehículos y publicación de resultados
+
 import ar.unla.rentar.vehicle.events.EventEnvelope;
 import ar.unla.rentar.vehicle.events.VehiculoVerificacionResultado;
 import ar.unla.rentar.vehicle.events.VehiculoVerificacionSolicitada;
@@ -44,14 +44,12 @@ public class VehicleVerificationListener {
     ))
     public void procesarSolicitudVerificacion(EventEnvelope envelope) {
         try {
-            // Validación defensiva del mensaje entrante
             if (envelope == null || envelope.getPayload() == null) {
                 logger.error("El envelope recibido o su payload son nulos. Descartando mensaje.");
-                // AmqpRejectAndDontRequeueException descarta el mensaje sin reencolarlo (evita bucle infinito)
+                //AmqpRejectAndDontRequeueException descarta el mensaje sin reencolarlo (evita un bucle infinito)
                 throw new AmqpRejectAndDontRequeueException("Payload nulo");
             }
 
-            // Mapeamos el payload genérico al objeto específico
             VehiculoVerificacionSolicitada solicitud = objectMapper.convertValue(
                     envelope.getPayload(), 
                     VehiculoVerificacionSolicitada.class
@@ -65,17 +63,17 @@ public class VehicleVerificationListener {
             logger.info("Procesando verificación para vehículo ID: {} con patente: {}", 
                     solicitud.getVehiculoId(), solicitud.getPatente());
 
-            // 1. Consultamos el registro policial simulado
+            //Consultamos el registro policial simulado
             String resultadoVerificacion = registroPolicialService.verificarVehiculo(solicitud.getPatente());
 
-            // 2. Preparamos el payload de respuesta
+            //Preparamos el payload de respuesta
             VehiculoVerificacionResultado resultadoPayload = new VehiculoVerificacionResultado(
                     solicitud.getVehiculoId(),
                     solicitud.getPatente(),
                     resultadoVerificacion
             );
 
-            // 3. Armamos el envelope para el evento de resultado
+            //Armamos el envelope para el evento de resultado
             EventEnvelope resultadoEnvelope = new EventEnvelope(
                     UUID.randomUUID().toString(),
                     "vehiculos.verificacion.resultado",
@@ -84,20 +82,16 @@ public class VehicleVerificationListener {
                     resultadoPayload
             );
 
-            // 4. Publicamos el resultado al exchange
+            //Publicamos el resultado al exchange
             rabbitTemplate.convertAndSend(EXCHANGE_NAME, "vehiculos.verificacion.resultado", resultadoEnvelope);
             logger.info("Resultado '{}' publicado con éxito para el vehículo ID: {}", 
                     resultadoVerificacion, solicitud.getVehiculoId());
 
         } catch (AmqpRejectAndDontRequeueException e) {
-            // Errores graves o de formato que no deben reintentarse
             logger.error("Error definitivo procesando el mensaje de verificación: {}", e.getMessage());
             throw e; 
         } catch (Exception e) {
-            // Errores inesperados (ej: problemas de conexión a BD si los hubiera, etc.)
             logger.error("Error temporal/inesperado al procesar la verificación del vehículo.", e);
-            // Al dejar propagar la excepción (sin envolverla en AmqpReject...), 
-            // Spring AMQP manejará el reintento según la configuración del broker.
             throw new RuntimeException("Error en procesamiento asíncrono", e);
         }
     }

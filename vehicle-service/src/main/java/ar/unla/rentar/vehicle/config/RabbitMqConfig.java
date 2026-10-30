@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-/** Declaraciones compartidas del transporte de eventos del Hito 3. */
 @Configuration
 public class RabbitMqConfig {
 

@@ -1,5 +1,5 @@
 package ar.unla.rentar.vehicle.events;
-/* Envoltorio común para los eventos de la aplicación. (P8)*/
+
 public class EventEnvelope {
     private String eventId;
     private String eventType;

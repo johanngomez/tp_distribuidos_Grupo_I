@@ -68,6 +68,7 @@ enum VehicleStatus {
   DISPONIBLE = 1;
   RESERVADO = 2;
   EN_ALQUILER = 3;
+  PENDIENTE = 4;
 }
 
 message Vehicle {
