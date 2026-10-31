@@ -31,13 +31,12 @@ import java.util.stream.Collectors;
 public class RentalGrpcServiceImpl extends RentalServiceGrpc.RentalServiceImplBase {
     private final ReservaRepository repository;
     private final ReservaEstadoService estadoService;
+    private final RentalEventPublisher eventPublisher;
 
-    @Autowired
-    private RentalEventPublisher eventPublisher;
-
-    public RentalGrpcServiceImpl(ReservaRepository repository, ReservaEstadoService estadoService) {
+    public RentalGrpcServiceImpl(ReservaRepository repository, ReservaEstadoService estadoService, RentalEventPublisher eventPublisher) {
         this.repository = repository;
         this.estadoService = estadoService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
