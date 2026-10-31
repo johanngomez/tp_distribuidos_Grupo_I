@@ -132,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `rentar_vehiculos`.`vehiculo` (
   `activo` bit(1) DEFAULT NULL,
   `anio` int DEFAULT NULL,
   `color` varchar(255) DEFAULT NULL,
-  `estado` enum('DISPONIBLE','EN_ALQUILER','RESERVADO','VEHICLE_STATUS_UNSPECIFIED') DEFAULT NULL,
+  `estado` enum('DISPONIBLE','EN_ALQUILER','PENDIENTE','RESERVADO','VEHICLE_STATUS_UNSPECIFIED') DEFAULT NULL,
   `marca` varchar(255) NOT NULL,
   `modelo` varchar(255) NOT NULL,
   `patente` varchar(255) NOT NULL,

@@ -47,7 +47,7 @@ def _map_grpc_error(error: GrpcServiceError) -> HTTPException:
     if error.code == grpc.StatusCode.ALREADY_EXISTS:
         return HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="La patente ya esta registrada",
+            detail="Ya existe un vehículo con esa patente. Ingresá una patente diferente.",
         )
     return HTTPException(
         status_code=status.HTTP_502_BAD_GATEWAY,
@@ -98,6 +98,7 @@ async def create_vehicle(
         201: {"description": "Vehiculo registrado y enviado a validacion."},
         400: {"description": "Datos invalidos."},
         403: {"description": "El cliente no puede registrar otro titular."},
+        409: {"description": "Ya existe un vehículo con esa patente."},
         503: {"description": "Vehicle Service no disponible."},
     },
 )

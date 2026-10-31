@@ -41,4 +41,17 @@ class VehicleWriteRequest(BaseModel):
 class ExternalVehicleWriteRequest(VehicleWriteRequest):
     """Datos de un vehiculo propiedad de un cliente."""
 
-    clienteId: int | None = Field(default=None, gt=0, description="Cliente titular del vehiculo. Los clientes pueden omitirlo.")
+    model_config = ConfigDict(json_schema_extra={"example": {
+        "clienteId": 3,
+        "patente": "AAA999", "marca": "Toyota", "modelo": "Corolla",
+        "anio": 2024, "color": "Gris", "tipo": "SEDAN", "precioDiario": 50000,
+    }})
+
+    clienteId: int | None = Field(
+        default=None, gt=0,
+        description=(
+            "ID de un cliente titular existente, consultable en GET /api/clientes. "
+            "Obligatorio para administradores. Para clientes se utiliza automáticamente "
+            "el ID del usuario autenticado."
+        ),
+    )

@@ -146,7 +146,15 @@ public class VehicleGrpcServiceImpl extends VehicleServiceGrpc.VehicleServiceImp
         vehiculo.setEstado(EstadoVehiculo.PENDIENTE); 
         vehiculo.setActivo(true);
 
-        Vehiculo guardado = vehiculoRepository.save(vehiculo);
+        Vehiculo guardado;
+        try {
+            guardado = vehiculoRepository.saveAndFlush(vehiculo);
+        } catch (DataIntegrityViolationException error) {
+            responseObserver.onError(Status.ALREADY_EXISTS
+                    .withDescription("La patente ya esta registrada")
+                    .asRuntimeException());
+            return;
+        }
 
         //crear y publicar el evento en RabbitMQ
         ar.unla.rentar.vehicle.events.VehiculoExternoRegistrado evento = 
