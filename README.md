@@ -576,13 +576,14 @@ El Gateway escucha HTTP en 8000 y el frontend Vite normalmente en 5173.
 
 ### Ejecución del Hito 2 en Windows
 
-MySQL debe estar iniciado y las bases rentar_clientes, rentar_vehiculos y
-rentar_reservas deben existir. Para inicializarlas junto con los datos de
-prueba, ejecutar scripts/initialize_microservices_databases.sql después de
-script_rentar_V2.sql.
+MySQL debe estar iniciado. El script siguiente crea las bases necesarias y
+carga los datos demo de clientes, vehiculos y reservas.
 
 powershell
-Get-Content -Raw scripts\initialize_microservices_databases.sql | mysql -u root -p
+mysql -u root -p < script_rentar_V2.sql
+
+La ejecucion anterior ya incluye la inicializacion de las bases separadas y la
+carga de los dumps demo; no hace falta ejecutar otro comando de datos.
 
 Reemplazar TU_CLAVE_MYSQL por la contraseña local de MySQL.
 

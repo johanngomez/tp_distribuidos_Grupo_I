@@ -169,3 +169,26 @@ DEALLOCATE PREPARE set_auto_increment;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-09-11 23:55:18
+
+-- ================================================================
+-- Carga de datos demo para los microservicios del Hito 2/Hito 3.
+-- Ejecutar este archivo desde la raiz del repositorio para que las
+-- instrucciones SOURCE encuentren los archivos dentro de scripts/.
+-- ================================================================
+
+SOURCE scripts/initialize_microservices_databases.sql;
+
+USE rentar_clientes;
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE cliente;
+SOURCE scripts/seed_clientes.sql;
+
+USE rentar_vehiculos;
+TRUNCATE TABLE vehiculo;
+SOURCE scripts/seed_vehiculos.sql;
+
+USE rentar_reservas;
+TRUNCATE TABLE reserva;
+SOURCE scripts/seed_reservas.sql;
+
+SET FOREIGN_KEY_CHECKS = 1;
