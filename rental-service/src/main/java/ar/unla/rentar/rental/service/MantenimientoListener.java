@@ -33,7 +33,7 @@ public class MantenimientoListener {
             resultado
         );
 
-        rabbitTemplate.convertAndSend("rentar.maintenance.result", resultadoEvent);
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "mantenimiento.resultado", resultadoEvent);
 
         System.out.println("Mantenimiento procesado para la reserva: " + evento.reservaId() + " -> " + resultado);
 

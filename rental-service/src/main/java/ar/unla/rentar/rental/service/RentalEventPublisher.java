@@ -17,6 +17,6 @@ public class RentalEventPublisher {
     }
 
     public void publicarReservaConfirmada(ReservaConfirmadaEvent evento) {
-        rabbitTemplate.convertAndSend("rentar.maintenance.request", evento);
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "reserva.confirmada", evento);
     }
 }
