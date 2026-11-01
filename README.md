@@ -1,14 +1,22 @@
-#### hito 1 ####
-
 # TP Desarrollo de Software en Sistemas Distribuidos — Grupo I
 
 Sistema web de alquiler de vehículos para la empresa **Rentar**, desarrollado para el Trabajo Práctico de la materia **Desarrollo de Software en Sistemas Distribuidos — Universidad Nacional de Lanús (UNLa)**.
+
+## Navegación rápida
+
+- [Hito 1 — REST y GraphQL](#hito1)
+- [Hito 2 — API Gateway y gRPC](#hito2)
+- [Hito 3 — RabbitMQ y eventos](#hito3)
+- [Documentación del backend original](backend/README.md)
+- [Documentación del API Gateway](api-gateway/README.md)
+- [Ejemplos para presentar](#ejemplos-por-hito)
 
 ---
 
 ## Tecnologías utilizadas
 
 ### Backend
+
 - Java 17
 - Spring Boot 4.1.1
 - Maven 3.9.16
@@ -21,6 +29,7 @@ Sistema web de alquiler de vehículos para la empresa **Rentar**, desarrollado p
 - SpringDoc OpenAPI / Swagger
 
 ### Frontend
+
 - React
 - Vite
 - JavaScript
@@ -29,12 +38,13 @@ Sistema web de alquiler de vehículos para la empresa **Rentar**, desarrollado p
 - ESLint
 
 ### Control de versiones
+
 - Git
 - GitHub
 
 ---
 
-# 1. Requisitos previos
+## 1. Requisitos previos
 
 Antes de clonar y ejecutar el proyecto, cada integrante debe tener instalados:
 
@@ -46,36 +56,36 @@ Antes de clonar y ejecutar el proyecto, cada integrante debe tener instalados:
 - npm
 - Visual Studio Code (recomendado)
 
-## Versiones utilizadas
+### Versiones utilizadas
 
-text
+```text
 Java:       17
 Maven:      3.9.16
 MySQL:      8.4
 Node.js:    22.23.2
 npm:        10.9.8
 Git:        2.55+
-
+```
 
 ---
 
-# 2. Clonar el proyecto
+## 2. Clonar el proyecto
 
 Desde una terminal:
 
-bash
+```bash
 git clone https://github.com/johanngomez/tp_distribuidos_Grupo_I.git
-
+```
 
 Ingresar al proyecto:
 
-bash
+```bash
 cd tp_distribuidos_Grupo_I
-
+```
 
 Estructura principal:
 
-text
+```text
 tp_distribuidos_Grupo_I/
 ├── api-gateway/
 ├── backend/                 # Backend monolítico del Hito 1
@@ -84,11 +94,11 @@ tp_distribuidos_Grupo_I/
 ├── rental-service/          # Servicio gRPC de reservas
 ├── frontend/
 └── README.md
-
+```
 
 ---
 
-# 3. Configurar MySQL
+## 3. Configurar MySQL
 
 El backend utiliza MySQL como base de datos.
 
@@ -96,202 +106,207 @@ Asegurarse de que el servidor MySQL esté iniciado.
 
 Ingresar a MySQL:
 
-bash
+```bash
 mysql -u root -p
-
+```
 
 Crear la base de datos:
 
-sql
+```sql
 CREATE DATABASE rentar;
-
+```
 
 Verificar:
 
-sql
+```sql
 SHOW DATABASES;
-
+```
 
 Debe aparecer:
 
-text
+```text
 rentar
-
+```
 
 Salir:
 
-sql
+```sql
 exit;
-
+```
 
 > **Importante:** cada integrante debe tener MySQL instalado y configurado en su propia computadora.
 
 !!Importante! Si tienen una base de datos antigua de rentar, es necesario para el hito 3 correr el siguiente script de SQL
+```sql
 USE rentar;
 ALTER TABLE reserva
 DROP FOREIGN KEY fk_reserva_vehiculo;
+```
 
 ---
 
-# 4. Configurar variables de enterno
+## 4. Configurar variables de enterno
 
 El archivo application.properties utiliza las siguientes variables de entorno para funcionar:
 
+```text
 DB_PORT: <puerto de la base de datos>
 DB_NAME: <nombre de la base de datos>
 DB_USER: <nombre de usuario de la bd>
 DB_PASSWORD: <contraseña del usuario de la bd>
 JWT_SECRET: <clave del servidor para autenticar inicio de sesión de usuario> (se puede dejar el valor por defecto)
-
+```
 
 Hay varias formas de configurar variables de entorno, pero en Visual Studio Code pueden apretar CTRL+SHIFT+P e ir a la opción "Open User Settings (JSON)". De ahí poner los datos previos en "terminal.integrated.env.windows".
 
 Ejemplo:
 
-    "terminal.integrated.env.windows": {
-    "DB_USER": "ejemplouser",
-    "DB_PASSWORD": "ejemplopass",
-    "DB_NAME": "grupoi_db",
-    "DB_PORT": "3306"
-    }
+```jsonc
+"terminal.integrated.env.windows": {
+"DB_USER": "ejemplouser",
+"DB_PASSWORD": "ejemplopass",
+"DB_NAME": "grupoi_db",
+"DB_PORT": "3306"
+}
+```
 
 ---
 
-# 5. Ejecutar y probar el Backend
+## 5. Ejecutar y probar el Backend
 
 Desde la carpeta del proyecto:
 
-bash
+```bash
 cd backend
-
+```
 
 En Windows:
 
-powershell
+```powershell
 .\mvnw.cmd clean test
-
+```
 
 Si todo está correctamente configurado debe aparecer:
 
-text
+```text
 BUILD SUCCESS
-
+```
 
 ---
 
-# 6. Levantar el Backend
+## 6. Levantar el Backend
 
 Desde:
 
-text
+```text
 tp_distribuidos_Grupo_I/backend
-
+```
 
 ejecutar:
 
-powershell
+```powershell
 .\mvnw.cmd spring-boot:run
-
+```
 
 El backend se ejecutará en:
 
-text
+```text
 http://localhost:8080
-
+```
 
 Para detenerlo:
 
-text
+```text
 Ctrl + C
-
+```
 
 ---
 
-# 7. Swagger / OpenAPI
+## 7. Swagger / OpenAPI
 
 Los endpoints REST serán documentados mediante Swagger/OpenAPI.
 
 Una vez que el backend esté ejecutándose:
 
-text
+```text
 http://localhost:8080/swagger-ui.html
-
+```
 
 Especificación OpenAPI:
 
-text
+```text
 http://localhost:8080/v3/api-docs
-
+```
 
 > Estas rutas estarán disponibles a medida que se incorporen los controladores REST.
 
 ---
 
-# 8. GraphQL
+## 8. GraphQL
 
 El proyecto utiliza **Spring for GraphQL**.
 
 Endpoint:
 
-text
+```text
 http://localhost:8080/graphql
-
+```
 
 Las operaciones GraphQL serán incorporadas durante el desarrollo del Hito 1.
 
 ---
 
-# 9. Configurar el Frontend
+## 9. Configurar el Frontend
 
 Abrir otra terminal.
 
 Desde la raíz:
 
-bash
+```bash
 cd frontend
-
+```
 
 Instalar dependencias:
 
-bash
+```bash
 npm install
-
+```
 
 > **Importante:** node_modules no se sube a GitHub. Se genera automáticamente ejecutando npm install.
 
 ---
 
-# 10. Ejecutar el Frontend
+## 10. Ejecutar el Frontend
 
 Desde:
 
-text
+```text
 tp_distribuidos_Grupo_I/frontend
-
+```
 
 ejecutar:
 
-bash
+```bash
 npm run dev
-
+```
 
 Vite mostrará una dirección similar a:
 
-text
+```text
 http://localhost:5173/
-
+```
 
 Abrirla en el navegador.
 
 Para detenerlo:
 
-text
+```text
 Ctrl + C
-
+```
 
 ---
 
-# 11. Ejecutar el Hito 1 en modo compatibilidad
+## 11. Ejecutar el Hito 1 en modo compatibilidad
 
 Esta modalidad mantiene disponible el backend monolítico original del Hito 1.
 Para ejecutar el Hito 2 se deben seguir las instrucciones de la sección
@@ -302,36 +317,36 @@ Se deben utilizar **dos terminales** para el Hito 1.
 
 ### Terminal 1 — Backend
 
-powershell
+```powershell
 cd backend
 .\mvnw.cmd spring-boot:run
-
+```
 
 Backend:
 
-text
+```text
 http://localhost:8080
-
+```
 
 ### Terminal 2 — Frontend
 
-powershell
+```powershell
 cd frontend
 npm install
 npm run dev
-
+```
 
 Frontend:
 
-text
+```text
 http://localhost:5173/
-
+```
 
 ---
 
-# 12. Estructura del Backend
+## 12. Estructura del Backend
 
-text
+```text
 backend/
 └── src/
     └── main/
@@ -347,28 +362,33 @@ backend/
         │               └── service/
         └── resources/
             └── application.properties
-
+```
 
 ### model/
+
 Entidades y modelos principales.
 
 ### repository/
+
 Acceso a datos mediante Spring Data JPA.
 
 ### service/
+
 Lógica de negocio.
 
 ### controller/
+
 Controladores REST.
 
 ### graphql/
+
 Implementaciones relacionadas con GraphQL.
 
 ---
 
-# 13. Estructura del Frontend
+## 13. Estructura del Frontend
 
-text
+```text
 frontend/
 ├── public/
 ├── src/
@@ -380,15 +400,15 @@ frontend/
 ├── package.json
 ├── vite.config.js
 └── eslint.config.js
-
+```
 
 La interfaz se desarrollará incrementalmente junto con los requerimientos del TP.
 
 ---
 
-# 14. Modelo general del sistema
+## 14. Modelo general del sistema
 
-## Administrador
+### Administrador
 
 Puede:
 
@@ -396,7 +416,7 @@ Puede:
 - Realizar ABM de clientes.
 - Consultar las reservas de todos los clientes.
 
-## Cliente
+### Cliente
 
 Puede:
 
@@ -408,11 +428,11 @@ Puede:
 
 ---
 
-# 15. Entidades principales
+## 15. Entidades principales
 
 Relación general:
 
-text
+```text
 Cliente
    │
    │ 1
@@ -424,9 +444,9 @@ Reserva
    │
    │ 1
 Vehiculo
+```
 
-
-## Cliente
+### Cliente
 
 - ID
 - Documento
@@ -437,7 +457,7 @@ Vehiculo
 - Fecha de nacimiento
 - Activo/Inactivo
 
-## Vehículo
+### Vehículo
 
 - ID
 - Patente
@@ -452,23 +472,23 @@ Vehiculo
 
 Tipos:
 
-text
+```text
 SEDAN
 SUV
 PICKUP
 COUPE
 HATCHBACK
-
+```
 
 Estados:
 
-text
+```text
 DISPONIBLE
 RESERVADO
 EN_ALQUILER
+```
 
-
-## Reserva
+### Reserva
 
 - ID
 - Cliente
@@ -481,20 +501,49 @@ EN_ALQUILER
 
 Estados:
 
-text
+```text
 CONFIRMADA
 CANCELADA
-
+```
 
 ---
 
-# 16. Hitos del Trabajo Práctico
+## 16. Hitos del Trabajo Práctico
 
 El desarrollo será incremental.
 
+<a id="ejemplos-por-hito"></a>
+
+### Cómo probar los ejemplos de cada hito
+
+| Hito | API HTTP | Interfaz REST | Interfaz GraphQL |
+|---|---|---|---|
+| 1: backend original | `http://localhost:8080` | `/swagger-ui.html` | `/graphiql` (endpoint: `/graphql`) |
+| 2: Gateway y gRPC | `http://127.0.0.1:8000` | `/docs` | `/graphql` |
+| 3: Gateway, gRPC y RabbitMQ | `http://127.0.0.1:8000` | `/docs` | `/graphql` |
+
+Para las operaciones protegidas, ejecutar `POST /auth/login` en la API que se está probando. En una base de demostración preparada con el inicializador, el administrador de prueba usa este body; si la cuenta existente tiene otra contraseña, utilizar la correspondiente:
+
+```json
+{
+  "email": "admin@rentar.com",
+  "password": "123456"
+}
+```
+
+Copiar el token recibido en **Authorize** de Swagger. Para GraphQL o un cliente HTTP, configurar el encabezado completo:
+
+```json
+{
+  "Authorization": "Bearer TOKEN_JWT_RECIBIDO"
+}
+```
+
+Los IDs de los ejemplos son ilustrativos: reemplazarlos por registros existentes. Usar patentes únicas y un intervalo futuro sin reservas superpuestas. Las fechas propuestas son de 2030; ajustarlas si corresponde. Una lista vacía puede ser una respuesta correcta si no hay datos que cumplan los filtros. Los ejemplos describen solicitudes para ejecutar, no pruebas de integración ya realizadas.
+
 <a id="hito1"></a>
 
-## Hito 1 — REST / GraphQL
+### Hito 1 — REST / GraphQL
 
 Se implementarán:
 
@@ -509,9 +558,52 @@ Se implementarán:
 - Documentación Swagger/OpenAPI.
 - Pruebas.
 
+#### Ejemplo REST — Crear y consultar un vehículo
+
+En Swagger del backend original, ejecutar `POST /vehiculos` con:
+
+```json
+{
+  "patente": "DEMO101",
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anio": 2024,
+  "color": "Gris",
+  "tipo": "SEDAN",
+  "precioDiario": 50000
+}
+```
+
+Se espera `201 Created`, un ID generado y el vehículo inicialmente activo y `DISPONIBLE`. Después consultar `GET /vehiculos` o `GET /vehiculos/{id}` con el ID devuelto. Para probar la baja lógica al terminar la demostración, usar `DELETE /vehiculos/{id}`: conserva la fila y cambia su actividad.
+
+#### Ejemplo GraphQL — Disponibilidad por período
+
+Pegar en http://localhost:8080/graphiql:
+
+```graphql
+query DisponibilidadHito1 {
+  consultarDisponibilidad(
+    fechaInicio: "2030-11-10T10:00:00"
+    fechaFin: "2030-11-12T10:00:00"
+    tipo: SEDAN
+    precioMin: 10000
+    precioMax: 100000
+  ) {
+    id
+    patente
+    marca
+    modelo
+    precioDiario
+    estado
+  }
+}
+```
+
+Ambas fechas son obligatorias en el esquema del monolito y deben incluir hora. No hay mutations: las escrituras de este hito están asignadas a REST. Para todas las rutas, más consultas y las particularidades de esta implementación, ver [REST del backend](backend/docs/rest.md), [GraphQL del backend](backend/docs/graphql.md) y [recorrido de demostración](backend/docs/demostracion.md).
+
 <a id="hito2"></a>
 
-## Hito 2 — RPC
+### Hito 2 — RPC
 
 El Hito 2 está implementado mediante un API Gateway en Python y tres servicios
 internos Java independientes. El frontend continúa utilizando REST y GraphQL;
@@ -520,7 +612,7 @@ servicios Java.
 
 La arquitectura es:
 
-text
+```text
 React + Vite
       |
       | REST / GraphQL
@@ -537,13 +629,13 @@ Java + Spring        Java + Spring        Java + Spring
       +-------------------+-------------------+
                           |
                          MySQL
-
+```
 
 El Gateway es el único punto de entrada del frontend. No accede directamente a
 las tablas de vehículos, clientes o reservas. Cada servicio mantiene la lógica
 y la persistencia de su dominio.
 
-### API Gateway
+#### API Gateway
 
 El Gateway está implementado con Python, FastAPI y Uvicorn. Expone REST y
 GraphQL, valida JWT y roles, aplica CORS, transforma solicitudes HTTP/GraphQL
@@ -554,17 +646,17 @@ Strawberry GraphQL, PyJWT y Protocol Buffers.
 
 Los clientes gRPC están separados por dominio:
 
-text
+```text
 api-gateway/app/grpc_clients/
 ├── vehicle_client.py
 ├── customer_client.py
 └── rental_client.py
-
+```
 
 Los contratos se encuentran en api-gateway/proto/ y los stubs Python se
 generan desde esos archivos .proto.
 
-### Servicios y puertos
+#### Servicios y puertos
 
 | Servicio | Puerto gRPC | Base de datos |
 |---|---:|---|
@@ -574,40 +666,41 @@ generan desde esos archivos .proto.
 
 El Gateway escucha HTTP en 8000 y el frontend Vite normalmente en 5173.
 
-### Ejecución del Hito 2 en Windows
+#### Ejecución del Hito 2 en Windows
 
 MySQL debe estar iniciado. El script siguiente crea las bases necesarias y
 carga los datos demo de clientes, vehiculos y reservas.
 
-powershell
+```powershell
 mysql -u root -p < script_rentar_V2.sql
+```
 
 La ejecucion anterior ya incluye la inicializacion de las bases separadas y la
 carga de los dumps demo; no hace falta ejecutar otro comando de datos.
 
 Reemplazar TU_CLAVE_MYSQL por la contraseña local de MySQL.
 
-sql
+```sql
 CREATE DATABASE rentar_clientes;
 CREATE DATABASE rentar_vehiculos;
 CREATE DATABASE rentar_reservas;
-
+```
 
 Cada proceso se ejecuta en una terminal diferente.
 
 Vehicle Service:
 
-powershell
+```powershell
 ## Terminal 1
 cd E:\TpDistribuidos\vehicle-service
 mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:mysql://localhost:3306/rentar_vehiculos --spring.datasource.username=root --spring.datasource.password=TU_CLAVE_MYSQL"
+```
 
 Debe quedar escuchando gRPC en localhost:50051. No cerrar esta terminal.
 
-
 Customer Service:
 
-powershell
+```powershell
 ## Terminal 2
 cd E:\TpDistribuidos\customer-service
 $env:DB_PORT="3306"
@@ -616,13 +709,13 @@ $env:DB_USER="root"
 $env:DB_PASSWORD="TU_CLAVE_MYSQL"
 $env:JWT_SECRET="RentarClaveSecreta2026ParaJWT123456789"
 mvn spring-boot:run
+```
 
 Debe quedar escuchando gRPC en localhost:50052. No cerrar esta terminal.
 
-
 Rental Service:
 
-powershell
+```powershell
 ## Terminal 3
 cd E:\TpDistribuidos\rental-service
 $env:DB_PORT="3306"
@@ -630,40 +723,42 @@ $env:DB_NAME="rentar_reservas"
 $env:DB_USER="root"
 $env:DB_PASSWORD="TU_CLAVE_MYSQL"
 mvn spring-boot:run
+```
 
 Debe quedar escuchando gRPC en localhost:50053. No cerrar esta terminal.
 
-
 API Gateway:
 
-powershell
+```powershell
 ## Terminal 4
 cd E:\TpDistribuidos\api-gateway
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 $env:JWT_SECRET="RentarClaveSecreta2026ParaJWT123456789"
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
 
 Debe aparecer Uvicorn running on http://127.0.0.1:8000.
 
 Comprobarlo:
 
-powershell
+```powershell
 Invoke-WebRequest http://127.0.0.1:8000/health
-
+```
 
 Frontend:
 
-powershell
+```powershell
 ## Terminal 5
 cd E:\TpDistribuidos\frontend
 npm install
 npm run dev
+```
 
 Abrir la URL indicada por Vite, normalmente http://localhost:5173.
 El frontend debe utilizar VITE_API_URL=http://127.0.0.1:8000.
 
-### Rutas principales del Gateway
+#### Rutas principales del Gateway
 
 | Método | Ruta | Servicio interno |
 |---|---|---|
@@ -682,20 +777,63 @@ El frontend debe utilizar VITE_API_URL=http://127.0.0.1:8000.
 La creación de una reserva se orquesta mediante tres llamadas gRPC: validar el
 cliente, verificar la disponibilidad del vehículo y crear la reserva.
 
-### Verificación rápida
+#### Verificación rápida
 
-powershell
+```powershell
 Invoke-RestMethod http://127.0.0.1:8000/health
-
+```
 
 La respuesta esperada es {"status":"ok"}. La documentación REST está en
 http://127.0.0.1:8000/docs y GraphQL en http://127.0.0.1:8000/graphql.
 
 Las rutas protegidas utilizan Authorization: Bearer <JWT>.
 
+#### Ejemplo REST — Crear y cancelar una reserva mediante el Gateway
+
+Con los servicios Java iniciados, ejecutar `POST /api/reservas` en http://127.0.0.1:8000/docs:
+
+```json
+{
+  "clienteId": 3,
+  "vehiculoId": 7,
+  "fechaInicio": "2030-11-10T10:00:00",
+  "fechaFin": "2030-11-12T10:00:00"
+}
+```
+
+Elegir un cliente activo y un vehículo activo y disponible. El Gateway coordina las llamadas gRPC; Rental Service comprueba el solapamiento, calcula el importe y crea la reserva. El precio se obtiene del vehículo, no se envía en el body. Para consultar, usar `GET /api/reservas`; para cancelar antes del inicio, `PUT /api/reservas/{id}/cancelar`, sin body.
+
+#### Ejemplo GraphQL — Reservas filtradas con datos relacionados
+
+Pegar en http://127.0.0.1:8000/graphql:
+
+```graphql
+query ReservasHito2 {
+  reservas(
+    filtro: {
+      clienteId: "3"
+      estado: CONFIRMADA
+      fechaInicioDesde: "2030-11-01T00:00:00"
+      fechaInicioHasta: "2030-11-30T23:59:59"
+    }
+  ) {
+    id
+    fechaInicio
+    fechaFin
+    precioDiario
+    importeTotal
+    estado
+    cliente { id nombre apellido }
+    vehiculo { id patente marca modelo }
+  }
+}
+```
+
+No enviar filtros como `clienteId: ""` o fechas vacías: omitir el filtro o completarlo. Los resolvers usan clientes gRPC para obtener y combinar la información; no consultan MySQL directamente. Más ejemplos: [REST del Gateway](api-gateway/docs/rest-examples.md) y [GraphQL del Gateway](api-gateway/docs/graphql-examples.md).
+
 <a id="hito3"></a>
 
-## Hito 3 — Mensajería con RabbitMQ
+### Hito 3 — Mensajería con RabbitMQ
 
 El Hito 3 incorpora RabbitMQ como broker para desacoplar procesos que no
 necesitan una respuesta inmediata. Se conserva la arquitectura del Hito 2:
@@ -703,16 +841,16 @@ el frontend se comunica con el API Gateway mediante REST y GraphQL, el Gateway
 coordina las operaciones síncronas mediante gRPC y los eventos se publican y
 consumen mediante RabbitMQ.
 
-### Requisitos y puesta en marcha
+#### Requisitos y puesta en marcha
 
 Se necesita Docker Desktop, que incluye Docker Compose v2. Desde la raíz del
 proyecto ejecutar:
 
-powershell
+```powershell
 cd E:\TpDistribuidos
 docker compose up -d rabbitmq
 docker compose ps
-
+```
 
 RabbitMQ debe quedar disponible en localhost:5672. La interfaz de
 administración se encuentra en http://localhost:15672 con usuario rentar y
@@ -725,9 +863,9 @@ Las bases utilizadas son rentar_clientes, rentar_vehiculos y
 rentar_reservas. Si todavía no existen, se pueden crear con
 scripts/initialize_microservices_databases.sql.
 
-### Flujos implementados
+#### Flujos implementados
 
-#### Verificación asíncrona de vehículos
+##### Verificación asíncrona de vehículos
 
 Al registrar un vehículo se publica vehiculos.verificacion.solicitada con su
 identificador y patente. Un consumidor consulta el registro policial simulado
@@ -735,7 +873,7 @@ y publica vehiculos.verificacion.resultado con resultado VALIDADO o
 ROBADO. El resultado ROBADO no se convierte en un estado operativo: el
 vehículo se desactiva lógicamente y no puede utilizarse en nuevas reservas.
 
-#### Incorporación de vehículos de clientes
+##### Incorporación de vehículos de clientes
 
 El cliente puede utilizar POST /vehiculos/externos desde el Gateway. El
 vehículo comienza en estado PENDIENTE y se publican validaciones
@@ -746,7 +884,7 @@ queda rechazada y el vehículo no se incorpora.
 
 Ejemplo de solicitud:
 
-json
+```json
 {
   "clienteId": 1,
   "patente": "DEF456",
@@ -757,9 +895,9 @@ json
   "tipo": "SEDAN",
   "precioDiario": 50000
 }
+```
 
-
-#### Mantenimiento preventivo
+##### Mantenimiento preventivo
 
 Cuando una reserva se confirma se publica reserva.confirmada. El componente
 de mantenimiento consume el evento, registra la solicitud y publica
@@ -767,7 +905,35 @@ mantenimiento.resultado con REALIZADO o NO_REALIZADO. La confirmación de
 la reserva no queda bloqueada esperando este procesamiento; el resultado se
 asocia posteriormente a la reserva.
 
-### Colas y eventos
+#### Ejemplo REST — Registrar un vehículo externo
+
+Con RabbitMQ y los servicios iniciados, ejecutar `POST /vehiculos/externos` en el Swagger del Gateway. El body de ejemplo de esta sección incluye `clienteId`: es obligatorio al operar como administrador; un cliente autenticado utiliza su propia identidad.
+
+La respuesta `201 Created` confirma el registro inicial, no la aprobación definitiva. Consultar después `GET /vehiculos/{id}` para observar el estado: comienza en `PENDIENTE`, puede pasar a `DISPONIBLE` si ambas validaciones son satisfactorias o quedar inactivo si se rechaza. Usar una patente nueva y un cliente existente.
+
+Para observar la verificación policial de un alta normal, ejecutar `POST /vehiculos` con el body del Hito 1 y una patente simulada como `ROBADO01`, siempre que no exista previamente. El resultado policial debe impedir nuevas operaciones mediante baja lógica. No es necesario borrar registros existentes para repetir la demo: elegir otra patente del simulador que esté libre.
+
+#### Ejemplo GraphQL — Consultar el historial conservando la API del Hito 2
+
+El Hito 3 mantiene REST y GraphQL como entrada. RabbitMQ se utiliza internamente; no agrega una mutation ni una suscripción GraphQL. Por ejemplo, consultar el historial en http://127.0.0.1:8000/graphql:
+
+```graphql
+query HistorialHito3 {
+  historialAlquileres(clienteId: "3") {
+    vehiculo
+    patente
+    fechaInicio
+    fechaFin
+    cantidadDias
+    importeTotal
+    estado
+  }
+}
+```
+
+Para mostrar mantenimiento, crear una reserva con el ejemplo REST del Hito 2. Observar los logs de los consumidores y la actividad de `rentar.maintenance.request` y `rentar.maintenance.result` en http://localhost:15672. El historial GraphQL no expone un campo de resultado de mantenimiento: no agregarlo a la query. Una cola vacía puede indicar que sus mensajes ya fueron consumidos.
+
+#### Colas y eventos
 
 Las colas declaradas por los servicios son:
 
@@ -785,7 +951,7 @@ se encuentran en:
 - [Eventos RabbitMQ](docs/hito3-rabbitmq-eventos.md)
 - [Documentación RabbitMQ del Gateway](api-gateway/docs/hito3-rabbitmq.md)
 
-### Documentación de las APIs
+#### Documentación de las APIs
 
 La documentación navegable queda disponible al levantar el Gateway:
 
@@ -798,11 +964,11 @@ fechas y errores:
 
 - [Ejemplos REST del API Gateway](api-gateway/docs/rest-examples.md)
 - [Ejemplos GraphQL](api-gateway/docs/graphql-examples.md)
-- [Contratos gRPC](api-gateway/docs/vehicle-grpc-contract-proposal.md)
+- [Contratos gRPC](api-gateway/proto/rentar/)
 
-### Documentación por hito
+#### Documentación por hito
 
-#### [Hito 1 — REST y GraphQL](#hito1)
+##### [Hito 1 — REST y GraphQL](#hito1)
 
 La documentación del Hito 1 está dentro de este README. Se puede navegar
 directamente a cada apartado:
@@ -818,15 +984,15 @@ directamente a cada apartado:
 - [GraphQL](#8-graphql)
 - [Flujo recomendado del Hito 1](#22-flujo-recomendado-para-comenzar-a-trabajar-con-el-hito-1)
 
-#### [Hito 2 — RPC](#hito2)
+##### [Hito 2 — RPC](#hito2)
 
 - [Sección completa del Hito 2](#hito2)
 - [README del API Gateway](./api-gateway/README.md)
 - [`api-gateway/docs/rest-examples.md`](./api-gateway/docs/rest-examples.md)
 - [`api-gateway/docs/graphql-examples.md`](./api-gateway/docs/graphql-examples.md)
-- [`api-gateway/docs/vehicle-grpc-contract-proposal.md`](./api-gateway/docs/vehicle-grpc-contract-proposal.md)
+- [Contratos protobuf por servicio](./api-gateway/proto/rentar/)
 
-#### [Hito 3 — RabbitMQ y eventos](#hito3)
+##### [Hito 3 — RabbitMQ y eventos](#hito3)
 
 - [Sección completa del Hito 3](#hito3)
 - [`docs/hito3-rabbitmq-eventos.md`](./docs/hito3-rabbitmq-eventos.md)
@@ -834,7 +1000,7 @@ directamente a cada apartado:
 
 ---
 
-# 17. Trabajo con Git
+## 17. Trabajo con Git
 
 **No trabajar directamente sobre main.**
 
@@ -842,71 +1008,71 @@ Cada integrante debe utilizar su propia rama.
 
 Ejemplo:
 
-text
+```text
 main
 ├── feature/base-datos
 ├── feature/vehiculos
 ├── feature/clientes
 ├── feature/reservas
 └── feature/graphql
+```
 
+### Antes de comenzar
 
-## Antes de comenzar
-
-bash
+```bash
 git checkout main
 git pull
-
+```
 
 Cambiar a la rama propia:
 
-bash
+```bash
 git checkout feature/nombre-de-la-rama
-
+```
 
 Actualizarla:
 
-bash
+```bash
 git merge main
-
+```
 
 ---
 
-# 18. Guardar cambios
+## 18. Guardar cambios
 
 Verificar:
 
-bash
+```bash
 git status
-
+```
 
 Agregar:
 
-bash
+```bash
 git add .
-
+```
 
 Commit:
 
-bash
+```bash
 git commit -m "Descripcion del cambio"
-
+```
 
 Subir:
 
-bash
+```bash
 git push
-
+```
 
 Primera vez:
 
-bash
+```bash
 git push -u origin feature/nombre-de-la-rama
-
+```
 
 ---
 
-# 19. Pull Requests
+## 19. Pull Requests
 
 Cuando un integrante termina una tarea:
 
@@ -918,57 +1084,57 @@ Cuando un integrante termina una tarea:
 
 Después de un merge:
 
-bash
+```bash
 git checkout main
 git pull
-
+```
 
 Luego:
 
-bash
+```bash
 git checkout feature/nombre-de-la-rama
 git merge main
-
+```
 
 ---
 
-# 20. Carpetas que NO deben subirse a Git
+## 20. Carpetas que NO deben subirse a Git
 
 ### Frontend
 
-text
+```text
 node_modules/
 dist/
-
+```
 
 ### Backend
 
-text
+```text
 target/
-
+```
 
 Estas carpetas ya están incluidas en los respectivos .gitignore.
 
 Después de clonar:
 
-bash
+```bash
 cd frontend
 npm install
-
+```
 
 Esto vuelve a generar node_modules.
 
 ---
 
-# 21. Solución de problemas frecuentes
+## 21. Solución de problemas frecuentes
 
-## Error de conexión con MySQL
+### Error de conexión con MySQL
 
 Si aparece:
 
-text
+```text
 Access denied
-
+```
 
 verificar:
 
@@ -980,65 +1146,65 @@ verificar:
 
 Probar:
 
-bash
+```bash
 mysql -u root -p
+```
 
+### No existe la base de datos
 
-## No existe la base de datos
-
-sql
+```sql
 CREATE DATABASE rentar;
+```
 
-
-## Error al ejecutar npm
+### Error al ejecutar npm
 
 Verificar:
 
-bash
+```bash
 node -v
 npm -v
-
+```
 
 Versiones utilizadas:
 
-text
+```text
 Node.js 22.23.2
 npm 10.9.8
-
+```
 
 Luego:
 
-bash
+```bash
 npm install
+```
 
-
-## Error al ejecutar Maven
+### Error al ejecutar Maven
 
 Verificar:
 
-bash
+```bash
 java -version
 mvn -version
-
+```
 
 Se requiere Java 17.
 
 También se puede utilizar el Maven Wrapper:
 
-powershell
+```powershell
 .\mvnw.cmd clean test
-
+```
 
 ---
 
-# 22. Flujo recomendado para comenzar a trabajar con el Hito 1
+## 22. Flujo recomendado para comenzar a trabajar con el Hito 1
 
 Después de clonar:
 
-powershell
+```powershell
 git clone https://github.com/johanngomez/tp_distribuidos_Grupo_I.git
 cd tp_distribuidos_Grupo_I
-
+```
 
 Estas instrucciones corresponden al backend monolítico de compatibilidad. Para
 la ejecución principal del Hito 2, utilizar la sección **Ejecución del Hito 2
@@ -1046,51 +1212,51 @@ en Windows**.
 
 ### Backend monolítico
 
-powershell
+```powershell
 cd backend
 .\mvnw.cmd clean test
 .\mvnw.cmd spring-boot:run
-
+```
 
 ### Frontend
 
 En otra terminal:
 
-powershell
+```powershell
 cd frontend
 npm install
 npm run dev
-
+```
 
 ### URLs principales
 
 Frontend:
 
-text
+```text
 http://localhost:5173/
-
+```
 
 Backend:
 
-text
+```text
 http://localhost:8080
-
+```
 
 Swagger:
 
-text
+```text
 http://localhost:8080/swagger-ui.html
-
+```
 
 GraphQL:
 
-text
+```text
 http://localhost:8080/graphql
-
+```
 
 ---
 
-# 23. Estado actual del proyecto
+## 23. Estado actual del proyecto
 
 El Hito 1, el Hito 2 y el Hito 3 se encuentran implementados e integrados.
 
@@ -1109,6 +1275,5 @@ Actualmente se encuentran disponibles:
 - Incorporación asíncrona de vehículos de clientes con validación de patente y titularidad.
 - Solicitudes de mantenimiento preventivo asociadas a reservas.
 - Bases independientes por microservicio y documentación de REST, GraphQL, gRPC y RabbitMQ.
-
 
 ---

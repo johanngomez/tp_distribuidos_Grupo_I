@@ -121,11 +121,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-graphql</artifactId>
-		</dependency>
-
 		<!-- Starter de gRPC para Spring Boot -->
         <dependency>
             <groupId>net.devh</groupId>
