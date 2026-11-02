@@ -7,12 +7,12 @@ services:
       RABBITMQ_DEFAULT_USER: rentar
       RABBITMQ_DEFAULT_PASS: rentar
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5672:5672" ##conexiones spring AMQP (conexión de java)
+      - "15672:15672" ## panel web de admin (para ver exchanges colas, y consumidores))
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"] ## para ver si responde bien
       interval: 10s
       timeout: 5s
       retries: 5
