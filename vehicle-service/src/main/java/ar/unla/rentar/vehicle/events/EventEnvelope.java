@@ -10,11 +10,11 @@ public class EventEnvelope {
     public EventEnvelope() {}
 
     public EventEnvelope(String eventId, String eventType, String correlationId, String occurredAt, Object payload) {
-        this.eventId = eventId;
-        this.eventType = eventType;
-        this.correlationId = correlationId;
-        this.occurredAt = occurredAt;
-        this.payload = payload;
+        this.eventId = eventId;    // Identifica este evento concreto, normalmente con un UUID.
+        this.eventType = eventType;  // Indica qué evento es.
+        this.correlationId = correlationId; // Relaciona los distintos eventos del mismo proceso.
+        this.occurredAt = occurredAt;  // Indica cuándo ocurrió el evento.
+        this.payload = payload;  // Contiene los datos de negocio necesarios para procesarlo.
     }
 
     public String getEventId() { return eventId; }
